@@ -2108,12 +2108,9 @@
         <name>application</name>
         <group>
             <name>cyclic_voltammetry</name>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\craabUtil.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\craabUtil.h</name>
-            </file>
+            <excluded>
+                <configuration>Debug</configuration>
+            </excluded>
             <file>
                 <name>$PROJ_DIR$\..\erdc_main\cycloVoltammetry.c</name>
             </file>
@@ -2151,6 +2148,9 @@
                 <name>$PROJ_DIR$\..\erdc_main\square_wave_volt.c</name>
             </file>
         </group>
+        <file>
+            <name>C:\Users\rditlkc9\Downloads\M355_ERDC_Electrochemistry\iar\main_prototype.c</name>
+        </file>
     </group>
     <group>
         <name>common</name>
@@ -2170,6 +2170,9 @@
             <name>$PROJ_DIR$\..\..\..\common\ClkLib.c</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\..\common\craabUtil.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\..\common\DioLib.c</name>
         </file>
         <file>
@@ -2177,6 +2180,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\common\IntLib.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\common\M355_ECSns_DCTest.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\common\PwrLib.c</name>
