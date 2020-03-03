@@ -48,6 +48,14 @@ ImpResult_t ImpResult[] =
          {4500,{0,0,0,0},{0},0,0},
          {4750,{0,0,0,0},{0},0,0},
          {5000,{0,0,0,0},{0},0,0},  
+         {5250,{0,0,0,0},{0},0,0},
+         {5500,{0,0,0,0},{0},0,0},
+         {5750,{0,0,0,0},{0},0,0},
+         {6000,{0,0,0,0},{0},0,0},
+         {6250,{0,0,0,0},{0},0,0},  
+         {6500,{0,0,0,0},{0},0,0},
+         {6750,{0,0,0,0},{0},0,0},
+         {7000,{0,0,0,0},{0},0,0},
          //user can add frequency option here
       };
 //END EIS GLOBALS
@@ -225,7 +233,7 @@ void runTest(char mode){
   
   if(mode=='3'){
         printf("\nElectrochemical impedance spectroscopy selected\n");
-        //printf("\nParameter input for EIS goes here!\n\n");
+        getEISFrequencies();
         runEIS();
         printf("\nElectrochemical impedance spectroscopy test concluded");
         
@@ -1281,7 +1289,7 @@ char getTestMode(void){
 bool restartTest(void){
   bool answer;
   
-  printf("\nTest Concluded, run another test?\n");
+  printf("\nRun another test?\n");
   printf("(1) Yes\n(2) No\n");
   
   while(1){
@@ -1298,69 +1306,95 @@ bool restartTest(void){
 //Modifies the Impresult array to use test frequencies given via UART
 //NOTE: !!!!!!!!!Will NOT WORK CORRECTLY FOR FREQUENCIES LESS THAN 1Hz!!!!!!!!!
 void getEISFrequencies(void){
-  int length = 28;
+  int length = 36;
   bool rec = false;
-  float startFreq, endFreq;
+  float startFreq=0;
+  float endFreq=0;   
   
-  printf("Enter starting frequency(Hz) and ending frequency(Hz), both in brackets\n");
-  printf("Ex: '[5][5000]' will test 28 evenly spaced frequencies between 5Hz and 5kHz\n");
+  printf("Enter starting frequency(Hz) in brackets, min is 1Hz\n");
+  printf("Ex: [5] will start the frequency sweep at 5Hz\n");
   while(rec == false){
     if(flag){
-      
-      //printf(
-      //Used for finding indexes where brackets are located
-      //EX: Starting freq is between the two indexes stored in f1[], which represents the bracket positions
-      int f1[2] = {0 , 0};
-      int f2[2] = {0 , 0};
-      bool lbc = false;
-      bool rbc = false;
-      
-      //Find the index locations of the brackets in the UART buffer
-      for(int i=0 ; i<UART_INBUFFER_LEN ; ++i){
-        char val = szInSring[i];
-        
-        if(val=='[' && lbc==false){
-          f1[0] = i;
-          lbc = true;
-        }
-        if(val==']' && rbc==false){
-          f1[1] = i;
-          rbc = true;
-        }
-        if(val=='[' && lbc==true){
-          f2[0] = i;
-        }
-        if(val==']' && rbc==true){
-          f2[1] = i;
-        }
+      //count the length of the input frequency
+      int ctr=0;
+      while(szInSring[ctr+1] != ']'){
+        ++ctr;  //at the end of this loop, ctr should equal the length of the input frequency
       }
-      //Using the bracket locations found above, determine the starting and ending frequencies in Hz
-      int startFreqOrder = f1[1]-f1[0]-2; //highest order factor of 10 in startFreq
-      int endFreqOrder   = f2[1]-f2[0]-2; //highest order factor of 10 in endFreq
-      
-      for(int i=f1[0]+1 ; i<f1[1] ; ++i){
-        startFreq = startFreq + (szInSring[i]*(pow(10,startFreqOrder)));
-        startFreqOrder = startFreqOrder - 1;
+      for(int i=1 ; i<=ctr ; ++i){
+        startFreq = startFreq + ((szInSring[i]-48)*pow(10,ctr-i));
       }
-      for(int i=f2[0]+1 ; i<f2[1] ; ++i){
-        endFreq = endFreq + (szInSring[i]*(pow(10,endFreqOrder)));
-        endFreqOrder = endFreqOrder - 1;
-      }
-      
+      printf("Starting frequency: ");
       printf("%f" , startFreq);
-      printf("\n");
-      printf("%f" , endFreq);
-      printf("\n");
-        
-           
+      printf(" Hz\n");
       flag = 0;
       rec = true;
     }
   }
   
+  printf("Enter ending frequency(Hz) in brackets\n");
+  printf("Ex: [5000] will end the frequency sweep at 5000Hz\n");
+  rec = false;
+  while(rec == false){
+    if(flag){
+      //count the length of the input frequency
+      int ctr=0;
+      while(szInSring[ctr+1] != ']'){
+        ++ctr;  //at the end of this loop, ctr should equal the length of the input frequency
+      }
+      for(int i=1 ; i<=ctr ; ++i){
+        endFreq = endFreq + ((szInSring[i]-48)*pow(10,ctr-i));
+      }
+      printf("Ending frequency: ");
+      printf("%f" , endFreq);
+      printf(" Hz\n");
+      flag = 0;
+      rec = true;
+    }
+  }
+  
+  rec = false;
+  printf("Select one of the following for test frequency spacing:\n");
+  printf("1: Linear spacing between starting and ending frequencies\n");
+  printf("2: Pseudo-logarithmic spacing, extra points added around low frequencies\n");
+  while(rec==false){
+    if(flag){
+      if(szInSring[0] == '2'){
+        //percent of total range to step each interval
+        float per[] = {0.1,0.1,0.1,0.2,0.5,0.5,0.5,1,1,1,1,1,1,1,1,1,1,3,3,3,3,3,3,5,5,5,5,5,5,5,5,5,5,10,10}; 
+        float val = startFreq;
+        
+        printf("\nThe sweep will use these frequencies:\n");
+        for(int i=0 ; i<length ; ++i){
+          ImpResult[i].freq = val;
+          val = val + ((per[i]/100)*(endFreq-startFreq));
+          printf("%f", ImpResult[i].freq);
+          printf("\n");
+        }
+      }
+      else{
+        float div = (endFreq-startFreq)/length+1;
+        float val = startFreq;
+        printf("\nThe sweep will use these frequencies:\n");
+        for(int i=0 ; i<length+1 ; ++i){
+          ImpResult[i].freq = val;
+          val = val + div;
+          if(val > endFreq){
+            val = endFreq;
+          }
+          printf("%f", ImpResult[i].freq);
+          printf("\n");
+        }
+      }
+      flag = 0;
+      rec = true;
+    }
+  }
+  
+
 }
 
 //debugging helper function, waits for UART input then prints whatever is input back to terminal
+//tbh this is mostly useless
 void reflectUART(void){
   bool rec = false; 
   while(rec == false){

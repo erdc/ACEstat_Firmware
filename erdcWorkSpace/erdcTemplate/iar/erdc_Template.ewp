@@ -2149,7 +2149,7 @@
             </file>
         </group>
         <file>
-            <name>C:\Users\rditlkc9\Downloads\M355_ERDC_Electrochemistry\iar\main_prototype.c</name>
+            <name>$PROJ_DIR$\..\erdc_main\main_prototype.c</name>
         </file>
     </group>
     <group>
