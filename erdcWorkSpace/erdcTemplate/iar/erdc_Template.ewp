@@ -2136,15 +2136,6 @@
                 <name>$PROJ_DIR$\..\erdc_main\M355_ECSns_EIS.h</name>
             </file>
         </group>
-        <group>
-            <name>square_wave_voltammetry</name>
-            <excluded>
-                <configuration>Debug</configuration>
-            </excluded>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\square_wave_volt.c</name>
-            </file>
-        </group>
         <file>
             <name>$PROJ_DIR$\..\erdc_main\main_prototype.c</name>
         </file>

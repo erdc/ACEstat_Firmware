@@ -185,9 +185,6 @@ uint16_t pollReadADC(void){
 }
 
 
-
-
-
 void runTest(char mode){
   
   bool testComplete = false;
@@ -214,8 +211,8 @@ void runTest(char mode){
         printf("\nSquarewave voltammetry selected\n");
         printf("Enter Starting Voltage and Ending Voltage. Middle is 1100mV\n");
         printf("Also enter a number for max current 0: 4.5mA, 1: 900uA, 2: 180uA,\n 3: 90uA, 4: 45uA, 5: 22.5uA, 6: 11.25uA, 7: 5.625uA\n");
-        printf("Also enter amplitide\n");
-        printf("Ex: 070015004100 is -400 to 400 max current 45uA Amplitude 100\n");
+        printf("Also enter amplitide, and deposition time\n");
+        printf("Ex: 070015004100020 is -400 to 400 max current 45uA Amplitude 100 20 second deposition time at the start voltage\n");
         while(testComplete==false){
           if(flag){
             reflectUART();
@@ -229,7 +226,6 @@ void runTest(char mode){
           }
         }
   }
-  
   
   if(mode=='3'){
         printf("\nElectrochemical impedance spectroscopy selected\n");
@@ -247,8 +243,6 @@ void runTest(char mode){
     printf("Invalid Test Mode Parameter Selected\nValid Modes are {1:CV, 2:SWV: 3:EIS}\n");
   } 
 }  
-
-
 
 #define MAX_BUFFER_LENGTH 16000
 
@@ -418,6 +412,17 @@ void cv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN){
   }  
 }
 
+void sqv_dep_time(uint16_t start, uint16_t time){
+	uint16_t Cbias, Czero;
+	uint16_t cStart = (start-200)/0.54;
+	
+	Czero=32;
+	Cbias=cStart;
+	
+	LPDacWr(CHAN0, Czero, Cbias);
+	delay_10us(time*100*1000);
+};
+
 void sqv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN, uint16_t amplitude){
   uint16_t SETTLING_DELAY = 5;
   uint16_t RAMP_STEP_DELAY = 10*mvStepDelay;          //14.7mS 68 loops to achieve 50mV 14.7mS*68 gives 50mV per second
@@ -579,6 +584,7 @@ void runSWV(volatile uint8_t szInSring[16]){
   uint16_t SWVstartingVoltage = 0;
   uint16_t SWVendingVoltage = 0;
   uint16_t SWVamplitude = 0;
+  uint16_t depTime = 0;
   char v[4];
   
   for (int i = 0; i < 4; ++i){
@@ -611,6 +617,14 @@ void runSWV(volatile uint8_t szInSring[16]){
   SWVamplitude += (v[1]-48)*10;
   SWVamplitude += (v[2]-48);
   
+    for (int i = 0; i < 3; ++i){
+    v[i]=szInSring[12+i];
+  }
+  depTime = 0;
+  depTime += (v[0]-48)*100;
+  depTime += (v[1]-48)*10;
+  depTime += (v[2]-48);
+  
   /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
   
@@ -628,16 +642,13 @@ void runSWV(volatile uint8_t szInSring[16]){
   /*end cv ramp setup*/
   
   /*RAMP HERE*/
+  sqv_dep_time(SWVstartingVoltage, depTime);
   sqv_ramp_parameters(SWVstartingVoltage,SWVendingVoltage,RGAIN, SWVamplitude);
   /*END RAMP*/
   
   turn_off_afe_power_things_down();
   DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
-
-/*s
-   user can modify frequency of impedance measurement
-*/
 
 /*
    user can modify frequency of impedance measurement
@@ -726,9 +737,7 @@ uint8_t SnsACSigChainCfg(float freq)
       AfeSysClkDiv(AFE_SYSCLKDIV_1);                    //AFE system clock remain in 16MHz
 
       AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);       
-      AfeHpTiaCon(HPTIABIAS_1V1);
-      
-      
+      AfeHpTiaCon(HPTIABIAS_1V1);  
      
       DacCon &= 0xFE01;                                 // Clear DACCON[8:1] bits
       DacCon |= (0x1b<<BITP_AFE_HSDACCON_RATE);         // Set DACCLK to recommended setting for LP mode   
@@ -1056,7 +1065,6 @@ uint8_t SnsACTest(uint8_t channel)
 
    return 1;
 }
-
 
 /**
    @brief uint8_t SnsMagPhaseCal()
@@ -1389,8 +1397,6 @@ void getEISFrequencies(void){
       rec = true;
     }
   }
-  
-
 }
 
 //debugging helper function, waits for UART input then prints whatever is input back to terminal
