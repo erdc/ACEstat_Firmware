@@ -2117,9 +2117,6 @@
             <file>
                 <name>$PROJ_DIR$\..\erdc_main\cycloVoltammetry.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\main.c</name>
-            </file>
         </group>
         <group>
             <name>EIS</name>
