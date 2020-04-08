@@ -1,14 +1,34 @@
 #include "craabUtil.h"
 
 /*UART*/
-#define  UART_INBUFFER_LEN 16
-volatile uint8_t szInSring[UART_INBUFFER_LEN];
 volatile uint8_t  ucInCnt;
 volatile uint32_t ucCOMIID0;
 volatile uint32_t iNumBytesInFifo;
-uint8_t flag = 0;
 uint8_t  ucComRx;
+uint8_t szInSring[UART_INBUFFER_LEN];
+uint8_t* return_uart_buffer(void){
+	return szInSring;
+}
 /*end UART*/
+
+/*FLAG VARIABLE CONTROL*/
+uint8_t flag = 0;
+int flag_set(void)
+{
+	flag=1;
+	return 1;
+}
+
+int flag_reset(void)
+{
+	flag=0;
+	return 1;
+}
+int get_flag(void)
+{
+	return flag;
+}
+/*END FLAG VARIOABLE CONTROL*/
 
 //EIS GLOBALS
 volatile uint8_t dftRdy =0;
@@ -103,7 +123,7 @@ void UART_Int_Handler(void)
      }
      UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR// Clear the Rx/TX FIFOs
              |BITM_UART_COMFCR_TFCLR);
-     flag = 1;
+     flag_set();
    }
 }
 
@@ -120,7 +140,7 @@ void turn_off_afe_power_things_down(void){
 void adcCurrentSetup_hptia(void){
   AfeAdcChan(MUXSELP_HPTIA_P,MUXSELN_HPTIA_N);
   AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-  AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
+  AfeAdcPgaCfg(GNPGA_4,0); //for current use GNPGA_4
   AfeAdcChopEn(1);
   
   AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
@@ -142,7 +162,7 @@ float calcCurrent_hptia(uint16_t DAT, int RGAIN){
 void adcCurrentSetup_lptia(void){
   AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
   AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-  AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
+  AfeAdcPgaCfg(GNPGA_4,0); //for current use GNPGA_4
   AfeAdcChopEn(1);
   
   AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
@@ -184,68 +204,6 @@ uint16_t pollReadADC(void){
    return adcRaw;
 }
 
-
-void runTest(char mode){
-  
-  bool testComplete = false;
-  
-  if(mode=='1'){
-        printf("\nCyclic voltammetry selected\n");
-        printf("Enter Starting Voltage and Ending Voltage. Zero is offset at 1100mV\n");
-        printf("Also enter a number for max current 0: 4.5mA, 1: 900uA, 2: 180uA,\n 3: 90uA, 4: 45uA, 5: 22.5uA, 6: 11.25uA, 7: 5.625uA\n");
-        printf("Ex: 070015004 is -400 to 400 max current 45uA\n");
-        while(testComplete==false){
-          if(flag){
-              printf("Running cyclic voltammetry test\n");
-              runCV(szInSring);
-              printf("Cyclic voltammetry test concluded\n\n");
-              
-              flag = 0;
-              testComplete = true;
-              return;
-          }
-        }
-  }
-  
-  if(mode=='2'){
-        printf("\nSquarewave voltammetry selected\n");
-        printf("Enter Starting Voltage and Ending Voltage. Middle is 1100mV\n");
-        printf("Also enter a number for max current 0: 4.5mA, 1: 900uA, 2: 180uA,\n 3: 90uA, 4: 45uA, 5: 22.5uA, 6: 11.25uA, 7: 5.625uA\n");
-        printf("Also enter amplitide, and deposition time\n");
-        printf("Ex: 070015004100020 is -400 to 400 max current 45uA Amplitude 100 20 second deposition time at the start voltage\n");
-        while(testComplete==false){
-          if(flag){
-            reflectUART();
-            printf("Running squarewave voltammetry test\n");
-            runSWV(szInSring);  
-            printf("Squarewave voltammetry test concluded\n\n");
-            
-            flag = 0;
-            testComplete = true;
-            return;
-          }
-        }
-  }
-  
-  if(mode=='3'){
-        printf("\nElectrochemical impedance spectroscopy selected\n");
-        getEISFrequencies();
-        runEIS();
-        printf("\nElectrochemical impedance spectroscopy test concluded");
-        
-        flag = 0;
-        testComplete = true;
-        return;
-  }
-     
-     
-  else{
-    printf("Invalid Test Mode Parameter Selected\nValid Modes are {1:CV, 2:SWV: 3:EIS}\n");
-  } 
-}  
-
-#define MAX_BUFFER_LENGTH 16000
-
 #if defined ( __ICCARM__ )
    #pragma location="never_retained_ram"
    uint16_t szADCSamples[16000];   // 32KB SRAM can be used to gather ADC samples,
@@ -254,6 +212,10 @@ void runTest(char mode){
 #else
    #pragma message("WARNING: Need to place this variable in a large RAM section using your selected toolchain.")
 #endif
+
+uint16_t* return_adc_buffer(void){
+	return szADCSamples;
+}
 
 void sensor_setup_cv(void){
     /*SNS INIT*/
@@ -289,49 +251,6 @@ void hptia_setup(void){
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
 }
 
-void cv_ramp(void){
-  /*RAMP*/
-  uint16_t Cbias, Czero;
-  uint16_t ADCRAW;
-  int RGAIN = 80000;
-  uint16_t SETTLING_DELAY = 50;
-  uint16_t RAMP_STEP_DELAY = 1000  ;          //delay before increasing step
-
-  float vDiff;
-  float tc;
-    /*start wave and measurement*/
-  Czero = 32;
-  Cbias = 800;
-  
-  
-  /*Ramp -468mV to 408.6mV*/
-  for (Cbias = 800; Cbias < 3275; ++Cbias){ 
-    LPDacWr(CHAN0, Czero, Cbias);         // Set VBIAS/VZERO output voltages 
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-    delay_10us(RAMP_STEP_DELAY);
-    
-    ADCRAW = pollReadADC();
-    tc = calcCurrent_hptia(ADCRAW, RGAIN);
-    vDiff = Cbias*0.54+200-1100.36;
-    //printf("Volt:%f,Current:%f\n", vDiff,tc);  
-    printf("%f,%f\n", vDiff,tc);
-  }
-
-  /*RAMP 408.06mV to -468mV*/
-  for (Cbias = 3275; Cbias > 800; --Cbias){  
-    LPDacWr(CHAN0, Czero, Cbias);         // Set VBIAS/VZERO output voltages 
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-    delay_10us(RAMP_STEP_DELAY);
-    
-    ADCRAW = pollReadADC();
-    tc = calcCurrent_hptia(ADCRAW, RGAIN);
-    vDiff = Cbias*0.54+200-1100.36;
-    //printf("Volt:%f,Current:%f\n", vDiff,tc);  
-    printf("%f,%f\n", vDiff,tc);
-  }
-  /*END RAMP*/
-}
-
 void hptia_setup_parameters(uint32_t RTIA){
   pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
   AfeHpTiaSeCfg(RTIA,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
@@ -348,150 +267,6 @@ void hptia_setup_parameters(uint32_t RTIA){
   LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
   
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
-}
-/*Imax = 0.9V/RGAIN*/
-uint32_t sampleCount = 0;
-#define mvStepDelay 147 //delay for 5mV/S
-void cv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN){
-  uint16_t SETTLING_DELAY = 5;
-  uint16_t RAMP_STEP_DELAY = 10*mvStepDelay;          //14.7mS 68 loops to achieve 50mV 14.7mS*68 gives 50mV per second
-  float vDiff;
-  float tc;
-  uint16_t Cbias, Czero;
-  uint16_t ADCRAW;
-  
-  uint16_t cStart = (start-200)/0.54;
-  uint16_t cEnd =(end-200)/0.54;
-  int RTIA = RTIA_VAL_LOOKUP(RGAIN);
-  
-  Czero = 32;
-  Cbias = cStart;
-  
-  sampleCount = 0;
-  
-  for (Cbias = cStart; Cbias < cEnd; ++Cbias){ 
-    LPDacWr(CHAN0, Czero, Cbias);         // Set VBIAS/VZERO output voltages 
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-    delay_10us(RAMP_STEP_DELAY);
-    
-    ADCRAW = pollReadADC();
-    szADCSamples[sampleCount]=Cbias;
-    sampleCount++;
-    szADCSamples[sampleCount]=ADCRAW;
-    sampleCount++;
-  }
-
-  for (Cbias = cEnd; Cbias > cStart; --Cbias){  
-      LPDacWr(CHAN0, Czero, Cbias);         // Set VBIAS/VZERO output voltages 
-      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-      delay_10us(RAMP_STEP_DELAY);
-      
-      ADCRAW = pollReadADC();
-      szADCSamples[sampleCount]=Cbias;
-      sampleCount++;
-      if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
-      szADCSamples[sampleCount]=ADCRAW;
-      sampleCount++;
-      if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
-    }
-  printf("RANGE IS %f to %f\n", cStart*0.54+200-1100.36, cEnd*0.54+200-1100.36);
-  printf("RGAIN VALUE IS %i\n", RTIA);
-  for(uint32_t i = 0; i < sampleCount; i+=2){
-    vDiff = szADCSamples[i]*0.54+200-1100.36; 
-    tc = calcCurrent_hptia(szADCSamples[i+1], RTIA);
-    //printf("Volt:%f,Current:%f\n", vDiff,tc);   
-    printf("%f,%f\n", vDiff,tc);
-  }  
-}
-
-void sqv_dep_time(uint16_t start, uint16_t time){
-	uint16_t Cbias, Czero;
-	uint16_t cStart = (start-200)/0.54;
-	
-	Czero=32;
-	Cbias=cStart;
-	
-	LPDacWr(CHAN0, Czero, Cbias);
-	delay_10us(time*100*1000);
-};
-
-void sqv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN, uint16_t amplitude){
-  uint16_t SETTLING_DELAY = 5;
-  uint16_t RAMP_STEP_DELAY = 10*mvStepDelay;          //14.7mS 68 loops to achieve 50mV 14.7mS*68 gives 50mV per second
-  float vDiff;
-  float tc;
-  uint16_t Cbias, Czero;
-  uint16_t ADCRAW;
-  
-  uint16_t cStart = (start-200)/0.54;
-  uint16_t cEnd =(end-200)/0.54;
-  int RTIA = RTIA_VAL_LOOKUP(RGAIN);
-  
-  uint16_t amp = (amplitude-200)/0.54;
-  
-  Czero = 32;
-  Cbias = cStart;
-  
-  sampleCount = 0;
-  
-  /*palmsense device does 2 sweps for some reason only reports one*/
-  for (Cbias = cStart; Cbias < cEnd; Cbias+=10){ 
-    LPDacWr(CHAN0, Czero, Cbias+amp);         
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-    delay_10us(1250); //delay 12.5ms
-    LPDacWr(CHAN0, Czero, Cbias-amp);      
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-    delay_10us(1250); //delay 12.5ms
-  }
-  
-  for (Cbias = cStart; Cbias < cEnd; Cbias+=10){ 
-    LPDacWr(CHAN0, Czero, Cbias+amp);         
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-    delay_10us(1250); //delay 12.5ms
-    ADCRAW = pollReadADC();
-    szADCSamples[sampleCount]=Cbias;
-    sampleCount++;
-    if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
-    szADCSamples[sampleCount]=ADCRAW;
-    sampleCount++;
-    if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
-    
-    LPDacWr(CHAN0, Czero, Cbias-amp);      
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle 
-    delay_10us(1250); //delay 12.5ms
-    ADCRAW = pollReadADC();
-    szADCSamples[sampleCount]=ADCRAW;
-    sampleCount++;
-    if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
-  }
-  printf("RANGE IS %f to %f\n", cStart*0.54+200-1100.36, cEnd*0.54+200-1100.36);
-  printf("RGAIN VALUE IS %i\n", RTIA);
-  for(uint32_t i = 0; i < sampleCount; i+=3){
-    vDiff = szADCSamples[i]*0.54+200-1100.36;
-    tc = calcCurrent_hptia(szADCSamples[i+1]-szADCSamples[i+2], RTIA);
-    //printf("Volt:%f,Current:%f\n", vDiff,tc);  
-    printf("%f,%f\n", vDiff,tc);
-  }
 }
 
 uint16_t RTIA_LOOKUP(uint8_t choice){
@@ -522,132 +297,6 @@ int RTIA_VAL_LOOKUP(uint32_t RGAIN){
   default : return 80000;
   }
   return 0;
-}
-
-void runCV(volatile uint8_t szInSring[16]){
-  uint16_t CVstartingVoltage = 0;
-  uint16_t CVendingVoltage = 0;
-  char v[4];
-  
-  for (int i = 0; i < 4; ++i){
-    v[i]=szInSring[i];
-  }
-  CVstartingVoltage=0;
-  CVstartingVoltage+=v[3]-48;  
-  CVstartingVoltage+=(v[2]-48)* 10;
-  CVstartingVoltage+=(v[1]-48)*100;
-  CVstartingVoltage+=(v[0]-48)*1000;
-
-  for (int i = 0; i < 4; ++i){
-    v[i]=szInSring[4+i];
-  }
-  CVendingVoltage=0;
-  CVendingVoltage+=v[3]-48;
-  CVendingVoltage+=(v[2]-48)* 10;
-  CVendingVoltage+=(v[1]-48)*100;
-  CVendingVoltage+=(v[0]-48)*1000;
-  
-  uint8_t RTIACHOICE = szInSring[8]-48;
-  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE);
-  /*cv ramp setup*/
-  AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
-  
-  LPDacPwrCtrl(CHAN0,PWR_UP);
-  LPDacCfg(CHAN0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  LPDacWr(CHAN0, 62, 62*64);
-  
-  /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
-  /*power up PA,TIA,no boost, full power*/
-  AfeLpTiaPwrDown(CHAN0,0);
-  AfeLpTiaAdvanced(CHAN0,BANDWIDTH_NORMAL,CURRENT_NOR);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_SHORT);  /*short TIA feedback for Sensor setup*/
-  AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_NORM);  /*TIA switch to normal*/
-  /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
-  
-  hptia_setup_parameters(RGAIN);
-  adcCurrentSetup_hptia();
-  /*end cv ramp setup*/
-  
-  /*RAMP HERE*/
-  
-  cv_ramp_parameters(CVstartingVoltage,CVendingVoltage,RGAIN);
-  
-  /*END RAMP*/
-  
-  turn_off_afe_power_things_down();
-  DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
-}
-
-
-void runSWV(volatile uint8_t szInSring[16]){
-  uint16_t SWVstartingVoltage = 0;
-  uint16_t SWVendingVoltage = 0;
-  uint16_t SWVamplitude = 0;
-  uint16_t depTime = 0;
-  char v[4];
-  
-  for (int i = 0; i < 4; ++i){
-    v[i]=szInSring[i];
-  }
-
-  SWVstartingVoltage=0;
-  SWVstartingVoltage+=v[3]-48;
-  SWVstartingVoltage+=(v[2]-48)* 10;
-  SWVstartingVoltage+=(v[1]-48)*100;
-  SWVstartingVoltage+=(v[0]-48)*1000;
-
-  for (int i = 0; i < 4; ++i){
-    v[i]=szInSring[4+i];
-  }
-  SWVendingVoltage=0;
-  SWVendingVoltage+=v[3]-48;
-  SWVendingVoltage+=(v[2]-48)* 10;
-  SWVendingVoltage+=(v[1]-48)*100;
-  SWVendingVoltage+=(v[0]-48)*1000;
-  
-  uint8_t RTIACHOICE = szInSring[8]-48;
-  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE);
-  
-  for (int i = 0; i < 3; ++i){
-    v[i]=szInSring[9+i];
-  }
-  SWVamplitude = 0;
-  SWVamplitude += (v[0]-48)*100;
-  SWVamplitude += (v[1]-48)*10;
-  SWVamplitude += (v[2]-48);
-  
-    for (int i = 0; i < 3; ++i){
-    v[i]=szInSring[12+i];
-  }
-  depTime = 0;
-  depTime += (v[0]-48)*100;
-  depTime += (v[1]-48)*10;
-  depTime += (v[2]-48);
-  
-  /*cv ramp setup*/
-  AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
-  
-  /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
-  /*power up PA,TIA,no boost, full power*/
-  AfeLpTiaPwrDown(CHAN0,0);
-  AfeLpTiaAdvanced(CHAN0,BANDWIDTH_NORMAL,CURRENT_NOR);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_SHORT);  /*short TIA feedback for Sensor setup*/
-  AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_NORM);  /*TIA switch to normal*/
-  /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
-  
-  hptia_setup_parameters(RGAIN);
-  adcCurrentSetup_hptia();
-  /*end cv ramp setup*/
-  
-  /*RAMP HERE*/
-  sqv_dep_time(SWVstartingVoltage, depTime);
-  sqv_ramp_parameters(SWVstartingVoltage,SWVendingVoltage,RGAIN, SWVamplitude);
-  /*END RAMP*/
-  
-  turn_off_afe_power_things_down();
-  DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
 /*
@@ -1167,27 +816,6 @@ uint8_t SnsMagPhaseCal(void)
 
 }
 
-//void ClockInit(void)
-//{
-//   DigClkSel(DIGCLK_SOURCE_HFOSC);
-//   ClkDivCfg(1,1);
-//   AfeClkSel(AFECLK_SOURCE_HFOSC);
-//   AfeSysClkDiv(AFE_SYSCLKDIV_1);
-//}
-//
-//void UartInit(void)
-//{
-//   DioCfgPin(pADI_GPIO0,PIN10,1);               // Setup P0.10 as UART pin
-//   DioCfgPin(pADI_GPIO0,PIN11,1);               // Setup P0.11 as UART pin
-//   pADI_UART0->COMLCR2 = 0x3;                  // Set PCLk oversampling rate 32. (PCLK to UART baudrate generator is /32)
-//   UrtCfg(pADI_UART0,B115200,
-//          (BITM_UART_COMLCR_WLS|3),0);         // Configure UART for 115200 baud rate
-//   UrtFifoCfg(pADI_UART0, RX_FIFO_14BYTE,      // Configure the UART FIFOs for 8 bytes deep
-//              BITM_UART_COMFCR_FIFOEN);
-//   UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR// Clear the Rx/TX FIFOs
-//              |BITM_UART_COMFCR_TFCLR);
-//}
-
 void AfeAdc_Int_Handler(void)
 {
 	uint32_t sta;
@@ -1281,34 +909,6 @@ void runEIS(void){
             printf("Test END\r\n");
             delay_10us(300000);
          //}
-}
-
-char getTestMode(void){
-    char testMode = 0;
-    while(testMode==0){
-      if(flag){
-        testMode = szInSring[0];
-        flag = 0;
-      }
-    }
-    return testMode;
-}
-
-bool restartTest(void){
-  bool answer;
-  
-  printf("\nRun another test?\n");
-  printf("(1) Yes\n(2) No\n");
-  
-  while(1){
-    if(flag){
-      if(szInSring[0]=='1'){answer = true;}
-      else{answer = false;}
-      flag = 0;
-      
-      return answer;
-    }
-  }
 }
 
 //Modifies the Impresult array to use test frequencies given via UART
@@ -1420,4 +1020,3 @@ void reflectUART(void){
     }
   }
 }
-

@@ -66,7 +66,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>8.40.1.21529</state>
+                    <state>8.50.1.24770</state>
                 </option>
                 <option>
                     <name>GeneralEnableMisra</name>
@@ -116,7 +116,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -133,7 +133,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -156,7 +156,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -215,7 +215,7 @@
             <name>ICCARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>35</version>
+                <version>36</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -347,6 +347,7 @@
                     <name>CCIncludePath2</name>
                     <state>$PROJ_DIR$/../../../common</state>
                     <state>$PROJ_DIR$/../../../inc</state>
+                    <state>$PROJ_DIR$\..\erdc_main\chemcrab_lib</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -467,6 +468,10 @@
                 <option>
                     <name>OICompilerExtraOption</name>
                     <state>1</state>
+                </option>
+                <option>
+                    <name>CCStackProtection</name>
+                    <state>0</state>
                 </option>
             </data>
         </settings>
@@ -1168,7 +1173,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>1</state>
                 </option>
                 <option>
@@ -1185,7 +1190,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>0</state>
                 </option>
                 <option>
@@ -1208,7 +1213,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>0</state>
                 </option>
                 <option>
@@ -1267,7 +1272,7 @@
             <name>ICCARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>35</version>
+                <version>36</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -1518,6 +1523,10 @@
                 <option>
                     <name>OICompilerExtraOption</name>
                     <state>1</state>
+                </option>
+                <option>
+                    <name>CCStackProtection</name>
+                    <state>0</state>
                 </option>
             </data>
         </settings>
@@ -2107,37 +2116,16 @@
     <group>
         <name>application</name>
         <group>
-            <name>cyclic_voltammetry</name>
-            <excluded>
-                <configuration>Debug</configuration>
-            </excluded>
+            <name>crab_lib</name>
             <file>
-                <name>$PROJ_DIR$\..\erdc_main\cycloVoltammetry.c</name>
+                <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\craabUtil.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\erdc_main\cycloVoltammetry.h</name>
-            </file>
-        </group>
-        <group>
-            <name>EIS</name>
-            <excluded>
-                <configuration>Debug</configuration>
-            </excluded>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\eis.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\M355_ECSns_DCTest.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\M355_ECSns_DCTest.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\erdc_main\M355_ECSns_EIS.h</name>
+                <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\voltammetry.c</name>
             </file>
         </group>
         <file>
-            <name>$PROJ_DIR$\..\erdc_main\main_prototype.c</name>
+            <name>$PROJ_DIR$\..\erdc_main\main.c</name>
         </file>
     </group>
     <group>
@@ -2156,9 +2144,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\common\ClkLib.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\common\craabUtil.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\common\DioLib.c</name>

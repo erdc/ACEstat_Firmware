@@ -25,6 +25,14 @@
 void ClockInit(void);
 void UartInit(void);
 void UART_Int_Handler(void);
+uint8_t* return_uart_buffer(void);
+#define  UART_INBUFFER_LEN 16
+
+/*FLAG CONTROL*/
+int flag_set(void);
+int flag_reset(void);
+int get_flag(void);
+/*END FLAG CONTROL*/
 
 //KEITH'S ORIGINAL UTIL FUNCTIONS
 void adcCurrentSetup_hptia(void);
@@ -35,20 +43,19 @@ float calcADCVolt(uint16_t DAT);
 float calcCurrent_lptia(uint16_t DAT, int RGAIN, int RLOAD);
 void powerDownADC(void);
 void turn_off_afe_power_things_down(void);
-void runTest(char mode);
+
+#define MAX_BUFFER_LENGTH 16000
+uint16_t* return_adc_buffer(void);
 
 //IMPORTED CYCLOVOLTAMMETRY FUNCTIONS
 void sensor_setup_cv(void);
 void hptia_setup(void);
-void cv_ramp(void);
-void cv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN);
-void sqv_dep_time(uint16_t start, uint16_t time);
-void sqv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN, uint16_t amplitude);
+
+
+
 uint16_t RTIA_LOOKUP(uint8_t choice);
 void hptia_setup_parameters(uint32_t RTIA);
 int RTIA_VAL_LOOKUP(uint32_t RGAIN);
-void runCV(volatile uint8_t szInSring[16]);
-void runSWV(volatile uint8_t szInSring[16]);
 
 //IMPORTED AD EIS FUNCTIONS
 /*
@@ -132,8 +139,6 @@ uint8_t SnsMagPhaseCal(void);
 
 void AfeAdc_Int_Handler(void);
 void runEIS(void);
-char getTestMode(void);
-bool restartTest(void);
 void getEISFrequencies(void);
 void reflectUART(void);
 
