@@ -72,7 +72,8 @@ void cv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN){
   uint16_t *pBuffer;
   pBuffer = return_adc_buffer();
   
-  Czero = 32;
+  Czero = 26; /*6 bit DAC is 0.2V + DAC_VAL*0.03438     26 is 1.09388V*/
+  uint16_t midVoltage = 1093.88;
   Cbias = cStart;
   
   for (Cbias = cStart; Cbias < cEnd; ++Cbias){ 
@@ -108,10 +109,10 @@ void cv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN){
         break;
       }
     }
-  printf("RANGE IS %f to %f\n", cStart*0.54+200-1100.36, cEnd*0.54+200-1100.36);
+  printf("RANGE IS %f to %f\n", cStart*0.54+200-midVoltage, cEnd*0.54+200-midVoltage);
   printf("RGAIN VALUE IS %i\n", RTIA);
   for(uint32_t i = 0; i < sampleCount; i+=2){
-    vDiff = pBuffer[i]*0.54+200-1100.36; 
+    vDiff = pBuffer[i]*0.54+200-midVoltage; 
     tc = calcCurrent_hptia(pBuffer[i+1], RTIA);
     //printf("Volt:%f,Current:%f\n", vDiff,tc);   
     printf("%f,%f\n", vDiff,tc);
@@ -124,7 +125,7 @@ void sqv_dep_time(uint16_t start, uint16_t time){
 	uint16_t Cbias, Czero;
 	uint16_t cStart = (start-200)/0.54;
 	
-	Czero=32;
+	Czero=26;
 	Cbias=cStart;
 	
 	LPDacWr(CHAN0, Czero, Cbias);
@@ -145,7 +146,8 @@ void sqv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN, uint16_t 
   
   uint16_t amp = (amplitude-200)/0.54;
   
-  Czero = 32;
+  Czero = 26; /*6 bit DAC is 0.2V + DAC_VAL*0.03438     26 is 1.09388V*/
+  uint16_t midVoltage = 1093.88;
   Cbias = cStart;
   
   uint32_t sampleCount = 0;
@@ -194,10 +196,10 @@ void sqv_ramp_parameters(uint16_t start, uint16_t end, uint32_t RGAIN, uint16_t 
         break;
       }
   }
-  printf("RANGE IS %f to %f\n", cStart*0.54+200-1100.36, cEnd*0.54+200-1100.36);
+  printf("RANGE IS %f to %f\n", cStart*0.54+200-midVoltage, cEnd*0.54+200-midVoltage);
   printf("RGAIN VALUE IS %i\n", RTIA);
   for(uint32_t i = 0; i < sampleCount; i+=3){
-    vDiff = pBuffer[i]*0.54+200-1100.36;
+    vDiff = pBuffer[i]*0.54+200-midVoltage;
     tc = calcCurrent_hptia(pBuffer[i+1]-pBuffer[i+2], RTIA);
     //printf("Volt:%f,Current:%f\n", vDiff,tc);  
     printf("%f,%f\n", vDiff,tc);
