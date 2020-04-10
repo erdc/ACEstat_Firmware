@@ -78,9 +78,9 @@ void runTest(char mode){
   
   if(mode=='1'){
         printf("\nCyclic voltammetry selected\n");
-        printf("Enter Starting Voltage and Ending Voltage. Zero is offset at 1100mV\n");
+        printf("Enter Starting Voltage, Middle voltage, and Ending Voltage. Zero is offset at 1100mV\n");
         printf("Also enter a number for max current 0: 4.5mA, 1: 900uA, 2: 180uA,\n 3: 90uA, 4: 45uA, 5: 22.5uA, 6: 11.25uA, 7: 5.625uA\n");
-        printf("Ex: 070015004 is -400 to 400 max current 45uA\n");
+        printf("Ex: 0700150007004 is -400 to 400 to -400 max current 45uA\n");
         while(testComplete==false){
           if(get_flag()){
               printf("Running cyclic voltammetry test\n");
@@ -102,7 +102,6 @@ void runTest(char mode){
         printf("Ex: 070015004100020 is -400 to 400 max current 45uA Amplitude 100 20 second deposition time at the start voltage\n");
         while(testComplete==false){
           if(get_flag()){
-            reflectUART();
             printf("Running squarewave voltammetry test\n");
             runSWV(return_uart_buffer());  
             printf("Squarewave voltammetry test concluded\n\n");
