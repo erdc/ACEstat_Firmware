@@ -113,7 +113,7 @@ void UART_Int_Handler(void)
 {
    UrtLinSta(pADI_UART0);
    ucCOMIID0 = UrtIntSta(pADI_UART0);
-   if ((ucCOMIID0 & 0xE) == 0x4)	          // Receive byte
+   if ((ucCOMIID0 & 0xE) == 0xc || (ucCOMIID0 & 0xE) == 0x4)	 // Receive byte
    {
      printf("Input Received\n");
      iNumBytesInFifo = pADI_UART0->COMRFC;    // read the Num of bytes in FIFO
