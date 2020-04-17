@@ -127,20 +127,23 @@ uint8_t SnsACTest(uint8_t channel);
       - calculated Magnitude of sensor
    @param RPhase :{}
       - calulated Phase of sensor
-   
+
    @return 1.
 */
 uint8_t SnsMagPhaseCal(void);
 
 /**
-    communications setup functions, almost certainly redundant once all 
+    communications setup functions, almost certainly redundant once all
     headers are integrated
 **/
 
 void AfeAdc_Int_Handler(void);
 void runEIS(void);
+//Retrieves voltammetry parameters from UART input
+uint16_t getParameter(int dec);
 void getEISFrequencies(void);
-void reflectUART(void);
+void printEISResults(void);
+
 
 #endif
 
