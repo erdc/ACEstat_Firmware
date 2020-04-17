@@ -37,47 +37,11 @@ SNS_CFG_Type * pSnsCfg0;
 SNS_CFG_Type * pSnsCfg1;
 volatile uint32_t u32AFEDieStaRdy =0;         // Variable used to load AFEDIESTA
 float FCW_Val = 0;
-ImpResult_t ImpResult[] =
-      {
-         //low frequency measurement takes longer because of big period 
-         {5,{0,0,0,0},0,0},
-         {10,{0,0,0,0},0,0},
-         {50,{0,0,0,0},0,0},
-         {100,{0,0,0,0},0,0},
-         {150,{0,0,0,},0,0},
-         {200,{0,0,0,0},0,0},
-         {250,{0,0,0,0},0,0},
-         {300,{0,0,0,0},00,0},
-         {400,{0,0,0,0},0,0},
-         {500,{0,0,0,0},0,0},
-         {750,{0,0,0,0},0,0},
-         {1000,{0,0,0,0},{0},0,0},
-         {1250,{0,0,0,0},{0},0,0},
-         {1500,{0,0,0,0},{0},0,0},
-         {1750,{0,0,0,0},{0},0,0},
-         {2000,{0,0,0,0},{0},0,0},
-         {2250,{0,0,0,0},{0},0,0},
-         {2500,{0,0,0,0},{0},0,0},
-         {2750,{0,0,0,0},{0},0,0},
-         {3000,{0,0,0,0},{0},0,0},
-         {3250,{0,0,0,0},{0},0,0},
-         {3500,{0,0,0,0},{0},0,0},
-         {3750,{0,0,0,0},{0},0,0},
-         {4000,{0,0,0,0},{0},0,0},
-         {4250,{0,0,0,0},{0},0,0},
-         {4500,{0,0,0,0},{0},0,0},
-         {4750,{0,0,0,0},{0},0,0},
-         {5000,{0,0,0,0},{0},0,0},  
-         {5250,{0,0,0,0},{0},0,0},
-         {5500,{0,0,0,0},{0},0,0},
-         {5750,{0,0,0,0},{0},0,0},
-         {6000,{0,0,0,0},{0},0,0},
-         {6250,{0,0,0,0},{0},0,0},  
-         {6500,{0,0,0,0},{0},0,0},
-         {6750,{0,0,0,0},{0},0,0},
-         {7000,{0,0,0,0},{0},0,0},
-         //user can add frequency option here
-      };
+const int numFreqs = 40;
+ImpResult_t ImpResult[40];
+//Set this true to print EIS test frequencies prior to beginning the test, as well as during the test to indicate progress
+bool EISdebugMode = false;
+
 //END EIS GLOBALS
 
 void ClockInit(void)
@@ -103,7 +67,7 @@ void UartInit(void)
   UrtIntCfg(pADI_UART0,BITM_UART_COMIEN_ERBFI |
             BITM_UART_COMIEN_ETBEI |
             BITM_UART_COMIEN_ELSI);            // Enable Rx, Tx and Rx buffer full Interrupts
-  /*ADDED*/ 
+  /*ADDED*/
   NVIC_EnableIRQ(UART_EVT_IRQn);              // Enable UART interrupt source in NVIC
   /*Enable UART wakeup intterupt*/
   //NVIC_EnableIRQ(AFE_EVT3_IRQn);    //UART_RX connected to EXT Int3
@@ -113,7 +77,7 @@ void UART_Int_Handler(void)
 {
    UrtLinSta(pADI_UART0);
    ucCOMIID0 = UrtIntSta(pADI_UART0);
-   if ((ucCOMIID0 & 0xE) == 0xc || (ucCOMIID0 & 0xE) == 0x4)	 // Receive byte
+   if ((ucCOMIID0 & 0xE) == 0xc || (ucCOMIID0 & 0xE) == 0x4)	          // Receive byte
    {
      printf("Input Received\n");
      iNumBytesInFifo = pADI_UART0->COMRFC;    // read the Num of bytes in FIFO
@@ -130,7 +94,7 @@ void UART_Int_Handler(void)
 void turn_off_afe_power_things_down(void){
   LPDacCfg(0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_ALLOPEN);
-  
+
   AfeLpTiaPwrDown(CHAN0, BITM_AFE_LPTIACON0_TIAPDEN|BITM_AFE_LPTIACON0_PAPDEN); //power down LPTIA and PA
   AfeHpTiaPwrUp(0); //power down hptia
   LPDacPwrCtrl(CHAN0, PWR_DOWN); //power down DAC
@@ -142,7 +106,7 @@ void adcCurrentSetup_hptia(void){
   AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
   AfeAdcPgaCfg(GNPGA_4,0); //for current use GNPGA_4
   AfeAdcChopEn(1);
-  
+
   AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
   AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
   pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
@@ -164,7 +128,7 @@ void adcCurrentSetup_lptia(void){
   AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
   AfeAdcPgaCfg(GNPGA_4,0); //for current use GNPGA_4
   AfeAdcChopEn(1);
-  
+
   AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
   AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
   pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
@@ -198,7 +162,7 @@ uint16_t pollReadADC(void){
    while(!(pADI_AFE->ADCINTSTA&BITM_AFE_ADCINTSTA_ADCRDY));
    while(!(pADI_AFE->ADCINTSTA&BITM_AFE_ADCINTSTA_ADCRDY));
    pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
-   
+
    uint16_t adcRaw;
    adcRaw = pADI_AFE->ADCDAT;
    return adcRaw;
@@ -222,12 +186,12 @@ void sensor_setup_cv(void){
   LPDacPwrCtrl(CHAN0,PWR_UP);
   LPDacCfg(CHAN0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   LPDacWr(CHAN0, 62, 62*64);
-  
+
   /*power up PA,TIA,no boost, full power*/
   AfeLpTiaPwrDown(CHAN0,0);
   AfeLpTiaAdvanced(CHAN0,BANDWIDTH_NORMAL,CURRENT_NOR);
   AfeLpTiaSwitchCfg(CHAN0,SWMODE_SHORT);  /*short TIA feedback for Sensor setup*/
-  
+
   AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M);
   AfeLpTiaSwitchCfg(CHAN0,SWMODE_NORM);  /*TIA switch to normal*/
   /*END SNS INIT*/
@@ -236,36 +200,36 @@ void sensor_setup_cv(void){
 void hptia_setup(void){
   pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
   AfeHpTiaSeCfg(HPTIASE_RTIA_80K,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
-  
+
   LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
   AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
-  
+
   AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
   AfeHpTiaPwrUp(true);
-  
+
   AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
   LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
-  
+
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
 }
 
 void hptia_setup_parameters(uint32_t RTIA){
   pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
   AfeHpTiaSeCfg(RTIA,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
-  
+
   LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
   AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
-  
+
   AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
   AfeHpTiaPwrUp(true);
-  
+
   AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
   LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
-  
+
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
 }
 
@@ -286,7 +250,7 @@ uint16_t RTIA_LOOKUP(uint8_t choice){
 
 int RTIA_VAL_LOOKUP(uint32_t RGAIN){
   switch(RGAIN){
-    case HPTIASE_RTIA_200:  return    200; 
+    case HPTIASE_RTIA_200:  return    200;
     case HPTIASE_RTIA_1K:   return   1000;
     case HPTIASE_RTIA_5K:   return   5000;
     case HPTIASE_RTIA_10K:  return  10000;
@@ -310,7 +274,7 @@ int RTIA_VAL_LOOKUP(uint32_t RGAIN){
 void ChargeECSensor(void)
 {
   pADI_AFE->LPTIASW0 |= 0x2;                   // Close SW1 in LP loop to short LPTIA0 output to inverting input
-  delay_10us(400000);                          // delay 4S 
+  delay_10us(400000);                          // delay 4S
   pADI_AFE->LPTIASW0 &= ~(0x2);                // Open SW1 in LP loop to unshort LPTIA0 output to inverting input
 }
 
@@ -380,122 +344,122 @@ uint8_t SnsACSigChainCfg(float freq)
   // WgFreqReg = (uint32_t)((((uint64_t)freq)<<30)/16000000.0+0.5);  //ATE version 0x14
    //WgFreqReg = (uint32_t)((((uint64_t)freq)<<26)/16000000.0+0.5); //ATE version less than 0x03
    if (freq < .11){
-      
-      ClkDivCfg(1,1);                                   // digital die to 26MHz 
+
+      ClkDivCfg(1,1);                                   // digital die to 26MHz
       AfeHFOsc32M(0x0);                                 //AFE oscillator change to 16MHz
       AfeSysClkDiv(AFE_SYSCLKDIV_1);                    //AFE system clock remain in 16MHz
 
-      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);       
-      AfeHpTiaCon(HPTIABIAS_1V1);  
-     
+      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);
+      AfeHpTiaCon(HPTIABIAS_1V1);
+
       DacCon &= 0xFE01;                                 // Clear DACCON[8:1] bits
-      DacCon |= (0x1b<<BITP_AFE_HSDACCON_RATE);         // Set DACCLK to recommended setting for LP mode   
-      
+      DacCon |= (0x1b<<BITP_AFE_HSDACCON_RATE);         // Set DACCLK to recommended setting for LP mode
+
       pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_SINC2EN));          // Clear the SINC2 filter to flush its contents
       delay_10us(50);
       pADI_AFE->AFECON |= BITM_AFE_AFECON_SINC2EN;               // re-enable SINC2 filter
-      
+
       AfeAdcFiltCfg(SINC3OSR_4,
                     SINC2OSR_1067,
                     LFPBYPEN_BYP,
                     ADCSAMPLERATE_800K);                // Configure ADC update = 800KSPS/5 = 200KSPS SINC3 output. 200K/800, SINC2 O/P = 250 SPS
-      
-      //DFT source: supply filter output. 
+
+      //DFT source: supply filter output.
       pADI_AFE->AFECON &=
         (~(BITM_AFE_AFECON_DFTEN));                     // Clear DFT enable bit
       delay_10us(50);
       pADI_AFE->AFECON |= BITM_AFE_AFECON_DFTEN;        // re-enable DFT
-            
+
       AfeAdcDFTCfg(BITM_AFE_DFTCON_HANNINGEN,
                    DFTNUM_16384,
                    DFTIN_SINC2); // DFT input is from SINC2 filter. 16384 * (1/250) = 65.5 seconds to fill
-      
+
       FCW_Val = (((freq/16000000)*1073741824)+0.5);
-      WgFreqReg = (uint32_t)FCW_Val; 
+      WgFreqReg = (uint32_t)FCW_Val;
    }
-   
+
    else if (freq < .51){
-      
-      ClkDivCfg(1,1);                       // digital die to 26MHz 
+
+      ClkDivCfg(1,1);                       // digital die to 26MHz
       AfeHFOsc32M(0x0);                       //AFE oscillator change to 16MHz
       AfeSysClkDiv(AFE_SYSCLKDIV_1);        //AFE system clock remain in 16MHz
 
-      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);       
+      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);
       AfeHpTiaCon(HPTIABIAS_1V1);
-      
-     
+
+
       DacCon &= 0xFE01;                        // Clear DACCON[8:1] bits
-      DacCon |= (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode   
-      
+      DacCon |= (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode
+
       pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_SINC2EN));          // Clear the SINC2 filter to flush its contents
       delay_10us(50);
       pADI_AFE->AFECON |= BITM_AFE_AFECON_SINC2EN;               // re-enable SINC2 filter
-      
+
       AfeAdcFiltCfg(SINC3OSR_4,
                     SINC2OSR_640,
                     LFPBYPEN_BYP,ADCSAMPLERATE_800K); // Configure ADC update = 800KSPS/5 = 160KSPS SINC3 output. 160K/640, SINC2 O/P = 250 SPS
-      
-      //DFT source: supply filter output. 
+
+      //DFT source: supply filter output.
       pADI_AFE->AFECON &=
         (~(BITM_AFE_AFECON_DFTEN));            // Clear DFT enable bit
       delay_10us(50);
       pADI_AFE->AFECON |= BITM_AFE_AFECON_DFTEN;// re-enable DFT
-      
+
       AfeAdcDFTCfg(BITM_AFE_DFTCON_HANNINGEN,
                    DFTNUM_8192,
                    DFTIN_SINC2);// DFT input is from SINC2 filter. 2048 * (1/250) = 8.2 seconds to fill
-      
+
       WgFreqReg = 0x21; //(.5Hz * 2^30)/16MHz = 33 (0x21)
       FCW_Val = (((freq/16000000)*1073741824)+0.5);
-      WgFreqReg = (uint32_t)FCW_Val; 
+      WgFreqReg = (uint32_t)FCW_Val;
    }
-   
-   else if(freq<5)   
+
+   else if(freq<5)
    {
-      ClkDivCfg(1,1);                          // digital die to 26MHz 
+      ClkDivCfg(1,1);                          // digital die to 26MHz
       AfeHFOsc32M(0);                          // AFE oscillator change to 16MHz
       AfeSysClkDiv(AFE_SYSCLKDIV_1);           // AFE system clock remain in 16MHz
       DacCon &= 0xFE01;                        // Clear DACCON[8:1] bits
-      DacCon |= 
-        (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode   
-      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);       
+      DacCon |=
+        (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode
+      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);
 		AfeHpTiaCon(HPTIABIAS_1V1);
 
       pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_SINC2EN)); // Clear the SINC2 filter
       delay_10us(50);
       pADI_AFE->AFECON |= BITM_AFE_AFECON_SINC2EN;
-   
+
       AfeAdcFiltCfg(SINC3OSR_4,
                     SINC2OSR_533,LFPBYPEN_BYP,
                     ADCSAMPLERATE_800K);       // Configure ADC update = 800KSPS/4 = 200KSPS SINC3 output. 200K/533, SINC2 O/P = 375 SPS
-      //DFT source: supply filter output. 
+      //DFT source: supply filter output.
       pADI_AFE->AFECON &=
         (~(BITM_AFE_AFECON_DFTEN));            // Clear DFT enable bit
       delay_10us(50);
       pADI_AFE->AFECON |= BITM_AFE_AFECON_DFTEN;// re-enable DFT
-    
+
       AfeAdcDFTCfg(BITM_AFE_DFTCON_HANNINGEN,  // DFT input is from SINC2 filter. 8192 * (1/375) = 21.83 seconds to fill
                    DFTNUM_8192,
                    DFTIN_SINC2);
       FCW_Val = (((freq/16000000)*1073741824)+0.5);
-      WgFreqReg = (uint32_t)FCW_Val;                     
+      WgFreqReg = (uint32_t)FCW_Val;
     }
    else if(freq<450)   /*frequency lower than 450 Hz*/
    {
-      ClkDivCfg(1,1);                          // digital die to 26MHz 
+      ClkDivCfg(1,1);                          // digital die to 26MHz
       AfeHFOsc32M(0);                          // AFE oscillator change to 16MHz
       AfeSysClkDiv(AFE_SYSCLKDIV_1);           // AFE system clock remain in 16MHz
-     
-      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);       
+
+      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);
 		AfeHpTiaCon(HPTIABIAS_1V1);
       DacCon &= 0xFE01;                        // Clear DACCON[8:1] bits
-      DacCon |= 
-        (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode   
+      DacCon |=
+        (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode
       /*ADC 900sps update rate to DFT engine*/
-      pADI_AFE->AFECON &= 
+      pADI_AFE->AFECON &=
         (~(BITM_AFE_AFECON_SINC2EN));          // Clear the SINC2 filter to flush its contents
       delay_10us(50);
-      pADI_AFE->AFECON |= 
+      pADI_AFE->AFECON |=
         BITM_AFE_AFECON_SINC2EN;               // re-enable SINC2 filter
       AfeAdcFiltCfg(SINC3OSR_4,
                     SINC2OSR_178,LFPBYPEN_BYP,
@@ -508,24 +472,24 @@ uint8_t SnsACSigChainCfg(float freq)
                    DFTNUM_4096,
                    DFTIN_SINC2);
       FCW_Val = (((freq/16000000)*1073741824)+0.5);
-      WgFreqReg = (uint32_t)FCW_Val; 
+      WgFreqReg = (uint32_t)FCW_Val;
    }
    else if(freq<80000)  /*450Hz < frequency < 80KHz*/
    {
-     ClkDivCfg(1,1);                           // digital die to 26MHz 
+     ClkDivCfg(1,1);                           // digital die to 26MHz
      AfeHFOsc32M(0);                           // AFE oscillator change to 16MHz
-     AfeSysClkDiv(AFE_SYSCLKDIV_1);            // AFE system clock remain in 16MHz  
+     AfeSysClkDiv(AFE_SYSCLKDIV_1);            // AFE system clock remain in 16MHz
       /*set middle DAC update rate,16MHz/18=~888KHz update rate,skew the DAC and ADC clocks with respect to each other*/
-      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);   
+      AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW250);
 		AfeHpTiaCon(HPTIABIAS_1V1);
       DacCon &= 0xFE01;                        // Clear DACCON[8:1] bits
-      DacCon |= 
-        (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode   
+      DacCon |=
+        (0x1b<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for LP mode
       /*ADC 160Ksps update rate to DFT engine*/
-      pADI_AFE->AFECON &= 
+      pADI_AFE->AFECON &=
         (~(BITM_AFE_AFECON_SINC2EN));          // Clear the SINC2 filter to flush its contents
       delay_10us(50);
-      pADI_AFE->AFECON |= 
+      pADI_AFE->AFECON |=
         BITM_AFE_AFECON_SINC2EN;               // re-enable SINC2 filter
       AfeAdcFiltCfg(SINC3OSR_4,SINC2OSR_178,
                     LFPBYPEN_BYP,
@@ -538,7 +502,7 @@ uint8_t SnsACSigChainCfg(float freq)
                    DFTNUM_16384,
                    DFTIN_SINC3);               //DFT source: Sinc3 result. 16384 * (1/200000) = 81.92mS
      FCW_Val = (((freq/16000000)*1073741824)+0.5);
-      WgFreqReg = (uint32_t)FCW_Val; 
+      WgFreqReg = (uint32_t)FCW_Val;
    }
    else/*80KHz < frequency < 200KHz*/
    {
@@ -552,19 +516,19 @@ uint8_t SnsACSigChainCfg(float freq)
       ClkDivCfg(1,1);
       /*set High DAC update rate,16MHz/9=~1.6MHz update rate,skew the DAC and ADC clocks with respect to each other*/
       DacCon &= 0xFE01;                        // Clear DACCON[8:1] bits
-      DacCon |= 
-        (0x07<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for HP mode   
+      DacCon |=
+        (0x07<<BITP_AFE_HSDACCON_RATE);        // Set DACCLK to recommended setting for HP mode
       /*ADC 400Ksps update rate to DFT engine*/
-      pADI_AFE->AFECON &= 
+      pADI_AFE->AFECON &=
         (~(BITM_AFE_AFECON_SINC2EN));          // Clear the SINC2 filter to flush its contents
       delay_10us(50);
-      pADI_AFE->AFECON |= 
+      pADI_AFE->AFECON |=
         BITM_AFE_AFECON_SINC2EN;               // re-enable SINC2 filter
       AfeAdcFiltCfg(SINC3OSR_2,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_1600K); //800KHz ADC update rate
       pADI_AFE->AFECON &=
         (~(BITM_AFE_AFECON_DFTEN));            // Clear DFT enable bit
       delay_10us(50);
-      pADI_AFE->AFECON |= 
+      pADI_AFE->AFECON |=
         BITM_AFE_AFECON_DFTEN;                 // re-enable DFT
       AfeAdcDFTCfg(BITM_AFE_DFTCON_HANNINGEN,
                    DFTNUM_16384,DFTIN_SINC3); //DFT source: Sinc3 result 16384 * (1/800000) = 20.48mS
@@ -580,7 +544,7 @@ uint8_t SnsACSigChainCfg(float freq)
    @brief uint8_t SnsACTest(uint8_t channel)
           start AC test
    @param channel :{CHAN0,CHAN1}
-      - 0 or CHAN0, Sensor channel 0  
+      - 0 or CHAN0, Sensor channel 0
       - 1 or CHAN1, Sensor channel 1
    @param pDFTData :{}
       - pointer to DFT result:6x word
@@ -614,25 +578,25 @@ uint8_t SnsACTest(uint8_t channel)
       {
          /*disconnect RTIA to avoid RC filter discharge*/
          AfeLpTiaCon(CHAN1,pSnsCfg1->Rload,LPTIA_RGAIN_DISCONNECT,pSnsCfg1->Rfilter);
-         
+
 #if EN_2_LEAD
-        AfeSwitchDPNT(SWID_D6_CE1,SWID_P12_CE1,SWID_N7_SE1RLOAD,SWID_T7_SE1RLOAD|SWID_T9);  
+        AfeSwitchDPNT(SWID_D6_CE1,SWID_P12_CE1,SWID_N7_SE1RLOAD,SWID_T7_SE1RLOAD|SWID_T9);
 #else
-        AfeSwitchDPNT(SWID_D6_CE1,SWID_P6_RE1,SWID_N7_SE1RLOAD,SWID_T7_SE1RLOAD|SWID_T9); 
+        AfeSwitchDPNT(SWID_D6_CE1,SWID_P6_RE1,SWID_N7_SE1RLOAD,SWID_T7_SE1RLOAD|SWID_T9);
 #endif
-        
+
       }
       else
       {
          /*disconnect RTIA to avoid RC filter discharge*/
          AfeLpTiaCon(CHAN0,pSnsCfg0->Rload,LPTIA_RGAIN_DISCONNECT,pSnsCfg0->Rfilter);
-         
+
 #if EN_2_LEAD
-        AfeSwitchDPNT(SWID_D5_CE0,SWID_P11_CE0,SWID_N5_SE0RLOAD,SWID_T5_SE0RLOAD|SWID_T9);  
+        AfeSwitchDPNT(SWID_D5_CE0,SWID_P11_CE0,SWID_N5_SE0RLOAD,SWID_T5_SE0RLOAD|SWID_T9);
 #else
         AfeSwitchDPNT(SWID_D5_CE0,SWID_P5_RE0,SWID_N5_SE0RLOAD,SWID_T5_SE0RLOAD|SWID_T9);
 #endif
-        
+
       }
       pADI_AFE->AFECON |= BITM_AFE_AFECON_ADCEN|BITM_AFE_AFECON_SINC2EN|BITM_AFE_AFECON_WAVEGENEN| \
                            BITM_AFE_AFECON_EXBUFEN|BITM_AFE_AFECON_INAMPEN|BITM_AFE_AFECON_TIAEN;
@@ -724,7 +688,7 @@ uint8_t SnsACTest(uint8_t channel)
       - calculated Magnitude of sensor
    @param RPhase :{}
       - calulated Phase of sensor
-   
+
    @return 1.
 */
 uint8_t SnsMagPhaseCal(void)
@@ -740,49 +704,49 @@ uint8_t SnsMagPhaseCal(void)
    {
       for (uint8_t ix=0;ix<6;ix++)
       {
-         Src[ix] = (float)(ImpResult[i].DFT_result[ix]); // Load DFT Real/Imag results for RCAL, RLOAD, RLOAD+RSENSE into local array for this frequency 
+         Src[ix] = (float)(ImpResult[i].DFT_result[ix]); // Load DFT Real/Imag results for RCAL, RLOAD, RLOAD+RSENSE into local array for this frequency
       }
-      
-      // The impedance engine inside of AD594x give us Real part and Imaginary part of DFT. Due to technology used, the Imaginary 
-      // part in register is the opposite number. So we add a negative sign on the Imaginary part of results. 
-   
+
+      // The impedance engine inside of AD594x give us Real part and Imaginary part of DFT. Due to technology used, the Imaginary
+      // part in register is the opposite number. So we add a negative sign on the Imaginary part of results.
+
       for (uint8_t ix=1;ix<6;ix+=2)
       {
          Src[ix] = - Src[ix];
       }
-      
+
       Src[6] = (float)(Src[2]-Src[0]);                   // RLoad(real)-RSensor+load(real)
       Src[7] = (float)(Src[3]-Src[1]);                   // RLoad(Imag)-RSensor+load(Imag)
-      
+
       for (uint8_t ix=0;ix<4;ix++)
       {
          ImpResult[i].DFT_Mag[ix] = Src[ix*2]*Src[ix*2]+Src[ix*2+1]*Src[ix*2+1];
          ImpResult[i].DFT_Mag[ix] = sqrt(ImpResult[i].DFT_Mag[ix]);
-         
+
          Phase[ix] = atan2(Src[ix*2+1], Src[ix*2]);  // returns value between -pi to +pi (radians) of ATAN2(IMAG/Real)
-    
+
          // DFT_Mag[0] = Magnitude of Rsensor+Rload
          // DFT_Mag[1] = Magnitude of Rload
          // DFT_Mag[2] = Magnitude of RCAL
          // DFT_Mag[3] = Magnitude of RSENSOR   (RSENSOR-RLOAD)
       }
-      
-      // Sensor Magnitude in ohms = (RCAL(ohms)*|Mag(RCAL)|*|Mag(RSensor)) 
+
+      // Sensor Magnitude in ohms = (RCAL(ohms)*|Mag(RCAL)|*|Mag(RSensor))
       //                            --------------------------------------
-      //                            |Mag(RSensor+Rload)|*|Mag(RLoad)) 
+      //                            |Mag(RSensor+Rload)|*|Mag(RLoad))
       Var1 = ImpResult[i].DFT_Mag[2]*ImpResult[i].DFT_Mag[3]*AFE_RCAL; // Mag(RCAL)*Mag(RSENSOR)*RCAL
-      Var2 = ImpResult[i].DFT_Mag[0]*ImpResult[i].DFT_Mag[1];          // Mag(RSENSE+LOAD)*Mag(RLOAD)   
+      Var2 = ImpResult[i].DFT_Mag[0]*ImpResult[i].DFT_Mag[1];          // Mag(RSENSE+LOAD)*Mag(RLOAD)
       Var1 = Var1/Var2;
       ImpResult[i].Mag = Var1;
-      
-      // RSensor+Rload Magnitude in ohms =    (RCAL(ohms)*|Mag(RCAL)|*|Mag(Rload)) 
+
+      // RSensor+Rload Magnitude in ohms =    (RCAL(ohms)*|Mag(RCAL)|*|Mag(Rload))
       //                                       --------------------------------------
-      //                                       |Mag(RSensor+Rload)|*|Mag(RSensor+Rload)| 
+      //                                       |Mag(RSensor+Rload)|*|Mag(RSensor+Rload)|
       Var1 = ImpResult[i].DFT_Mag[2]*ImpResult[i].DFT_Mag[0]*AFE_RCAL; // Mag(Rload)*Mag(Rcal)*RCAL
-      Var2 = ImpResult[i].DFT_Mag[0]*ImpResult[i].DFT_Mag[0];          // Mag(RSENSE+LOAD)*Mag(RSENSE+LOAD)   
+      Var2 = ImpResult[i].DFT_Mag[0]*ImpResult[i].DFT_Mag[0];          // Mag(RSENSE+LOAD)*Mag(RSENSE+LOAD)
       Var1 = Var1/Var2;
       ImpResult[i].RloadMag = (Var1 - ImpResult[i].Mag);               // Magnitude of Rload in ohms
-      
+
       // Phase calculation for sensor
   //  Var1 = -(Phase[2]+Phase[3]-Phase[1]-Phase[0]); // -((RCAL+RSENSE - RLOAD-RLOADSENSE)
       Var1 = (Phase[2]+Phase[3]-Phase[1]-Phase[0]); // ((RCAL+RSENSE - RLOAD-RLOADSENSE)
@@ -805,7 +769,7 @@ uint8_t SnsMagPhaseCal(void)
          while(Var1 < -180);
       }
       ImpResult[i].Phase = Var1;
-      
+
       // Re and Im component of Magnitude
       ImpResult[i].Re_Mag = ImpResult[i].Mag * cos(ImpResult[i].Phase * (PI/180));
       ImpResult[i].Im_Mag = - ImpResult[i].Mag * sin(ImpResult[i].Phase * (PI/180));
@@ -843,16 +807,16 @@ void runEIS(void){
            pSnsCfg1->Vzero = 1500;
            pSnsCfg1->Vbias = 900;
          }
-         
+
       #endif
-        
-         u32AFEDieStaRdy = AfeDieSta();              // Check if Kernel completed correctly before accessing AFE die             
+
+         u32AFEDieStaRdy = AfeDieSta();              // Check if Kernel completed correctly before accessing AFE die
          if ((u32AFEDieStaRdy & 1) == 1)             // Kernel initialization of AFE die was not successful
-         { 
+         {
            UartInit();                               // Initialize UART for 57600-8-N-1
            printf("AFE DIE Failure" EOL);
            while(u32AFEDieStaRdy == 1)               // AFE die has not initialized correctly.
-           {}                                        // trap code here 
+           {}                                        // trap code here
          }
          AfeWdtGo(false);                            // Turn off AFE watchdog timer for debug purposes
          ClockInit();                                // Init system clock sources
@@ -892,131 +856,155 @@ void runEIS(void){
                AfeWaveGenGo(false);
                AfeHPDacPwrUp(false);
                AfeHpTiaPwrUp(false);
-
-               /*print Impedance result*/
-               printf("Impedance Result:\r\n");
-               //printf("Frequencey,RxRload_REAL,RxRload_IMG,Rload_REAL,Rload_IMG,Rcal_REAL,Rcal_IMG,Mag_Rx,Mag_Rload,Mag_Rcal,Mag_Rload-Rx,MAG,PHASE"EOL);
-               printf("Frequency, MAG, PHASE, Re_Mag, Im_Mag "EOL);
-               for(uint32_t i=0;i<sizeof(ImpResult)/sizeof(ImpResult_t);i++)
-               {
-                 //phase magnitude is correct, but inverted relative to the palmsens
-                 printf("%6f,%.4f,%.4f,%.4f,%.4f"EOL, ImpResult[i].freq, \
-                                                      ImpResult[i].Mag,            \
-                                                      (ImpResult[i].Phase*-1),
-                                                      ImpResult[i].Re_Mag,
-                                                      ImpResult[i].Im_Mag);
-               }
-            printf("Test END\r\n");
-            delay_10us(300000);
+               delay_10us(300000);
          //}
+               printEISResults();
 }
 
-//Modifies the Impresult array to use test frequencies given via UART
-//NOTE: !!!!!!!!!Will NOT WORK CORRECTLY FOR FREQUENCIES LESS THAN 1Hz!!!!!!!!!
-void getEISFrequencies(void){
-  int length = 36;
-  bool rec = false;
-  float startFreq=0;
-  float endFreq=0;   
+//Returns a uint16_t representing the 4-digit UART input
+uint16_t getParameter(int dec){
   
-  printf("Enter starting frequency(Hz) in brackets, min is 1Hz\n");
-  printf("Ex: [5] will start the frequency sweep at 5Hz\n");
-  while(rec == false){
-    if(flag){
-      //count the length of the input frequency
-      int ctr=0;
-      while(szInSring[ctr+1] != ']'){
-        ++ctr;  //at the end of this loop, ctr should equal the length of the input frequency
-      }
-      for(int i=1 ; i<=ctr ; ++i){
-        startFreq = startFreq + ((szInSring[i]-48)*pow(10,ctr-i));
-      }
-      printf("Starting frequency: ");
-      printf("%f" , startFreq);
-      printf(" Hz\n");
-      flag = 0;
-      rec = true;
-    }
-  }
+  uint16_t parameter = 0;
   
-  printf("Enter ending frequency(Hz) in brackets\n");
-  printf("Ex: [5000] will end the frequency sweep at 5000Hz\n");
-  rec = false;
-  while(rec == false){
-    if(flag){
-      //count the length of the input frequency
-      int ctr=0;
-      while(szInSring[ctr+1] != ']'){
-        ++ctr;  //at the end of this loop, ctr should equal the length of the input frequency
-      }
-      for(int i=1 ; i<=ctr ; ++i){
-        endFreq = endFreq + ((szInSring[i]-48)*pow(10,ctr-i));
-      }
-      printf("Ending frequency: ");
-      printf("%f" , endFreq);
-      printf(" Hz\n");
-      flag = 0;
-      rec = true;
-    }
-  }
-  
-  rec = false;
-  printf("Select one of the following for test frequency spacing:\n");
-  printf("1: Linear spacing between starting and ending frequencies\n");
-  printf("2: Pseudo-logarithmic spacing, extra points added around low frequencies\n");
-  while(rec==false){
-    if(flag){
-      if(szInSring[0] == '2'){
-        //percent of total range to step each interval
-        float per[] = {0.1,0.1,0.1,0.2,0.5,0.5,0.5,1,1,1,1,1,1,1,1,1,1,3,3,3,3,3,3,5,5,5,5,5,5,5,5,5,5,10,10}; 
-        float val = startFreq;
-        
-        printf("\nThe sweep will use these frequencies:\n");
-        for(int i=0 ; i<length ; ++i){
-          ImpResult[i].freq = val;
-          val = val + ((per[i]/100)*(endFreq-startFreq));
-          printf("%f", ImpResult[i].freq);
-          printf("\n");
-        }
-      }
-      else{
-        float div = (endFreq-startFreq)/length+1;
-        float val = startFreq;
-        printf("\nThe sweep will use these frequencies:\n");
-        for(int i=0 ; i<length+1 ; ++i){
-          ImpResult[i].freq = val;
-          val = val + div;
-          if(val > endFreq){
-            val = endFreq;
+  while(1){
+    if(get_flag()){
+      if(dec==7){
+          char v[7];
+          uint8_t *uBuffer;
+          uBuffer=return_uart_buffer();
+          for(int i=0 ; i<dec ; ++i){
+            v[i] = uBuffer[i];
           }
-          printf("%f", ImpResult[i].freq);
-          printf("\n");
-        }
+          parameter+=(v[6]-48);
+          parameter+=(v[5]-48)*10;
+          parameter+=(v[4]-48)*100;
+          parameter+=(v[3]-48)*1000;
+          parameter+=(v[2]-48)*10000;
+          parameter+=(v[1]-48)*100000;
+          parameter+=(v[0]-48)*1000000;
+          flag_reset();
+          return parameter;
       }
-      flag = 0;
-      rec = true;
+      if(dec==6){
+          char v[6];
+          uint8_t *uBuffer;
+          uBuffer=return_uart_buffer();
+          for(int i=0 ; i<dec ; ++i){
+            v[i] = uBuffer[i];
+          }
+          parameter+=(v[5]-48);
+          parameter+=(v[4]-48)*10;
+          parameter+=(v[3]-48)*100;
+          parameter+=(v[2]-48)*1000;
+          parameter+=(v[1]-48)*10000;
+          parameter+=(v[0]-48)*100000;
+          flag_reset();
+          return parameter;
+      }
+      if(dec==5){
+        //not in use
+      }
+      if(dec==4){
+          char v[4];
+          uint8_t *uBuffer;
+          uBuffer=return_uart_buffer();
+          for(int i=0 ; i<dec ; ++i){
+            v[i] = uBuffer[i];
+          }
+          parameter+=v[3]-48;
+          parameter+=(v[2]-48)*10;
+          parameter+=(v[1]-48)*100;
+          parameter+=(v[0]-48)*1000;
+          flag_reset();
+          return parameter;
+      }
+      
+      if(dec==3){
+          char v[3];
+          uint8_t *uBuffer;
+          uBuffer=return_uart_buffer();
+          for(int i=0 ; i<dec ; ++i){
+            v[i] = uBuffer[i];
+          }
+          parameter+=(v[2]-48);
+          parameter+=(v[1]-48)*10;
+          parameter+=(v[0]-48)*100;
+          flag_reset();
+          return parameter;
+      }
+      
+      if(dec==2){
+        //Blank, have not required a 2-digit paramter yet
+      }
+      
+      if(dec==1){
+          uint8_t *uBuffer;
+          uBuffer=return_uart_buffer();
+          parameter = uBuffer[0];
+          flag_reset();
+          return parameter;
+      }
+    }
+  }
+}
+//Modifies the Impresult array to use N=numFreqs logarithmically spaced frequencies between the values defined by user over UART
+//NOTE: Using frequencies below 5Hz cause the test to run extremely slowly, possibly as long as 40 minutes
+void getEISFrequencies(void){
+
+  printf("Lower-bound test frequency(between 0000Hz and 9999Hz) : ");
+  float startFreq = getParameter(4);
+  
+  printf("\nUpper-bound test frequency(between 0000Hz and 9999Hz) : ");
+  float endFreq = getParameter(4);
+  
+  //Generate llinVec and logVec
+  float range = endFreq-startFreq;
+  float logVec[40];
+  float linVec[40];
+  for(int i=0 ; i<numFreqs ; ++i){
+    float inc = i;
+    linVec[i] = 100*inc/numFreqs;
+    logVec[i] = exp(0.04722*linVec[i]);
+                    
+//    printf("%f" , linVec[i]);
+//    printf("        :       ");
+//    printf("%f" , logVec[i]);
+//    printf("\n");
+  }
+  
+  
+  //using the mapping from logVec, determine the testing frequencies
+  for(int i=0 ; i<numFreqs ; ++i){
+
+    if(i==0){
+      ImpResult[i].freq = startFreq;
+    }
+    else{
+      ImpResult[i].freq = startFreq + (logVec[i])*range/100 ;
+    }
+    if(EISdebugMode==true){
+      printf("%f" , ImpResult[i].freq);
+      printf("\n");
     }
   }
 }
 
-//debugging helper function, waits for UART input then prints whatever is input back to terminal
-//tbh this is mostly useless
-void reflectUART(void){
-  bool rec = false; 
-  while(rec == false){
-    if(flag){
-      printf("szInSring: \n");
-      for(int i=0 ; i<UART_INBUFFER_LEN ; ++i){
-        printf("%i", i);
-        printf("     ");
-        printf("%c",szInSring[i]);
-        printf("\n");
-        if(i==UART_INBUFFER_LEN-1){
-          printf("\n");
-        }
-      }
-      flag = 0;
-      rec = true;
-    }
+void printEISResults(void){
+  /*print Impedance result*/
+  printf("Impedance Result:\r\n");
+  //printf("Frequencey,RxRload_REAL,RxRload_IMG,Rload_REAL,Rload_IMG,Rcal_REAL,Rcal_IMG,Mag_Rx,Mag_Rload,Mag_Rcal,Mag_Rload-Rx,MAG,PHASE"EOL);
+  printf("Frequency, MAG, PHASE, Re_Mag, Im_Mag "EOL);
+  for(uint32_t i=0;i<sizeof(ImpResult)/sizeof(ImpResult_t);i++){
+    //phase magnitude is correct, but inverted relative to the palmsens
+    printf("%6f,%.4f,%.4f,%.4f,%.4f"EOL, ImpResult[i].freq, \
+    ImpResult[i].Mag,            \
+    (ImpResult[i].Phase*-1),
+    ImpResult[i].Re_Mag,
+    ImpResult[i].Im_Mag);
   }
+  printf("Test END\r\n");
 }
+
+
+
+
