@@ -51,7 +51,7 @@ int main(void){
       }
       
       if(testMode=='2'){  
-        runTest(testMode);              //Squarewave Voltammetry
+        runTest(testMode);              //Squarewave Voltammetry 
       }
       
       if(testMode=='3'){
