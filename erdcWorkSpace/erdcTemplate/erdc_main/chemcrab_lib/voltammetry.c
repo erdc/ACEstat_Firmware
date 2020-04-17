@@ -1,56 +1,5 @@
 #include "voltammetry.h"
 
-//Returns a uint16_t representing the 4-digit UART input
-uint16_t getParameter(int dec){
-  
-  uint16_t parameter = 0;
-  
-  while(1){
-    if(get_flag()){
-      if(dec==4){
-          char v[4];
-          uint8_t *uBuffer;
-          uBuffer=return_uart_buffer();
-          for(int i=0 ; i<dec ; ++i){
-            v[i] = uBuffer[i];
-          }
-          parameter+=v[3]-48;
-          parameter+=(v[2]-48)*10;
-          parameter+=(v[1]-48)*100;
-          parameter+=(v[0]-48)*1000;
-          flag_reset();
-          return parameter;
-      }
-      
-      if(dec==3){
-          char v[3];
-          uint8_t *uBuffer;
-          uBuffer=return_uart_buffer();
-          for(int i=0 ; i<dec ; ++i){
-            v[i] = uBuffer[i];
-          }
-          parameter+=(v[2]-48);
-          parameter+=(v[1]-48)*10;
-          parameter+=(v[0]-48)*100;
-          flag_reset();
-          return parameter;
-      }
-      
-      if(dec==2){
-        //Blank, have not required a 2-digit paramter yet
-      }
-      
-      if(dec==1){
-          char v;
-          uint8_t *uBuffer;
-          uBuffer=return_uart_buffer();
-          parameter = uBuffer[0];
-          flag_reset();
-          return parameter;
-      }
-    }
-  }
-}
 
 /***************CYCLIC VOLTAMMETRY**************/
 void runCV(void){
