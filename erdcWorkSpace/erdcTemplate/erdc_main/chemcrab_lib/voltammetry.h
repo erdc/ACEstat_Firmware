@@ -20,9 +20,6 @@
 /*Imax = 0.9V/RGAIN*/
 #define mvStepDelay 147 //delay for 5mV/S
 
-//Retrieves voltammetry parameters from UART input
-uint16_t getParameter(int dec);
-
 //Cyclic Voltammetry Functions
 void runCV(void);
 void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t midV, uint16_t endV, uint32_t RGAIN);
