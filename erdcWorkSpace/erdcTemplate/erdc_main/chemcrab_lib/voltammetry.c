@@ -21,7 +21,7 @@ void runCV(void){
   uint8_t RTIACHOICE = getParameter(1);
   //uint8_t* uBuffer = return_uart_buffer();
   //uint8_t RTIACHOICE = uBuffer[0];
-  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE);
+  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48); //PASS INT VAL RATHER THAN ASCII
   
   
   /*cv ramp setup*/
