@@ -65,7 +65,7 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
   uint16_t cEnd =(endV-200)/0.54;
   int RTIA = RTIA_VAL_LOOKUP(RGAIN);
   
-  cZero = (zeroV-200)/0.03438;
+  cZero = (zeroV-200)/34.38;
   cBias = cStart;
 
   int sampleCount = 0;
