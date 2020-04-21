@@ -119,7 +119,7 @@ float calcCurrent_hptia(uint16_t DAT, int RGAIN){
   float RLOAD=0;
   int32_t adcSign = DAT;
   float vv = (adcSign-32768.0)/65536.0*V_ADC_REF_mV*-1;
-  return ((vv/(RGAIN-(RLOAD-100)) *1000)+1)/2; //divided by 2 because PGA of  2 in hptia setup
+  return ((vv/(RGAIN-(RLOAD-100)) *1000)+1)/4; //divided by 4 because PGA of 4 in hptia setup
 }
 
 
