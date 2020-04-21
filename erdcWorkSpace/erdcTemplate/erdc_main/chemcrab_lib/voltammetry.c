@@ -109,7 +109,7 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
 }
 
 void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA){
-  float zeroVoltage = 200+(cZero*0.03438);
+  float zeroVoltage = 200+(cZero*34.38);
   printf("RANGE IS %f to %f to %f\n", cStart*0.54+200-zeroVoltage, cVertex*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
   printf("RGAIN VALUE IS %i\n", RTIA);
   uint16_t* szADCSamples = return_adc_buffer();
@@ -252,7 +252,7 @@ void runSWV(void){
 }
 
 void printSWVResults(float cZero, float cStart, float cEnd, uint16_t amp, int sampleCount, int RTIA, int dep){
-  float zeroVoltage = 200+(cZero*0.03438);
+  float zeroVoltage = 200+(cZero*34.38);
   printf("Range is %f to %f\n", cStart*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
   printf("Rgain value is %i\n", RTIA);
   printf("Amplitude is %i\n", amp);

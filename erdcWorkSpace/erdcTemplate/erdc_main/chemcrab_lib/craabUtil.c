@@ -104,7 +104,7 @@ void turn_off_afe_power_things_down(void){
 void adcCurrentSetup_hptia(void){
   AfeAdcChan(MUXSELP_HPTIA_P,MUXSELN_HPTIA_N);
   AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-  AfeAdcPgaCfg(GNPGA_4,0); //for current use GNPGA_4
+  AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
   AfeAdcChopEn(1);
 
   AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
@@ -119,14 +119,14 @@ float calcCurrent_hptia(uint16_t DAT, int RGAIN){
   float RLOAD=0;
   int32_t adcSign = DAT;
   float vv = (adcSign-32768.0)/65536.0*V_ADC_REF_mV*-1;
-  return ((vv/(RGAIN-(RLOAD-100)) *1000)+1)/4; //divided by 4 because PGA of 4 in hptia setup
+  return ((vv/(RGAIN-(RLOAD-100)) *1000)+1)/2; //divided by 2 because PGA of 2 in hptia setup
 }
 
 
 void adcCurrentSetup_lptia(void){
   AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
   AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-  AfeAdcPgaCfg(GNPGA_4,0); //for current use GNPGA_4
+  AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
   AfeAdcChopEn(1);
 
   AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
