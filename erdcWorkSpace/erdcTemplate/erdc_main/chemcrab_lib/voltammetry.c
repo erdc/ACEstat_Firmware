@@ -51,7 +51,8 @@ void runCV(void){
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
-  DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
+  NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
+  //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
 void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN){
@@ -105,7 +106,6 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
       }
   }
   printCVResults(cZero,cStart,cVertex,cEnd,sampleCount,RTIA);
-
 }
 
 void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA){
@@ -248,7 +248,7 @@ void runSWV(void){
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
-  DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
+  //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
 void printSWVResults(float cZero, float cStart, float cEnd, uint16_t amp, int sampleCount, int RTIA, int dep){

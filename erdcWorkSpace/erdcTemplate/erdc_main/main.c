@@ -24,9 +24,9 @@ int main(void){
   AfeWdtGo(false);
   ClockInit();
   UartInit();
-  DioOenPin(pADI_GPIO2,PIN4,1);               // Enable P2.4 as Output to toggle DS2 LED
-  DioPulPin(pADI_GPIO2,PIN4,1);               // Enable pull-up
-  DioTglPin(pADI_GPIO2,PIN4);                 // LED ON
+  //DioOenPin(pADI_GPIO2,PIN4,1);               // Enable P2.4 as Output to toggle DS2 LED
+  //DioPulPin(pADI_GPIO2,PIN4,1);               // Enable pull-up
+  //DioTglPin(pADI_GPIO2,PIN4);                 // LED ON
   delay_10us(10);                             //settling delay
   /*End powerup setup*/
   

@@ -95,6 +95,8 @@ void turn_off_afe_power_things_down(void){
   LPDacCfg(0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_ALLOPEN);
 
+  powerDownADC();
+
   AfeLpTiaPwrDown(CHAN0, BITM_AFE_LPTIACON0_TIAPDEN|BITM_AFE_LPTIACON0_PAPDEN); //power down LPTIA and PA
   AfeHpTiaPwrUp(0); //power down hptia
   LPDacPwrCtrl(CHAN0, PWR_DOWN); //power down DAC
