@@ -37,12 +37,13 @@ int main(void){
 
     //Test mode selection
     restart=false;    
-    printf("Select a test to run:\n");
-    printf("(1)Cyclic Voltammetry (CV)\n");
-    printf("(2)Square-wave Voltammetry (SWV)\n");
-    printf("(3)Electrochemical Impedance Spectroscopy (EIS)\n");
+    //printf("Select a test to run:\n");
+    //printf("(1)Cyclic Voltammetry (CV)\n");
+    //printf("(2)Square-wave Voltammetry (SWV)\n");
+    //printf("(3)Electrochemical Impedance Spectroscopy (EIS)\n");
 
     while(restart==false){
+      printf("[:MAIN]");
       
       testMode = getTestMode();         //test mode input, reads only the first character in szInString
       
@@ -58,14 +59,16 @@ int main(void){
         runTest(testMode);              //Electrochemical Impedance Spectroscopy
       }
       
-      if(restartTest() == true){        //Prompts the user to either restart or end.  Restarting returns to test mode selection prompts
-        restart = true;
-      }
+      restart = true;
       
-      else{
-        printf("Not running any more tests, use board reset button to restart");
-        return 0;
-      }
+//      if(restartTest() == true){        //Prompts the user to either restart or end.  Restarting returns to test mode selection prompts
+//        restart = true;
+//      }
+//      
+//      else{
+//        printf("Not running any more tests, use board reset button to restart");
+//        return 0;
+//      }
       
     }
   }
@@ -79,10 +82,11 @@ void runTest(char mode){
   if(mode=='1'){
         while(testComplete==false){
           //if(get_flag()){
-              printf("Running CV...\n");
+              //printf("Running CV...\n");
+              printf("[START:CV]");
               runCV();
-              printf("...CV concluded\n\n");
-              
+              //printf("...CV concluded\n\n");
+              printf("[END:CV]");
               flag_reset();
               testComplete = true;
               return;
