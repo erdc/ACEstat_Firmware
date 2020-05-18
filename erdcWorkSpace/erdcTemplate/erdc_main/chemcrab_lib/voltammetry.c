@@ -56,6 +56,7 @@ void runCV(void){
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
+  printf("[END:CV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
   //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
