@@ -1,6 +1,6 @@
 #include "voltammetry.h"
 
-
+  
 /***************CYCLIC VOLTAMMETRY**************/
 void runCV(void){
   
@@ -17,7 +17,7 @@ void runCV(void){
   uint16_t cvEndVolt = getParameter(4);
 
   printf("Current Limit:\n");
-  printf("0: 4.5mA\n0001: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
+  printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
   uint8_t RTIACHOICE = getParameter(1);
   //uint8_t* uBuffer = return_uart_buffer();
   //uint8_t RTIACHOICE = uBuffer[0];
@@ -147,7 +147,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
 
   uint16_t amp = (amplitude-200)/0.54;
 
-  cZero = (zeroV-200)/0.03438;
+  cZero = (zeroV-200)/34.38;
   cBias = cStart;
 
   int sampleCount = 0;
@@ -216,12 +216,11 @@ void runSWV(void){
   uint16_t depTime = getParameter(3);
   
   printf("Current Limit:\n");
-  printf("0: 4.5mA\n0001: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
+  printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
   uint8_t RTIACHOICE = getParameter(1);
 //  uint8_t* uBuffer = return_uart_buffer();
 //  uint8_t RTIACHOICE = uBuffer[0];
-  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE);
-  
+  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48);
 
   /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
@@ -248,6 +247,7 @@ void runSWV(void){
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
+  NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
   //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
