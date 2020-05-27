@@ -14,9 +14,9 @@
 //ERDC File(s)
 #include "craabUtil.h" 
 #include "voltammetry.h"
+#include "eis.h"
 
 void runTest(char mode);
-bool restartTest(void);
 char getTestMode(void);
 
 int main(void){
@@ -56,15 +56,6 @@ int main(void){
       
       if(testMode=='3'){
         runTest(testMode);              //Electrochemical Impedance Spectroscopy
-      }
-      
-      if(restartTest() == true){        //Prompts the user to either restart or end.  Restarting returns to test mode selection prompts
-        restart = true;
-      }
-      
-      else{
-        printf("Not running any more tests, use board reset button to restart");
-        return 0;
       }
       
     }
@@ -132,23 +123,4 @@ char getTestMode(void){
       }
     }
     return testMode;
-}
-
-bool restartTest(void){
-  bool answer;
-  
-  printf("\nRun another test?\n");
-  printf("(1) Yes\n(2) No\n");
-  uint8_t *uBuffer;
-  uBuffer=return_uart_buffer();
-  
-  while(1){
-    if(get_flag()){
-      if(uBuffer[0]=='1'){answer = true;}
-      else{answer = false;}
-      flag_reset();
-      
-      return answer;
-    }
-  }
 }
