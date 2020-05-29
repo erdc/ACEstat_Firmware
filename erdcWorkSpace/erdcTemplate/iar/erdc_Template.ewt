@@ -2781,6 +2781,9 @@
                 <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\craabUtil.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\eis.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\voltammetry.c</name>
             </file>
         </group>
