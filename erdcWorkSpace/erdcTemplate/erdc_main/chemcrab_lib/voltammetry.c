@@ -4,20 +4,25 @@
 /***************CYCLIC VOLTAMMETRY**************/
 void runCV(void){
   
-  printf("Zero voltage between 0000mV - 9999mV : ");
+  //printf("Zero voltage between 0000mV - 9999mV : ");
+  printf("[:ZVI]");
   uint16_t cvZeroVolt = getParameter(4);
 
-  printf("Starting voltage between 0000mV - 9999mV : ");
+  //printf("Starting voltage between 0000mV - 9999mV : ");
+  printf("[:SVI]");
   uint16_t cvStartVolt = getParameter(4);
   
-  printf("Vertex voltage between 0000mV - 9999mV : ");
+  //printf("Vertex voltage between 0000mV - 9999mV : ");
+  printf("[:VVI]");
   uint16_t cvVertexVolt = getParameter(4);
   
-  printf("Ending voltage between 0000mV - 9999mV : ");
+  //printf("Ending voltage between 0000mV - 9999mV : ");
+  printf("[:EVI]");
   uint16_t cvEndVolt = getParameter(4);
 
-  printf("Current Limit:\n");
-  printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
+  //printf("Current Limit:\n");
+  //printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
+  printf("[:CLI]");
   uint8_t RTIACHOICE = getParameter(1);
   //uint8_t* uBuffer = return_uart_buffer();
   //uint8_t RTIACHOICE = uBuffer[0];
@@ -45,12 +50,13 @@ void runCV(void){
   /*end cv ramp setup*/
 
   /*RAMP HERE*/
-  printf("CV sweep begin\n");
+  //printf("CV sweep begin\n");
   cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN);
-  printf("CV sweep end\n");
+  //printf("CV sweep end\n");
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
+  printf("[END:CV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
   //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
@@ -93,14 +99,16 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
       szADCSamples[sampleCount]=cBias;
       sampleCount++;
       if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
+        //printf("MEMORY OVERFLOW\n");
+        printf("[ERR:MEMORY OVERFLOW]");
         sampleCount=0;
         break;
       }
       szADCSamples[sampleCount]=ADCRAW;
       sampleCount++;
       if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
+        //printf("MEMORY OVERFLOW\n");
+        printf("[ERR:MEMORY OVERFLOW]");
         sampleCount=0;
         break;
       }
@@ -110,8 +118,10 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
 
 void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA){
   float zeroVoltage = 200+(cZero*34.38);
-  printf("RANGE IS %f to %f to %f\n", cStart*0.54+200-zeroVoltage, cVertex*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
-  printf("RGAIN VALUE IS %i\n", RTIA);
+  //printf("RANGE IS %f to %f to %f\n", cStart*0.54+200-zeroVoltage, cVertex*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
+  printf("[RANGE:%f,%f,%f]", cStart*0.54+200-zeroVoltage, cVertex*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
+  //printf("RGAIN VALUE IS %i\n", RTIA);
+  printf("[RGAIN:%i][RESULTS:", RTIA);
   uint16_t* szADCSamples = return_adc_buffer();
   float tc, vDiff;
   for(uint32_t i = 0; i < sampleCount; i+=2){
@@ -120,6 +130,7 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
     //printf("Volt:%f,Current:%f\n", vDiff,tc);
     printf("%f,%f\n", vDiff,tc);
   }
+  printf("]");
 }
 /****************END CYCLIC VOLTAMMETRY**********************/
 
