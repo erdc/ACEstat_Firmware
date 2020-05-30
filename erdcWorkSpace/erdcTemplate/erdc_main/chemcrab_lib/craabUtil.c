@@ -72,6 +72,9 @@ void UART_Int_Handler(void)
        ucComRx = UrtRx(pADI_UART0);
        szInSring[i]=ucComRx;
      }
+     if (/*iNumBytesInFifo == 1 && */szInSring[0] == 27) {
+       NVIC_SystemReset();
+     }
      UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR// Clear the Rx/TX FIFOs
              |BITM_UART_COMFCR_TFCLR);
      flag_set();

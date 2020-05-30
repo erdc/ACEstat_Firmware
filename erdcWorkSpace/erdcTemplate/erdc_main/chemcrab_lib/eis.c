@@ -549,7 +549,8 @@ void runEIS(void){
          if ((u32AFEDieStaRdy & 1) == 1)             // Kernel initialization of AFE die was not successful
          {
            UartInit();                               // Initialize UART for 57600-8-N-1
-           printf("AFE DIE Failure" EOL);
+           //printf("AFE DIE Failure" EOL);
+           printf("[ERR:AFE DIE Failure]");
            while(u32AFEDieStaRdy == 1)               // AFE die has not initialized correctly.
            {}                                        // trap code here
          }
@@ -561,22 +562,22 @@ void runEIS(void){
          pSnsCfg1 = getSnsCfg(CHAN1);
          if((pSnsCfg0->Enable == SENSOR_CHANNEL_ENABLE))
          {
-            printf("Sensor Initializing...");
+            //printf("Sensor Initializing...");
             SnsInit(pSnsCfg0);
             for(uint32_t i=0;i<5000;i++)delay_10us(100);
-            printf("Finish" EOL);
+            //printf("Finish" EOL);
          }
          if((pSnsCfg1->Enable == SENSOR_CHANNEL_ENABLE))
          {
-           printf("%s Sensor Initializing...", pSnsCfg1->SensorName);
+           //printf("%s Sensor Initializing...", pSnsCfg1->SensorName);
             SnsInit(pSnsCfg1);
             for(uint32_t i=0;i<5000;i++)delay_10us(100);
-            printf("Finish" EOL);
+            //printf("Finish" EOL);
          }
 
          ChargeECSensor();
-         printf("Wait a few moments for results to complete...."EOL);
-         printf("Will take over a minute if 0.1 and 0.5Hz options enabled "EOL);
+         //printf("Wait a few moments for results to complete...."EOL);
+         //printf("Will take over a minute if 0.1 and 0.5Hz options enabled "EOL);
          //while(1)
          //{
                ucButtonPress = 0;
@@ -594,6 +595,7 @@ void runEIS(void){
                delay_10us(300000);
          //}
                printEISResults();
+               printf("[END:EIS]");
                NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
@@ -601,10 +603,12 @@ void runEIS(void){
 //NOTE: Using frequencies below 5Hz cause the test to run extremely slowly, possibly as long as 40 minutes
 void getEISFrequencies(void){
 
-  printf("Lower-bound test frequency(between 0000Hz and 9999Hz) : ");
+  //printf("Lower-bound test frequency(between 0000Hz and 9999Hz) : ");
+  printf("[:LBF]");
   float startFreq = getParameter(4);
   
-  printf("\nUpper-bound test frequency(between 0000Hz and 9999Hz) : ");
+  //printf("\nUpper-bound test frequency(between 0000Hz and 9999Hz) : ");
+  printf("[:UBF]");
   float endFreq = getParameter(4);
   
   //Generate llinVec and logVec
@@ -628,26 +632,29 @@ void getEISFrequencies(void){
       ImpResult[i].freq = startFreq + (logVec[i])*range/100 ;
     }
     if(EISdebugMode==true){
-      printf("%f" , ImpResult[i].freq);
-      printf("\n");
+      printf("%f"EOL , ImpResult[i].freq);
+      //printf("\n");
     }
   }
 }
 
 void printEISResults(void){
   /*print Impedance result*/
-  printf("Impedance Result:\r\n");
+  //printf("Impedance Result:\r\n");
+  printf("[RESULTS:");
   //printf("Frequencey,RxRload_REAL,RxRload_IMG,Rload_REAL,Rload_IMG,Rcal_REAL,Rcal_IMG,Mag_Rx,Mag_Rload,Mag_Rcal,Mag_Rload-Rx,MAG,PHASE"EOL);
-  printf("Frequency, MAG, PHASE, Re_Mag, Im_Mag "EOL);
+  //printf("Frequency, MAG, PHASE, Re_Mag, Im_Mag "EOL);
   for(uint32_t i=0;i<sizeof(ImpResult)/sizeof(ImpResult_t);i++){
     //phase magnitude is correct, but inverted relative to the palmsens
-    printf("%6f,%.4f,%.4f,%.4f,%.4f"EOL, ImpResult[i].freq, \
-    ImpResult[i].Mag,            \
-    (ImpResult[i].Phase*-1),
-    ImpResult[i].Re_Mag,
-    ImpResult[i].Im_Mag);
+    printf("%6f,%.4f,%.4f,%.4f,%.4f"EOL,
+           ImpResult[i].freq,
+           ImpResult[i].Mag,
+           (ImpResult[i].Phase*-1),
+           ImpResult[i].Re_Mag,
+           ImpResult[i].Im_Mag);
   }
-  printf("Test END\r\n");
+  //printf("Test END\r\n");
+  printf("]");
 }
 
 void AfeAdc_Int_Handler(void)

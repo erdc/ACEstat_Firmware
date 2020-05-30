@@ -128,7 +128,7 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
     vDiff = szADCSamples[i]*0.54+200-zeroVoltage;
     tc = calcCurrent_hptia(szADCSamples[i+1], RTIA);
     //printf("Volt:%f,Current:%f\n", vDiff,tc);
-    printf("%f,%f\n", vDiff,tc);
+    printf("%f,%f"EOL, vDiff,tc);
   }
   printf("]");
 }

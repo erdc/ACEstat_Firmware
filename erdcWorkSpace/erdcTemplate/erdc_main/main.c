@@ -31,18 +31,18 @@ int main(void){
   /*End powerup setup*/
   
   char testMode = 0;
-  bool restart = false;
+  //bool restart = false;
   
   while(1){
 
     //Test mode selection
-    restart=false;    
+    //restart=false;    
     //printf("Select a test to run:\n");
     //printf("(1)Cyclic Voltammetry (CV)\n");
     //printf("(2)Square-wave Voltammetry (SWV)\n");
     //printf("(3)Electrochemical Impedance Spectroscopy (EIS)\n");
 
-    while(restart==false){
+    while(1){
       printf("[:MAIN]");
       
       testMode = getTestMode();         //test mode input, reads only the first character in szInString
@@ -76,9 +76,9 @@ void runTest(char mode){
               runCV();
               //printf("...CV concluded\n\n");
               printf("[END:CV]");
-              flag_reset();
-              testComplete = true;
-              return;
+              //flag_reset();
+              //testComplete = true;
+              //return;
           //}
         }
   }
@@ -98,20 +98,22 @@ void runTest(char mode){
   }
   
   if(mode=='3'){
-        printf("\nElectrochemical impedance spectroscopy selected\n");
+        //printf("\nElectrochemical impedance spectroscopy selected\n");
+        printf("[START:EIS]");
         getEISFrequencies();
         runEIS();
-        printf("...EIS concluded");
+        //printf("...EIS concluded");
+        printf("[END:EIS]");
         
-        flag_reset();
-        testComplete = true;
-        return;
+        //flag_reset();
+        //testComplete = true;
+        //return;
   }
      
      
-  else{
-    printf("Invalid Test Mode Parameter Selected\nValid Modes are {1:CV, 2:SWV: 3:EIS}\n");
-  } 
+  //else{
+  //  printf("Invalid Test Mode Parameter Selected\nValid Modes are {1:CV, 2:SWV: 3:EIS}\n");
+  //} 
 }  
 
 char getTestMode(void){
