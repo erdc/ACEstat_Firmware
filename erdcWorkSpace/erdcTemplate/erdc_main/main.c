@@ -24,23 +24,18 @@ int main(void){
   AfeWdtGo(false);
   ClockInit();
   UartInit();
-  //DioOenPin(pADI_GPIO2,PIN4,1);               // Enable P2.4 as Output to toggle DS2 LED
-  //DioPulPin(pADI_GPIO2,PIN4,1);               // Enable pull-up
-  //DioTglPin(pADI_GPIO2,PIN4);                 // LED ON
   delay_10us(10);                             //settling delay
   /*End powerup setup*/
   
   char testMode = 0;
-  //bool restart = false;
   
   while(1){
 
-    //Test mode selection
-    //restart=false;    
-    //printf("Select a test to run:\n");
-    //printf("(1)Cyclic Voltammetry (CV)\n");
-    //printf("(2)Square-wave Voltammetry (SWV)\n");
-    //printf("(3)Electrochemical Impedance Spectroscopy (EIS)\n");
+    /*****************************
+     *1 Cyclic Voltammetry       *
+     *2 Square Wave Voltammetry  *
+     *3 EIS                      *
+    ******************************/
 
     while(1){
       printf("[:MAIN]");
@@ -70,22 +65,14 @@ void runTest(char mode){
   
   if(mode=='1'){
         while(testComplete==false){
-          //if(get_flag()){
-              //printf("Running CV...\n");
               printf("[START:CV]");
               runCV();
-              //printf("...CV concluded\n\n");
               printf("[END:CV]");
-              //flag_reset();
-              //testComplete = true;
-              //return;
-          //}
         }
   }
   
   if(mode=='2'){
         while(testComplete==false){
-          //if(get_flag()){
             printf("Running SWV...\n");
             runSWV();  
             printf("...SWV concluded\n\n");
@@ -93,27 +80,15 @@ void runTest(char mode){
             flag_reset();
             testComplete = true;
             return;
-          //}
         }
   }
   
   if(mode=='3'){
-        //printf("\nElectrochemical impedance spectroscopy selected\n");
         printf("[START:EIS]");
         getEISFrequencies();
         runEIS();
-        //printf("...EIS concluded");
         printf("[END:EIS]");
-        
-        //flag_reset();
-        //testComplete = true;
-        //return;
   }
-     
-     
-  //else{
-  //  printf("Invalid Test Mode Parameter Selected\nValid Modes are {1:CV, 2:SWV: 3:EIS}\n");
-  //} 
 }  
 
 char getTestMode(void){

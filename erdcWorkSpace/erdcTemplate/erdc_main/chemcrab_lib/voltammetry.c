@@ -148,7 +148,7 @@ void sqv_dep_time(uint16_t start, uint16_t time){
 
 void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, int dep){
   uint16_t SETTLING_DELAY = 5;
-  uint16_t RAMP_STEP_DELAY = 10*mvStepDelay;          //14.7mS 68 loops to achieve 50mV 14.7mS*68 gives 50mV per second
+  //uint16_t RAMP_STEP_DELAY = 10*mvStepDelay;          //14.7mS 68 loops to achieve 50mV 14.7mS*68 gives 50mV per second
   uint16_t cBias, cZero;
   uint16_t ADCRAW;
 
@@ -229,9 +229,7 @@ void runSWV(void){
   printf("Current Limit:\n");
   printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
   uint8_t RTIACHOICE = getParameter(1);
-//  uint8_t* uBuffer = return_uart_buffer();
-//  uint8_t RTIACHOICE = uBuffer[0];
-  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48);
+  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48); //-48 because an ascii character is passed. 
 
   /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
@@ -259,7 +257,6 @@ void runSWV(void){
 
   turn_off_afe_power_things_down();
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
-  //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
 void printSWVResults(float cZero, float cStart, float cEnd, uint16_t amp, int sampleCount, int RTIA, int dep){
@@ -274,7 +271,6 @@ void printSWVResults(float cZero, float cStart, float cEnd, uint16_t amp, int sa
   for(uint32_t i = 0; i < sampleCount; i+=3){
     vDiff = szADCSamples[i]*0.54+200-zeroVoltage;
     tc = calcCurrent_hptia(szADCSamples[i+1]-szADCSamples[i+2], RTIA);
-    //printf("Volt:%f,Current:%f\n", vDiff,tc);
     printf("%f,%f\n", vDiff,tc);
   }
 }

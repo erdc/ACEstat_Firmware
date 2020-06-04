@@ -57,7 +57,6 @@ void UartInit(void)
   /*ADDED*/
   NVIC_EnableIRQ(UART_EVT_IRQn);              // Enable UART interrupt source in NVIC
   /*Enable UART wakeup intterupt*/
-  //NVIC_EnableIRQ(AFE_EVT3_IRQn);    //UART_RX connected to EXT Int3
 }
 
 void UART_Int_Handler(void)
@@ -66,13 +65,12 @@ void UART_Int_Handler(void)
    ucCOMIID0 = UrtIntSta(pADI_UART0);
    if ((ucCOMIID0 & 0xE) == 0xc || (ucCOMIID0 & 0xE) == 0x4)	          // Receive byte
    {
-     //printf("Input Received\n");
      iNumBytesInFifo = pADI_UART0->COMRFC;    // read the Num of bytes in FIFO
      for(uint8_t i = 0; i <iNumBytesInFifo;++i){
        ucComRx = UrtRx(pADI_UART0);
        szInSring[i]=ucComRx;
      }
-     if (/*iNumBytesInFifo == 1 && */szInSring[0] == 27) {
+     if (szInSring[0] == 27) {
        NVIC_SystemReset();
      }
      UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR// Clear the Rx/TX FIFOs
@@ -107,7 +105,6 @@ void adcCurrentSetup_hptia(void){
 
 //return current in uA;
 float calcCurrent_hptia(uint16_t DAT, int RGAIN){
-  //float vv = calcADCVolt(DAT);
   float RLOAD=0;
   int32_t adcSign = DAT;
   float vv = (adcSign-32768.0)/65536.0*V_ADC_REF_mV*-1;
@@ -135,7 +132,6 @@ void powerDownADC(void){
 
 //return current in uA;
 float calcCurrent_lptia(uint16_t DAT, int RGAIN, int RLOAD){
-  //float vv = calcADCVolt(DAT);
   int32_t adcSign = DAT;
   float vv = (adcSign-32768.0)/65536.0*V_ADC_REF_mV*2;
   return vv/(RGAIN-(RLOAD-100)) *1000;
