@@ -28,7 +28,6 @@ int main(void){
   /*End powerup setup*/
   
   char testMode = 0;
-  
   while(1){
 
     /*****************************
@@ -52,8 +51,7 @@ int main(void){
       
       if(testMode=='3'){
         runTest(testMode);              //Electrochemical Impedance Spectroscopy
-      }
-      
+      }  
     }
   }
   return 0;
