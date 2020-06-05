@@ -2778,68 +2778,68 @@
         <group>
             <name>crab_lib</name>
             <file>
-                <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\craabUtil.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\eis.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\eis.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\erdc_main\chemcrab_lib\voltammetry.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</name>
             </file>
         </group>
         <file>
-            <name>$PROJ_DIR$\..\erdc_main\main.c</name>
+            <name>$PROJ_DIR$\..\src\main.c</name>
         </file>
     </group>
     <group>
         <name>common</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\AfeAdcLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\AfeAdcLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\AfeDacLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\AfeDacLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\AfeTiaLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\AfeTiaLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\AfeWdtLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\AfeWdtLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\ClkLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\ClkLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\DioLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\DioLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\GptLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\GptLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\IntLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\IntLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\M355_ECSns_DCTest.c</name>
+            <name>$PROJ_DIR$\..\..\common\M355_ECSns_DCTest.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\PwrLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\PwrLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\IAR\retarget.c</name>
+            <name>$PROJ_DIR$\..\..\common\IAR\retarget.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\RstLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\RstLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\UrtLib.c</name>
+            <name>$PROJ_DIR$\..\..\common\UrtLib.c</name>
         </file>
     </group>
     <group>
         <name>startup</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\IAR\startup_ADuCM355.c</name>
+            <name>$PROJ_DIR$\..\..\common\IAR\startup_ADuCM355.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\common\system_ADuCM355.c</name>
+            <name>$PROJ_DIR$\..\..\common\system_ADuCM355.c</name>
         </file>
     </group>
 </project>
