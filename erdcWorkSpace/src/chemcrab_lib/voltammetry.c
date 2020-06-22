@@ -1,6 +1,7 @@
 #include "voltammetry.h"
 
-  
+volatile uint8_t adcRdy = 0;
+
 /***************CYCLIC VOLTAMMETRY**************/
 void runCV(void){
   
@@ -19,6 +20,10 @@ void runCV(void){
   //printf("Ending voltage between 0000mV - 9999mV : ");
   printf("[:EVI]");
   uint16_t cvEndVolt = getParameter(4);
+  
+  //printf("Voltage sweep rate between 000mV/s - 999mV/s : ");
+  printf("[:SRI]");
+  uint16_t sweepRate = getParameter(3);
 
   //printf("Current Limit:\n");
   //printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
@@ -32,17 +37,20 @@ void runCV(void){
   /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
 
+  
   LPDacPwrCtrl(CHAN0,PWR_UP);
-  LPDacCfg(CHAN0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   LPDacWr(CHAN0, 62, 62*64);
+  LPDacCfg(CHAN0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
 
   /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
   /*power up PA,TIA,no boost, full power*/
   AfeLpTiaPwrDown(CHAN0,0);
   AfeLpTiaAdvanced(CHAN0,BANDWIDTH_NORMAL,CURRENT_NOR);
   AfeLpTiaSwitchCfg(CHAN0,SWMODE_SHORT);  /*short TIA feedback for Sensor setup*/
-  AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_NORM);  /*TIA switch to normal*/
+  AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
+  delay_10us(200);
+  
+  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to normal*/
   /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
 
   hptia_setup_parameters(RGAIN);
@@ -51,7 +59,7 @@ void runCV(void){
 
   /*RAMP HERE*/
   //printf("CV sweep begin\n");
-  cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN);
+  cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN, sweepRate);
   //printf("CV sweep end\n");
   /*END RAMP*/
 
@@ -61,11 +69,12 @@ void runCV(void){
   //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
-void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN){
+void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate){
   uint16_t SETTLING_DELAY = 5;
-  uint16_t RAMP_STEP_DELAY = 10*mvStepDelay;          //14.7mS 68 loops to achieve 50mV 14.7mS*68 gives 50mV per second
   uint16_t cBias, cZero;
   uint16_t ADCRAW;
+  
+  GptCfgVoltammetry(sweepRate); //configure general-purpose digital timer to use chosen sweeprate
 
   uint16_t cStart = (startV-200)/0.54;
   uint16_t cVertex = (vertexV-200)/0.54;
@@ -77,24 +86,23 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
 
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
-
+  
   for (cBias = cStart; cBias < cVertex; ++cBias){
     LPDacWr(CHAN0, cZero, cBias);         // Set VBIAS/VZERO output voltages
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-    delay_10us(RAMP_STEP_DELAY);
 
     ADCRAW = pollReadADC();
     szADCSamples[sampleCount]=cBias;
     sampleCount++;
     szADCSamples[sampleCount]=ADCRAW;
     sampleCount++;
+    GptWaitForFlag();
   }
 
   for (cBias = cVertex; cBias > cEnd; --cBias){
       LPDacWr(CHAN0, cZero, cBias);         // Set VBIAS/VZERO output voltages
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-      delay_10us(RAMP_STEP_DELAY);
-
+      
       ADCRAW = pollReadADC();
       szADCSamples[sampleCount]=cBias;
       sampleCount++;
@@ -112,6 +120,8 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
         sampleCount=0;
         break;
       }
+      GptWaitForFlag();
+      LPDacWr(CHAN0, 0, 0); //reset the DAC output to zero to prevent voltage holding high at end of ramp
   }
   printCVResults(cZero,cStart,cVertex,cEnd,sampleCount,RTIA);
 }
