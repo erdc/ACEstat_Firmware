@@ -2,7 +2,7 @@
 #include "eis.h"
 
 //EIS GLOBALS
-volatile uint8_t dftRdy =0;
+volatile uint8_t dftRdy = 0;
 volatile uint32_t ucButtonPress =0;
 SNS_CFG_Type * pSnsCfg0;
 SNS_CFG_Type * pSnsCfg1;
@@ -11,8 +11,8 @@ float FCW_Val = 0;
 const int numFreqs = 40;
 ImpResult_t ImpResult[40];
 bool EISdebugMode = false;
-//END EIS GLOBALS
 
+//END EIS GLOBALS
 
 // On initialization, this function is called to temporarily close SW1 in teh Low Power loop.
 // This results in the LPTIA output being shorted to its input.
@@ -657,14 +657,14 @@ void printEISResults(void){
   printf("]");
 }
 
-void AfeAdc_Int_Handler(void)
-{
-	uint32_t sta;
-	sta = pADI_AFE->ADCINTSTA;
-	if(sta&BITM_AFE_ADCINTSTA_DFTRDY)
-	{
-      pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_DFTRDY;	//clear interrupt
-      dftRdy = 1;
-      pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_DFTEN|BITM_AFE_AFECON_ADCCONVEN|BITM_AFE_AFECON_ADCEN));  //stop conversion
-	}
-}
+//void AfeAdc_Int_Handler(void)
+//{
+//	uint32_t sta;
+//	sta = pADI_AFE->ADCINTSTA;
+//	if(sta&BITM_AFE_ADCINTSTA_DFTRDY)
+//	{
+//          pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_DFTRDY;	//clear interrupt
+//          dftRdy = 1;
+//          pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_DFTEN|BITM_AFE_AFECON_ADCCONVEN|BITM_AFE_AFECON_ADCEN));  //stop conversion
+//	}
+//}
