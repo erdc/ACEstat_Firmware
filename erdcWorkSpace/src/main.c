@@ -29,13 +29,11 @@ int main(void){
   
   char testMode = 0;
   while(1){
-
     /*****************************
      *1 Cyclic Voltammetry       *
      *2 Square Wave Voltammetry  *
      *3 EIS                      *
     ******************************/
-
     while(1){
       printf("[:MAIN]");
       
