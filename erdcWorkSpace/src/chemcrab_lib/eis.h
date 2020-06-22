@@ -102,6 +102,6 @@ uint8_t SnsMagPhaseCal(void);
 void runEIS(void);
 void getEISFrequencies(void);
 void printEISResults(void);
-void AfeAdc_Int_Handler(void);
+//void AfeAdc_Int_Handler(void);
 
 #endif
