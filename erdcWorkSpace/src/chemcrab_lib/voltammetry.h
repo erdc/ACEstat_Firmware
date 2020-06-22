@@ -22,7 +22,7 @@
 
 //Cyclic Voltammetry Functions
 void runCV(void);
-void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t midV, uint16_t endV, uint32_t RGAIN);
+void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t midV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate);
 void printCVResults(float cZero, float cStart, float cMid, float cEnd, int samplesCount, int RTIA);
 
 //Square-wave Voltammetry Functions
