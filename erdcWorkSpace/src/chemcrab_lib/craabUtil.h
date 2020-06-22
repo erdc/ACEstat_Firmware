@@ -34,6 +34,11 @@ int flag_reset(void);
 int get_flag(void);
 /*END FLAG CONTROL*/
 
+/*ADC Mode Control*/
+extern uint8_t adcModeSel;
+extern volatile uint8_t dftRdy;
+extern volatile uint8_t adcRdy;
+
 //KEITH'S ORIGINAL UTIL FUNCTIONS
 void adcCurrentSetup_hptia(void);
 float calcCurrent_hptia(uint16_t DAT, int RGAIN);
@@ -56,5 +61,13 @@ void hptia_setup_parameters(uint32_t RTIA);
 int RTIA_VAL_LOOKUP(uint32_t RGAIN);
 //Retrieves voltammetry parameters from UART input
 uint16_t getParameter(int dec);
+
+//Used to configure voltammetry sweeprates using digital timers
+void GptCfgVoltammetry(uint16_t mvRate);
+void GptWaitForFlag(void);
+uint16_t sweeprateLookup(uint16_t mvRate);
+void GP_Tmr2_Int_Handler(void);
+
+void AfeAdc_Int_Handler(void);
 #endif
 
