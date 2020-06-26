@@ -12,8 +12,9 @@ uint8_t* return_uart_buffer(void){
 }
 /*end UART*/
 
-uint8_t adcModeSel = 1;
+uint8_t adcModeSel = 0;
 volatile uint8_t tmr2_timeout = 0;
+volatile uint16_t ADCRAW = 0;
 
 /*FLAG VARIABLE CONTROL*/
 uint8_t flag = 0;
@@ -28,6 +29,7 @@ int flag_reset(void)
 	flag=0;
 	return 1;
 }
+
 int get_flag(void)
 {
 	return flag;
@@ -99,8 +101,11 @@ void adcCurrentSetup_hptia(void){
   AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
   AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
   AfeAdcChopEn(1);
-
+  
+  AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
+  NVIC_EnableIRQ(AFE_ADC_IRQn);
   AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
+  
   AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
   pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
   delay_10us(5);  //50uS
@@ -142,21 +147,6 @@ float calcCurrent_lptia(uint16_t DAT, int RGAIN, int RLOAD){
 
 float calcADCVolt(uint16_t DAT){
   return (DAT-32768.0)/65535*3600+1100;
-}
-
-uint16_t pollReadADC(void){
-     /*start ADC conversion*/
-   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
-
-   /*Read ADC data*/
-   while(!(pADI_AFE->ADCINTSTA&BITM_AFE_ADCINTSTA_ADCRDY));
-   while(!(pADI_AFE->ADCINTSTA&BITM_AFE_ADCINTSTA_ADCRDY));
-   while(!(pADI_AFE->ADCINTSTA&BITM_AFE_ADCINTSTA_ADCRDY));
-   pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
-
-   uint16_t adcRaw;
-   adcRaw = pADI_AFE->ADCDAT;
-   return adcRaw;
 }
 
 #if defined ( __ICCARM__ )
@@ -341,30 +331,6 @@ uint16_t getParameter(int dec){
   }
 }
 
-void AfeAdc_Int_Handler(void){
-/*
-PROTOTYPE NEW VERSION
-*/
-  uint32_t sta;
-  sta = pADI_AFE->ADCINTSTA;
-  //ADCINTSTA DFT operation complete, used in EIS functions
-  if(adcModeSel){
-    if(sta&BITM_AFE_ADCINTSTA_DFTRDY){
-      pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_DFTRDY;	//clear DFTRDY interrupt bit
-      dftRdy = 1;       //set dftRdy flag
-      pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_DFTEN|BITM_AFE_AFECON_ADCCONVEN|BITM_AFE_AFECON_ADCEN));  //stop conversion
-    }
-  }
-  //ADCINTSTA ADC conversion complete, used more generally and in voltammetry functions
-  else{
-    if(sta&BITM_AFE_ADCINTSTA_ADCRDY){
-      pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;   //clear ADCRDY interrupt bit
-      adcRdy = 1;       //set adcRdy flag
-      pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_DFTEN|BITM_AFE_AFECON_ADCCONVEN|BITM_AFE_AFECON_ADCEN));  //stop conversion
-    }
-  }
-}
-
 void GptCfgVoltammetry(uint16_t mvRate){
    GptLd(pADI_TMR2, sweeprateLookup(mvRate));      // Load timer 2
    GptCfg(pADI_TMR2,TCTL_CLK_HFOSC, TCTL_PRE_DIV64,
@@ -404,6 +370,33 @@ uint16_t sweeprateLookup(uint16_t mvRate){
     default: return 0x1123;
   }
   return 0;
+}
+
+uint16_t getAdcVal(void){
+  return ADCRAW;
+}
+
+void setAdcMode(uint8_t mode){
+  adcModeSel = mode;
+}
+
+void AfeAdc_Int_Handler(void){
+  uint32_t sta;
+  sta = pADI_AFE->ADCINTSTA;
+  if(adcModeSel == 1){
+    if(sta&BITM_AFE_ADCINTSTA_DFTRDY){
+      pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_DFTRDY;	//clear DFTRDY interrupt bit
+      dftRdy = 1;       //set dftRdy flag
+      //pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_DFTEN|BITM_AFE_AFECON_ADCCONVEN|BITM_AFE_AFECON_ADCEN));  //stop conversion
+    }
+  }
+  else{
+    if(sta&BITM_AFE_ADCINTSTA_ADCRDY){
+      pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;   //clear ADCRDY interrupt bit
+      ADCRAW = pADI_AFE->ADCDAT;
+      //pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_DFTEN|BITM_AFE_AFECON_ADCCONVEN|BITM_AFE_AFECON_ADCEN));  //stop conversion
+    }
+  }
 }
 
 void GP_Tmr2_Int_Handler(void)
