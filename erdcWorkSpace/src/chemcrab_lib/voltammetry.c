@@ -1,10 +1,8 @@
 #include "voltammetry.h"
 
-volatile uint8_t adcRdy = 0;
-
 /***************CYCLIC VOLTAMMETRY**************/
 void runCV(void){
-  
+  setAdcMode(0);
   //printf("Zero voltage between 0000mV - 9999mV : ");
   printf("[:ZVI]");
   uint16_t cvZeroVolt = getParameter(4);
@@ -39,7 +37,7 @@ void runCV(void){
 
   
   LPDacPwrCtrl(CHAN0,PWR_UP);
-  LPDacWr(CHAN0, 62, 62*64);
+  //LPDacWr(CHAN0, 62, 62*64);
   LPDacCfg(CHAN0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
 
   /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
@@ -72,10 +70,10 @@ void runCV(void){
 void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate){
   uint16_t SETTLING_DELAY = 5;
   uint16_t cBias, cZero;
-  uint16_t ADCRAW;
+  uint16_t AdcVal;
   
   GptCfgVoltammetry(sweepRate); //configure general-purpose digital timer to use chosen sweeprate
-
+  
   uint16_t cStart = (startV-200)/0.54;
   uint16_t cVertex = (vertexV-200)/0.54;
   uint16_t cEnd =(endV-200)/0.54;
@@ -83,18 +81,19 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
   
   cZero = (zeroV-200)/34.38;
   cBias = cStart;
-
+  
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   
   for (cBias = cStart; cBias < cVertex; ++cBias){
     LPDacWr(CHAN0, cZero, cBias);         // Set VBIAS/VZERO output voltages
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
 
-    ADCRAW = pollReadADC();
+    AdcVal = getAdcVal();
     szADCSamples[sampleCount]=cBias;
     sampleCount++;
-    szADCSamples[sampleCount]=ADCRAW;
+    szADCSamples[sampleCount]=AdcVal;
     sampleCount++;
     GptWaitForFlag();
   }
@@ -103,7 +102,7 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
       LPDacWr(CHAN0, cZero, cBias);         // Set VBIAS/VZERO output voltages
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       
-      ADCRAW = pollReadADC();
+      AdcVal = getAdcVal();
       szADCSamples[sampleCount]=cBias;
       sampleCount++;
       if(sampleCount>MAX_BUFFER_LENGTH) {
@@ -112,7 +111,7 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
         sampleCount=0;
         break;
       }
-      szADCSamples[sampleCount]=ADCRAW;
+      szADCSamples[sampleCount]=AdcVal;
       sampleCount++;
       if(sampleCount>MAX_BUFFER_LENGTH) {
         //printf("MEMORY OVERFLOW\n");
@@ -121,8 +120,8 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
         break;
       }
       GptWaitForFlag();
-      LPDacWr(CHAN0, 0, 0); //reset the DAC output to zero to prevent voltage holding high at end of ramp
   }
+  LPDacWr(CHAN0, 0, 0); //reset the DAC output to zero to prevent voltage holding high at end of ramp
   printCVResults(cZero,cStart,cVertex,cEnd,sampleCount,RTIA);
 }
 
@@ -174,7 +173,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
 
-  /*palmsense device does 2 sweps for some reason only reports one*/
+  /*palmsense device does 2 sweeps for some reason only reports one*/
   for (cBias = cStart; cBias < cEnd; cBias+=10){
     LPDacWr(CHAN0, cZero, cBias+amp);
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
@@ -188,7 +187,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
     LPDacWr(CHAN0, cZero, cBias+amp);
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
     delay_10us(1250); //delay 12.5ms
-    ADCRAW = pollReadADC();
+    ADCRAW = getAdcVal();
     szADCSamples[sampleCount]=cBias;
     sampleCount++;
     if(sampleCount>MAX_BUFFER_LENGTH) {
@@ -207,7 +206,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
     LPDacWr(CHAN0, cZero, cBias-amp);
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
     delay_10us(1250); //delay 12.5ms
-    ADCRAW = pollReadADC();
+    ADCRAW = getAdcVal();
     szADCSamples[sampleCount]=ADCRAW;
     sampleCount++;
     if(sampleCount>MAX_BUFFER_LENGTH) {
@@ -220,7 +219,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
 }
 
 void runSWV(void){
-  
+  setAdcMode(0);
   printf("Zero voltage between 0000mV - 9999mV : ");
   uint16_t swvZeroVolt = getParameter(4);
 
