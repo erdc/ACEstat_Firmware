@@ -17,7 +17,6 @@
 #include "M355_ECSns_EIS.h"
 #include "M355_ECSns_DCTest.h"
 
-
 #define ADCSTART pADI_AFE->AFECON |= BITM_AFE_AFECON_ADCCONVEN  //start ADC conversion
 #define ADCSTOP  pADI_AFE->AFECON &= (~BITM_AFE_AFECON_ADCCONVEN)  //stop ADC conversion
 
@@ -37,12 +36,10 @@ int get_flag(void);
 /*ADC Mode Control*/
 extern uint8_t adcModeSel;
 extern volatile uint8_t dftRdy;
-extern volatile uint8_t adcRdy;
 
 //KEITH'S ORIGINAL UTIL FUNCTIONS
 void adcCurrentSetup_hptia(void);
 float calcCurrent_hptia(uint16_t DAT, int RGAIN);
-uint16_t pollReadADC(void);
 void adcCurrentSetup_lptia(void);
 float calcADCVolt(uint16_t DAT);
 float calcCurrent_lptia(uint16_t DAT, int RGAIN, int RLOAD);
@@ -66,8 +63,11 @@ uint16_t getParameter(int dec);
 void GptCfgVoltammetry(uint16_t mvRate);
 void GptWaitForFlag(void);
 uint16_t sweeprateLookup(uint16_t mvRate);
-void GP_Tmr2_Int_Handler(void);
+uint16_t getAdcVal(void);
+void setAdcMode(uint8_t mode);
 
 void AfeAdc_Int_Handler(void);
+void GP_Tmr2_Int_Handler(void);
+
 #endif
 
