@@ -36,6 +36,7 @@ int get_flag(void);
 /*ADC Mode Control*/
 extern uint8_t adcModeSel;
 extern volatile uint8_t dftRdy;
+extern volatile uint8_t adcRdy;
 
 //KEITH'S ORIGINAL UTIL FUNCTIONS
 void adcCurrentSetup_hptia(void);
