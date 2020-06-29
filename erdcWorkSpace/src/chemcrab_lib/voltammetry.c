@@ -22,6 +22,11 @@ void runCV(void){
   //printf("Voltage sweep rate between 000mV/s - 999mV/s : ");
   printf("[:SRI]");
   uint16_t sweepRate = getParameter(3);
+  
+  //printf("Output Data Voltage Resolution:\n");
+  //printf("1: 1mV per step, 5:5mV per step");
+  printf("[:ORI]");
+  uint16_t resolution = getParameter(1);
 
   //printf("Current Limit:\n");
   //printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
@@ -57,7 +62,7 @@ void runCV(void){
 
   /*RAMP HERE*/
   //printf("CV sweep begin\n");
-  cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN, sweepRate);
+  cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN, sweepRate, resolution);
   //printf("CV sweep end\n");
   /*END RAMP*/
 
@@ -67,10 +72,13 @@ void runCV(void){
   //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
-void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate){
+void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate, uint16_t res){
   uint16_t SETTLING_DELAY = 5;
   uint16_t cBias, cZero;
   uint16_t AdcVal;
+  uint16_t div;              //used to set the voltage interval at which ADC samples are stored to the output array
+  if(res==5){div=5;}
+  else{div=2;}
   
   GptCfgVoltammetry(sweepRate); //configure general-purpose digital timer to use chosen sweeprate
   
@@ -89,37 +97,45 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
   for (cBias = cStart; cBias < cVertex; ++cBias){
     LPDacWr(CHAN0, cZero, cBias);         // Set VBIAS/VZERO output voltages
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-
-    AdcVal = getAdcVal();
-    szADCSamples[sampleCount]=cBias;
-    sampleCount++;
-    szADCSamples[sampleCount]=AdcVal;
-    sampleCount++;
-    GptWaitForFlag();
+    
+    if(cBias%div == 0){                    //Only store ADC data for every other DAC increment
+      while(!adcRdy){};
+      adcRdy = 0;
+      AdcVal = getAdcVal();
+      szADCSamples[sampleCount]=cBias;
+      sampleCount++;
+      szADCSamples[sampleCount]=AdcVal;
+      sampleCount++;
+    }
+    GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
   }
 
   for (cBias = cVertex; cBias > cEnd; --cBias){
       LPDacWr(CHAN0, cZero, cBias);         // Set VBIAS/VZERO output voltages
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       
-      AdcVal = getAdcVal();
-      szADCSamples[sampleCount]=cBias;
-      sampleCount++;
-      if(sampleCount>MAX_BUFFER_LENGTH) {
-        //printf("MEMORY OVERFLOW\n");
-        printf("[ERR:MEMORY OVERFLOW]");
-        sampleCount=0;
-        break;
+      if(cBias%div == 0){                    //Only store ADC data for every other DAC increment
+        while(!adcRdy){};
+        adcRdy = 0;
+        AdcVal = getAdcVal();
+        szADCSamples[sampleCount]=cBias;
+        sampleCount++;
+        if(sampleCount>MAX_BUFFER_LENGTH) {
+          //printf("MEMORY OVERFLOW\n");
+          printf("[ERR:MEMORY OVERFLOW]");
+          sampleCount=0;
+          break;
+        }
+        szADCSamples[sampleCount]=AdcVal;
+        sampleCount++;
+        if(sampleCount>MAX_BUFFER_LENGTH) {
+          //printf("MEMORY OVERFLOW\n");
+          printf("[ERR:MEMORY OVERFLOW]");
+          sampleCount=0;
+          break;
+        }
       }
-      szADCSamples[sampleCount]=AdcVal;
-      sampleCount++;
-      if(sampleCount>MAX_BUFFER_LENGTH) {
-        //printf("MEMORY OVERFLOW\n");
-        printf("[ERR:MEMORY OVERFLOW]");
-        sampleCount=0;
-        break;
-      }
-      GptWaitForFlag();
+      GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
   }
   LPDacWr(CHAN0, 0, 0); //reset the DAC output to zero to prevent voltage holding high at end of ramp
   printCVResults(cZero,cStart,cVertex,cEnd,sampleCount,RTIA);
@@ -157,57 +173,63 @@ void sqv_dep_time(uint16_t start, uint16_t time){
 
 void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, int dep){
   uint16_t SETTLING_DELAY = 5;
-  //uint16_t RAMP_STEP_DELAY = 10*mvStepDelay;          //14.7mS 68 loops to achieve 50mV 14.7mS*68 gives 50mV per second
   uint16_t cBias, cZero;
-  uint16_t ADCRAW;
+  uint16_t AdcVal;
 
   uint16_t cStart = (startV-200)/0.54;
   uint16_t cEnd =(endV-200)/0.54;
   int RTIA = RTIA_VAL_LOOKUP(RGAIN);
 
-  uint16_t amp = (amplitude-200)/0.54;
+  uint16_t amp = (amplitude)/0.54;
 
   cZero = (zeroV-200)/34.38;
   cBias = cStart;
 
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
 
   /*palmsense device does 2 sweeps for some reason only reports one*/
-  for (cBias = cStart; cBias < cEnd; cBias+=10){
-    LPDacWr(CHAN0, cZero, cBias+amp);
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-    delay_10us(1250); //delay 12.5ms
-    LPDacWr(CHAN0, cZero, cBias-amp);
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-    delay_10us(1250); //delay 12.5ms
-  }
+//  for (cBias = cStart; cBias < cEnd; cBias+=10){
+//    LPDacWr(CHAN0, cZero, cBias+amp);
+//    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+//    delay_10us(1250); //delay 12.5ms
+//    LPDacWr(CHAN0, cZero, cBias-amp);
+//    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+//    delay_10us(1250); //delay 12.5ms
+//  }
 
   for (cBias = cStart; cBias < cEnd; cBias+=10){
-    LPDacWr(CHAN0, cZero, cBias+amp);
+    LPDacWr(CHAN0, cZero, cBias+amp);            //Squarewave peak, voltage = cBias+amp
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
     delay_10us(1250); //delay 12.5ms
-    ADCRAW = getAdcVal();
+    
+    while(!adcRdy){};                           //wait for adcRdy flag indicating that ADC conversion is complete
+    adcRdy = 0;
+    AdcVal = getAdcVal();
     szADCSamples[sampleCount]=cBias;
     sampleCount++;
     if(sampleCount>MAX_BUFFER_LENGTH) {
         printf("MEMORY OVERFLOW\n");
         sampleCount=0;
         break;
-      }
-    szADCSamples[sampleCount]=ADCRAW;
+    }
+    szADCSamples[sampleCount]=AdcVal;
     sampleCount++;
     if(sampleCount>MAX_BUFFER_LENGTH) {
         printf("MEMORY OVERFLOW\n");
         sampleCount=0;
         break;
-      }
+    }
 
-    LPDacWr(CHAN0, cZero, cBias-amp);
+    LPDacWr(CHAN0, cZero, cBias-amp);            //Squarewave trough, voltage = cBias-amp
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
     delay_10us(1250); //delay 12.5ms
-    ADCRAW = getAdcVal();
-    szADCSamples[sampleCount]=ADCRAW;
+    
+    while(!adcRdy){};
+    adcRdy = 0;
+    AdcVal = getAdcVal();
+    szADCSamples[sampleCount]=AdcVal;
     sampleCount++;
     if(sampleCount>MAX_BUFFER_LENGTH) {
         printf("MEMORY OVERFLOW\n");
@@ -240,21 +262,27 @@ void runSWV(void){
   uint8_t RTIACHOICE = getParameter(1);
   uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48); //-48 because an ascii character is passed. 
 
-  /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
+
+  
+  LPDacPwrCtrl(CHAN0,PWR_UP);
+  //LPDacWr(CHAN0, 62, 62*64);
+  LPDacCfg(CHAN0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
 
   /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
   /*power up PA,TIA,no boost, full power*/
   AfeLpTiaPwrDown(CHAN0,0);
   AfeLpTiaAdvanced(CHAN0,BANDWIDTH_NORMAL,CURRENT_NOR);
   AfeLpTiaSwitchCfg(CHAN0,SWMODE_SHORT);  /*short TIA feedback for Sensor setup*/
-  AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_NORM);  /*TIA switch to normal*/
+  AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
+  delay_10us(200);
+  
+  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to normal*/
   /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
 
   hptia_setup_parameters(RGAIN);
   adcCurrentSetup_hptia();
-  /*end cv ramp setup*/
+  /*end swv ramp setup*/
 
   /*RAMP HERE*/
   printf("SWV deposition begin\n");
