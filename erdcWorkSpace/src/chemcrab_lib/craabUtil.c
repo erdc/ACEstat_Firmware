@@ -4,6 +4,7 @@
 volatile uint8_t  ucInCnt;
 volatile uint32_t ucCOMIID0;
 volatile uint32_t iNumBytesInFifo;
+#define USE_SINC2_FOR_TEST 0
 
 uint8_t  ucComRx;
 uint8_t szInSring[UART_INBUFFER_LEN];
@@ -14,6 +15,7 @@ uint8_t* return_uart_buffer(void){
 
 uint8_t adcModeSel = 0;
 volatile uint8_t tmr2_timeout = 0;
+volatile uint8_t adcRdy = 0;
 volatile uint16_t ADCRAW = 0;
 
 /*FLAG VARIABLE CONTROL*/
@@ -244,7 +246,7 @@ int RTIA_VAL_LOOKUP(uint32_t RGAIN){
   return 0;
 }
 
-//Returns a uint16_t representing  the 4-digit UART input
+//Returns a uint16_t representing  the UART input
 uint16_t getParameter(int dec){
   
   uint16_t parameter = 0;
@@ -394,6 +396,7 @@ void AfeAdc_Int_Handler(void){
     if(sta&BITM_AFE_ADCINTSTA_ADCRDY){
       pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;   //clear ADCRDY interrupt bit
       ADCRAW = pADI_AFE->ADCDAT;
+      adcRdy = 1;
       //pADI_AFE->AFECON &= (~(BITM_AFE_AFECON_DFTEN|BITM_AFE_AFECON_ADCCONVEN|BITM_AFE_AFECON_ADCEN));  //stop conversion
     }
   }
