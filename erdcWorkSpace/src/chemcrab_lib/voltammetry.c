@@ -94,6 +94,10 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
   uint16_t* szADCSamples = return_adc_buffer();
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   
+  /*Write low to dac for 5 seconds deposit electrons*/
+  LPDacWr(CHAN0, cZero, cStart);
+  delay_10us(500000);
+  
   for (cBias = cStart; cBias < cVertex; ++cBias){
     LPDacWr(CHAN0, cZero, cBias);         // Set VBIAS/VZERO output voltages
     delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
