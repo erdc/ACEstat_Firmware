@@ -40,6 +40,7 @@ extern volatile uint8_t adcRdy;
 
 //KEITH'S ORIGINAL UTIL FUNCTIONS
 void adcCurrentSetup_hptia(void);
+void adcVoltageSetup_hptia(int mode);
 float calcCurrent_hptia(uint16_t DAT, int RGAIN);
 void adcCurrentSetup_lptia(void);
 float calcADCVolt(uint16_t DAT);
@@ -56,6 +57,7 @@ void hptia_setup(void);
 
 uint16_t RTIA_LOOKUP(uint8_t choice);
 void hptia_setup_parameters(uint32_t RTIA);
+void lptia_setup_parameters(uint32_t RTIA);
 int RTIA_VAL_LOOKUP(uint32_t RGAIN);
 //Retrieves voltammetry parameters from UART input
 uint16_t getParameter(int dec);
@@ -66,7 +68,9 @@ void GptWaitForFlag(void);
 uint16_t sweeprateLookup(uint16_t mvRate);
 uint16_t getAdcVal(void);
 void setAdcMode(uint8_t mode);
+int burstSample(int numSamples, int mode);
 
+//Interrupt handlers
 void AfeAdc_Int_Handler(void);
 void GP_Tmr2_Int_Handler(void);
 
