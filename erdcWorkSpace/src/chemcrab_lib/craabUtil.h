@@ -68,7 +68,7 @@ void GptWaitForFlag(void);
 uint16_t sweeprateLookup(uint16_t mvRate);
 uint16_t getAdcVal(void);
 void setAdcMode(uint8_t mode);
-int burstSample(int numSamples, int mode);
+int burstSample(int mode);
 
 //Interrupt handlers
 void AfeAdc_Int_Handler(void);
