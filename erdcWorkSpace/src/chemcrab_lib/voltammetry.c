@@ -4,38 +4,38 @@
 void runCV(void){
   setAdcMode(0);
 
-    //printf("Zero voltage between 0000mV - 9999mV : ");
-    printf("[:ZVI]");
-    uint16_t cvZeroVolt = getParameter(4);
-
-    //printf("Starting voltage between 0000mV - 9999mV : ");
-    printf("[:SVI]");
-    uint16_t cvStartVolt = getParameter(4);
-    
-    //printf("Vertex voltage between 0000mV - 9999mV : ");
-    printf("[:VVI]");
-    uint16_t cvVertexVolt = getParameter(4);
-    
-    //printf("Ending voltage between 0000mV - 9999mV : ");
-    printf("[:EVI]");
-    uint16_t cvEndVolt = getParameter(4);
-    
-    //printf("Voltage sweep rate between 000mV/s - 999mV/s : ");
-    printf("[:SRI]");
-    uint16_t sweepRate = getParameter(3);
-    
-    //printf("Equilibrium Time 0000ms - 9999ms");
-    printf("[:TEI]");
-    uint16_t tEquilibrium = getParameter(4);
-    
-    //printf("Number of samples to take in a burst {2,4,8,16,32,64,128,256,512}");
-    printf("[:BSI]");
-    uint16_t burstSamples = getParameter(3);
-
-    //printf("Current Limit:\n");
-    //printf("0: 1.125mA\n1: 225uA\n2: 45uA\n3: 22.5uA\n4: 11.25uA\n5: 5.625uA\n6: 2.8uA\n7: 1.4uA\n");
-    printf("[:CLI]");
-    uint8_t RTIACHOICE = getParameter(1);
+  //printf("Zero voltage between 0000mV - 9999mV : ");
+  printf("[:ZVI]");
+  uint16_t cvZeroVolt = getParameter(4);
+  
+  //printf("Starting voltage between 0000mV - 9999mV : ");
+  printf("[:SVI]");
+  uint16_t cvStartVolt = getParameter(4);
+  
+  //printf("Vertex voltage between 0000mV - 9999mV : ");
+  printf("[:VVI]");
+  uint16_t cvVertexVolt = getParameter(4);
+  
+  //printf("Ending voltage between 0000mV - 9999mV : ");
+  printf("[:EVI]");
+  uint16_t cvEndVolt = getParameter(4);
+  
+  //printf("Voltage sweep rate between 000mV/s - 999mV/s : ");
+  printf("[:SRI]");
+  uint16_t sweepRate = getParameter(3);
+  
+  //printf("Equilibrium Time 0000ms - 9999ms");
+  printf("[:TEI]");
+  uint16_t tEquilibrium = getParameter(4);
+  
+  //printf("Number of samples to take in a burst {2,4,8,16,32,64,128,256,512}");
+  //printf("[:BSI]");
+  //uint16_t burstSamples = getParameter(3);
+  
+  //printf("Current Limit:\n");
+  //printf("0: 1.125mA\n1: 225uA\n2: 45uA\n3: 22.5uA\n4: 11.25uA\n5: 5.625uA\n6: 2.8uA\n7: 1.4uA\n");
+  printf("[:CLI]");
+  uint8_t RTIACHOICE = getParameter(1);
   
   //uint8_t* uBuffer = return_uart_buffer();
   //uint8_t RTIACHOICE = uBuffer[0];
@@ -76,7 +76,7 @@ void runCV(void){
   
   /*RAMP HERE*/
   //printf("CV sweep begin\n");
-  cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN, sweepRate, burstSamples);
+  cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN, sweepRate);
   //printf("CV sweep end\n");
   /*END RAMP*/
 
@@ -86,7 +86,7 @@ void runCV(void){
   //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
-void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate, uint16_t burstSamples){
+void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate){
   
   uint16_t SETTLING_DELAY = 5;
   uint16_t cBias, cZero;
@@ -112,9 +112,9 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(burstSamples, 1);
+        szADCSamples[sampleCount]=burstSample(1);
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(burstSamples, 0);
+        szADCSamples[sampleCount]=burstSample(0);
         sampleCount++;
       }
     }
@@ -124,9 +124,9 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(burstSamples, 1);
+        szADCSamples[sampleCount]=burstSample(1);
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(burstSamples, 0);
+        szADCSamples[sampleCount]=burstSample(0);
         sampleCount++;
       }
     }
@@ -139,9 +139,9 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(burstSamples, 1);
+        szADCSamples[sampleCount]=burstSample(1);
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(burstSamples, 0);
+        szADCSamples[sampleCount]=burstSample(0);
         sampleCount++;
       }
     }
@@ -152,9 +152,9 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(burstSamples, 1);
+        szADCSamples[sampleCount]=burstSample(1);
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(burstSamples, 0);
+        szADCSamples[sampleCount]=burstSample(0);
         sampleCount++;
       }
     }
@@ -176,8 +176,8 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
   uint16_t* szADCSamples = return_adc_buffer();
   float tc, vDiff;
   for(uint32_t i = 0; i < sampleCount; i+=2){
-    vDiff = -1*(szADCSamples[i]*0.54+200-zeroVoltage);
-    //vDiff = szADCSamples[i];
+    //vDiff = -1*(szADCSamples[i]*0.54+200-zeroVoltage);
+    vDiff = szADCSamples[i];
     tc = calcCurrent_hptia(szADCSamples[i+1], RTIA);
     //printf("Volt:%f,Current:%f\n", vDiff,tc);
     printf("%f,%f"EOL, vDiff,tc);
@@ -187,16 +187,16 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
 /****************END CYCLIC VOLTAMMETRY**********************/
 
 /****************SQUARE WAVE VOLTAMMETRY***************************/
-void sqv_dep_time(uint16_t start, uint16_t time){
-	uint16_t cBias, cZero;
-	uint16_t cStart = (start-200)/0.54-10;
-
-	cZero=32;
-	cBias=cStart;
-
-	LPDacWr(CHAN0, cZero, cBias);
-	delay_10us(time*100*1000);
-}
+//void sqv_dep_time(uint16_t start, uint16_t time){
+//	uint16_t cBias, cZero;
+//	uint16_t cStart = (start-200)/0.54-10;
+//
+//	cZero=32;
+//	cBias=cStart;
+//
+//	LPDacWr(CHAN0, cZero, cBias);
+//	delay_10us(time*100*1000);
+//}
 
 void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, int dep, uint16_t freq){
   uint16_t SETTLING_DELAY = 5;
@@ -227,75 +227,128 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
 //    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
 //    delay_10us(1250); //delay 12.5ms
 //  }
-
-  for (cBias = cStart; cBias < cEnd; cBias+=10){
-    
-    //Squarewave high
-    LPDacWr(CHAN0, cZero, cBias+0.5*amp);        //Squarewave peak, voltage = cBias+0.5amp
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-    delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
-    
-    while(!adcRdy){};                           //wait for adcRdy flag indicating that ADC conversion is complete
-    adcRdy = 0;                                 //reset adcRdy flag
-    AdcVal = getAdcVal();                       //read the value of the global ADCRAW value    
-    szADCSamples[sampleCount]=cBias;            //store the 12-bit DAC output value
-    sampleCount++;                              
-    
-    if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflow
+  
+  //Ramp function goes from negative to positive voltage
+  if(startV < endV){
+    for (cBias = cStart; cBias < cEnd; cBias+=10){
+      //Squarewave high
+      LPDacWr(CHAN0, cZero, cBias+0.5*amp);        //Squarewave peak, voltage = cBias+0.5amp
+      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
+      
+      //Measure the voltage and current at the squarewave HIGH side
+      szADCSamples[sampleCount]=burstSample(1);
+      sampleCount++;
+      szADCSamples[sampleCount]=burstSample(0);
+      sampleCount++;           
+      
+      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflow
         printf("MEMORY OVERFLOW\n");            
         sampleCount=0;
         break;
-    }
-    szADCSamples[sampleCount]=AdcVal;           //store squarewave-high current measurement
-    sampleCount++;
-    
-    if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflows
+      }
+      
+      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflows
         printf("MEMORY OVERFLOW\n");
         sampleCount=0;
         break;
-    }
-
-    //Squarewave low
-    LPDacWr(CHAN0, cZero, cBias-0.5*amp);        //Squarewave-low, voltage = cBias-0.5amp
-    delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-    delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
-    
-    while(!adcRdy){};
-    adcRdy = 0;
-    AdcVal = getAdcVal();    
-    szADCSamples[sampleCount]=AdcVal;
-    sampleCount++;
-    if(sampleCount>MAX_BUFFER_LENGTH) {
+      }
+      
+      //Squarewave low
+      LPDacWr(CHAN0, cZero, cBias-0.5*amp);        //Squarewave-low, voltage = cBias-0.5amp
+      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
+      
+      //Measure the voltage and current at the squarewave LOW side
+      szADCSamples[sampleCount]=burstSample(1);
+      sampleCount++;
+      szADCSamples[sampleCount]=burstSample(0);
+      sampleCount++;     
+      
+      if(sampleCount>MAX_BUFFER_LENGTH) {
         printf("MEMORY OVERFLOW\n");
         sampleCount=0;
         break;
+      }
     }
+  }
+  
+  //Ramp function goes from positive to negative voltage
+  else{
+    for (cBias = cStart; cBias > cEnd; cBias = cBias - 10){
+      //Squarewave high
+      LPDacWr(CHAN0, cZero, cBias+0.5*amp);        //Squarewave peak, voltage = cBias+0.5amp
+      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
+      
+      //Measure the voltage and current at the squarewave HIGH side
+      szADCSamples[sampleCount]=burstSample(1);
+      sampleCount++;
+      szADCSamples[sampleCount]=burstSample(0);
+      sampleCount++;                       
+      
+      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflow
+        printf("MEMORY OVERFLOW\n");            
+        sampleCount=0;
+        break;
+      }
+      
+      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflows
+        printf("MEMORY OVERFLOW\n");
+        sampleCount=0;
+        break;
+      }
+      
+      //Squarewave low
+      LPDacWr(CHAN0, cZero, cBias-0.5*amp);        //Squarewave-low, voltage = cBias-0.5amp
+      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
+      
+      //Measure the voltage and current at the squarewave LOW side
+      szADCSamples[sampleCount]=burstSample(1);
+      sampleCount++;
+      szADCSamples[sampleCount]=burstSample(0);
+      sampleCount++;     
+      
+      if(sampleCount>MAX_BUFFER_LENGTH) {
+        printf("MEMORY OVERFLOW\n");
+        sampleCount=0;
+        break;
+      }
+    }  
   }
   printSWVResults(cZero, cStart, cEnd, amplitude, sampleCount, RTIA, dep, freq);
 }
 
 void runSWV(void){
   setAdcMode(0);
-  printf("Zero voltage (0000mV - 9999mV) : ");
+  //printf("Zero voltage (0000mV - 9999mV) : ");
+  printf("[:ZVI]");
   uint16_t swvZeroVolt = getParameter(4);
   
-  printf("Starting voltage (0000mV - 9999mV) : ");
+  printf("[:SVI]");
+  //printf("Starting voltage (0000mV - 9999mV) : ");
   uint16_t swvStartVolt = getParameter(4);
   
-  printf("Ending voltage (0000mV - 9999mV) : ");
+  //printf("Ending voltage (0000mV - 9999mV) : ");
+  printf("[:EVI]");
   uint16_t swvEndVolt = getParameter(4);
   
-  printf("Squarewave Pk-Pk amplitude (000mV - 999mV) : ");
+  printf("[:AMPI]");
+  //printf("Squarewave Pk-Pk amplitude (000mV - 999mV) : ");
   uint16_t swvAmp = getParameter(3);
   
-  printf("Squarewave frequency (0000Hz - 9999Hz) : ");
+  printf("[:FREQI]");
+  //printf("Squarewave frequency (0000Hz - 9999Hz) : ");
   uint16_t swvFreq = getParameter(4);
   
-  printf("Deposition time between 000s and 999s : ");
-  uint16_t depTime = getParameter(3);
+  printf("[:DTI]");
+  //printf("Deposition time between 0000s and 9999s : ");
+  uint16_t tEquilibrium = getParameter(4);
   
-  printf("Absolute Current Limit:\n");
-  printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
+  //printf("Current Limit:\n");
+  //printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
+  printf("[:CLI]");
   uint8_t RTIACHOICE = getParameter(1);
   uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48); //-48 because an ascii character is passed. 
   
@@ -321,11 +374,12 @@ void runSWV(void){
   /*end swv ramp setup*/
 
   /*RAMP HERE*/
-  printf("SWV deposition begin\n");
-  sqv_dep_time(swvStartVolt, depTime);
-  printf("SWV deposition end, sweep begin\n");
-  sqv_ramp_parameters(swvZeroVolt,swvStartVolt,swvEndVolt,RGAIN, swvAmp, depTime, swvFreq);
-  printf("SWV sweep end\n");
+  //sqv_dep_time(swvStartVolt, depTime);
+  //Delay for equilibrium time prior to sweep beginning
+  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to normal*/
+  LPDacWr(CHAN0, (swvZeroVolt-200)/34.38, (swvStartVolt-200)/0.54-10);    //Write the DAC to its starting voltage during the quilibrium period
+  delay_10us(100*tEquilibrium);
+  sqv_ramp_parameters(swvZeroVolt,swvStartVolt,swvEndVolt,RGAIN, swvAmp, tEquilibrium, swvFreq);
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
@@ -334,18 +388,18 @@ void runSWV(void){
 
 void printSWVResults(float cZero, float cStart, float cEnd, uint16_t amp, int sampleCount, int RTIA, int dep, int freq){
   float zeroVoltage = 200+(cZero*34.38);
-  printf("Range is %f to %f\n", cStart*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
-  printf("Rgain value is %i\n", RTIA);
-  printf("Amplitude is %i\n", amp);
-  printf("Frequency is %i\n", freq);
-  printf("Deposition time is %i\n", dep);
-  uint16_t* szADCSamples = return_adc_buffer();
+  //printf("Range is %f to %f\n", cStart*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
+  //printf("Rgain value is %i\n", RTIA);
+  //printf("Amplitude is %i\n", amp);
+  //printf("Frequency is %i\n", freq);
+  //printf("Deposition time is %i\n", dep);
+  //uint16_t* szADCSamples = return_adc_buffer();
   float vDiff, tc;
-
-  for(uint32_t i = 0; i < sampleCount; i+=3){
-    vDiff = szADCSamples[i]*0.54+200-zeroVoltage;
+  for(uint32_t i = 0; i < sampleCount; i+=4){
+    //vDiff = szADCSamples[i]*0.54+200-zeroVoltage;
+    vDiff = (szADCSamples[i] + szADCSamples[i+2])/2;
     //tc = calcCurrent_hptia(szADCSamples[i+1]-szADCSamples[i+2], RTIA);
-    tc = calcCurrent_hptia(szADCSamples[i+1],RTIA) - calcCurrent_hptia(szADCSamples[i+2],RTIA);
+    tc = calcCurrent_hptia(szADCSamples[i+1],RTIA) - calcCurrent_hptia(szADCSamples[i+3],RTIA);
     printf("%f,%f\n", vDiff, tc);
     //printf("%f,%f,%f\n", vDiff,calcCurrent_hptia(szADCSamples[i+1],RTIA),calcCurrent_hptia(szADCSamples[i+2],RTIA));
   }
