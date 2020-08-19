@@ -427,8 +427,9 @@ void setAdcMode(uint8_t mode){
   adcModeSel = mode;
 }
 
-int burstSample(int numSamples, int mode){
+int burstSample(int mode){
   int sum = 0;
+  int numSamples = 32;
   if(mode == 0){        //ADC is sampling from the HPTIA to measure current
     //AfeAdcChan(MUXSELP_HPTIA_P,MUXSELN_HPTIA_N);  //ADC mux configuration to measure WE current
     adcCurrentSetup_hptia();
