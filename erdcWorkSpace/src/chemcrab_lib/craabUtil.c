@@ -116,7 +116,7 @@ void adcVoltageSetup_hptia(int mode){
   if(mode == 0){
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);
-    AfeAdcChan(MUXSELP_VRE0,MUXSELN_VBIAS0);
+    AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
     AfeAdcChopEn(1);
     AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
     NVIC_EnableIRQ(AFE_ADC_IRQn);
@@ -129,7 +129,7 @@ void adcVoltageSetup_hptia(int mode){
   else{
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);
-    AfeAdcChan(MUXSELP_VSE0,MUXSELN_VBIAS0);
+    AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
     AfeAdcChopEn(1);
     AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
     NVIC_EnableIRQ(AFE_ADC_IRQn);
@@ -332,7 +332,19 @@ uint16_t getParameter(int dec){
           return parameter;
       }
       if(dec==5){
-        //not in use
+          char v[5];
+          uint8_t *uBuffer;
+          uBuffer=return_uart_buffer();
+          for(int i=0 ; i<dec ; ++i){
+            v[i] = uBuffer[i];
+          }
+          parameter+=(v[4]-48);
+          parameter+=(v[3]-48)*10;
+          parameter+=(v[2]-48)*100;
+          parameter+=(v[1]-48)*1000;
+          parameter+=(v[0]-48)*10000;
+          flag_reset();
+          return parameter;
       }
       if(dec==4){
           char v[4];
@@ -348,7 +360,6 @@ uint16_t getParameter(int dec){
           flag_reset();
           return parameter;
       }
-      
       if(dec==3){
           char v[3];
           uint8_t *uBuffer;
@@ -449,6 +460,14 @@ int burstSample(int mode){
     sum = sum + getAdcVal();
   }
   return sum/numSamples;
+}
+
+float adc_to_volts(float adcVal){
+  float VREF = 1.82;
+  float ADCVBIAS_CAP = 1.11;
+  float VIN = (VREF*((adcVal-32768)/(32768)))+ADCVBIAS_CAP;
+  float shift = 0.015;
+  return (VIN + shift);
 }
 
 void AfeAdc_Int_Handler(void){
