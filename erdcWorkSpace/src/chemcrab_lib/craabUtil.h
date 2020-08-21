@@ -69,6 +69,7 @@ uint16_t sweeprateLookup(uint16_t mvRate);
 uint16_t getAdcVal(void);
 void setAdcMode(uint8_t mode);
 int burstSample(int mode);
+float adc_to_volts(float adcVal);
 
 //Interrupt handlers
 void AfeAdc_Int_Handler(void);
