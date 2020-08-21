@@ -68,22 +68,15 @@ void runCV(void){
   
   AfeLpTiaSwitchCfg(1,SWMODE_NORM);  /*TIA channel 1 switch to normal mode*/
   AfeLpTiaSwitchCfg(0,SWMODE_RAMP);  /*TIA channel 0 switch to ramp mode*/
-  
-  //Delay for equilibrium time prior to sweep beginning
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to normal*/
-  LPDacWr(CHAN0, (cvZeroVolt-200)/34.38, (cvStartVolt-200)/0.54-10);    //Write the DAC to its starting voltage during the quilibrium period
-  delay_10us(100*tEquilibrium);
-  
+
   /*RAMP HERE*/
-  //printf("CV sweep begin\n");
+  equilibrium_delay(cvStartVolt, cvZeroVolt, tEquilibrium);
   cv_ramp_parameters(cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN, sweepRate);
-  //printf("CV sweep end\n");
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
   printf("[END:CV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
-  //DioTglPin(pADI_GPIO2,PIN4);           // Flash LED
 }
 
 void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate){
@@ -177,7 +170,7 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
   float tc, vDiff;
   for(uint32_t i = 0; i < sampleCount; i+=2){
     //vDiff = -1*(szADCSamples[i]*0.54+200-zeroVoltage);
-    vDiff = szADCSamples[i];
+    vDiff = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
     tc = calcCurrent_hptia(szADCSamples[i+1], RTIA);
     //printf("Volt:%f,Current:%f\n", vDiff,tc);
     printf("%f,%f"EOL, vDiff,tc);
@@ -187,21 +180,15 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
 /****************END CYCLIC VOLTAMMETRY**********************/
 
 /****************SQUARE WAVE VOLTAMMETRY***************************/
-//void sqv_dep_time(uint16_t start, uint16_t time){
-//	uint16_t cBias, cZero;
-//	uint16_t cStart = (start-200)/0.54-10;
-//
-//	cZero=32;
-//	cBias=cStart;
-//
-//	LPDacWr(CHAN0, cZero, cBias);
-//	delay_10us(time*100*1000);
-//}
+void equilibrium_delay(uint16_t start, uint16_t zero, uint16_t time){
+  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to normal*/
+  LPDacWr(CHAN0, (zero-200)/34.38, (start-200)/0.54-10);    //Write the DAC to its starting voltage during the quilibrium period
+  delay_10us(100*time);
+}
 
 void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, int dep, uint16_t freq){
   uint16_t SETTLING_DELAY = 5;
   uint16_t cBias, cZero;
-  uint16_t AdcVal;
   
   uint16_t cStart = (startV-200)/0.54-10;
   uint16_t cEnd =(endV-200)/0.54-10;
@@ -232,7 +219,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
   if(startV < endV){
     for (cBias = cStart; cBias < cEnd; cBias+=10){
       //Squarewave high
-      LPDacWr(CHAN0, cZero, cBias+0.5*amp);        //Squarewave peak, voltage = cBias+0.5amp
+      LPDacWr(CHAN0, cZero, cBias+amp);        //Squarewave peak, voltage = cBias+0.5amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
@@ -255,7 +242,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
       }
       
       //Squarewave low
-      LPDacWr(CHAN0, cZero, cBias-0.5*amp);        //Squarewave-low, voltage = cBias-0.5amp
+      LPDacWr(CHAN0, cZero, cBias-amp);        //Squarewave-low, voltage = cBias-0.5amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
@@ -277,7 +264,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
   else{
     for (cBias = cStart; cBias > cEnd; cBias = cBias - 10){
       //Squarewave high
-      LPDacWr(CHAN0, cZero, cBias+0.5*amp);        //Squarewave peak, voltage = cBias+0.5amp
+      LPDacWr(CHAN0, cZero, cBias+amp);        //Squarewave peak, voltage = cBias+0.5amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
@@ -300,7 +287,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
       }
       
       //Squarewave low
-      LPDacWr(CHAN0, cZero, cBias-0.5*amp);        //Squarewave-low, voltage = cBias-0.5amp
+      LPDacWr(CHAN0, cZero, cBias-amp);        //Squarewave-low, voltage = cBias-0.5amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
@@ -317,7 +304,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
       }
     }  
   }
-  printSWVResults(cZero, cStart, cEnd, amplitude, sampleCount, RTIA, dep, freq);
+  printSWVResults(cZero, cStart, cEnd, sampleCount, RTIA);
 }
 
 void runSWV(void){
@@ -339,10 +326,10 @@ void runSWV(void){
   uint16_t swvAmp = getParameter(3);
   
   printf("[:FREQI]");
-  //printf("Squarewave frequency (0000Hz - 9999Hz) : ");
-  uint16_t swvFreq = getParameter(4);
+  //printf("Squarewave frequency (00000Hz - 99999Hz) : ");
+  uint16_t swvFreq = getParameter(5);
   
-  printf("[:DTI]");
+  printf("[:TEI]");
   //printf("Deposition time between 0000s and 9999s : ");
   uint16_t tEquilibrium = getParameter(4);
   
@@ -366,7 +353,7 @@ void runSWV(void){
   AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
   delay_10us(200);
   
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to normal*/
+  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to ramp mode*/
   /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
 
   hptia_setup_parameters(RGAIN);
@@ -374,11 +361,7 @@ void runSWV(void){
   /*end swv ramp setup*/
 
   /*RAMP HERE*/
-  //sqv_dep_time(swvStartVolt, depTime);
-  //Delay for equilibrium time prior to sweep beginning
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);  /*TIA switch to normal*/
-  LPDacWr(CHAN0, (swvZeroVolt-200)/34.38, (swvStartVolt-200)/0.54-10);    //Write the DAC to its starting voltage during the quilibrium period
-  delay_10us(100*tEquilibrium);
+  equilibrium_delay(swvStartVolt, swvZeroVolt , tEquilibrium);
   sqv_ramp_parameters(swvZeroVolt,swvStartVolt,swvEndVolt,RGAIN, swvAmp, tEquilibrium, swvFreq);
   /*END RAMP*/
 
@@ -386,22 +369,17 @@ void runSWV(void){
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
-void printSWVResults(float cZero, float cStart, float cEnd, uint16_t amp, int sampleCount, int RTIA, int dep, int freq){
+void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA){
   float zeroVoltage = 200+(cZero*34.38);
-  //printf("Range is %f to %f\n", cStart*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
-  //printf("Rgain value is %i\n", RTIA);
-  //printf("Amplitude is %i\n", amp);
-  //printf("Frequency is %i\n", freq);
-  //printf("Deposition time is %i\n", dep);
-  //uint16_t* szADCSamples = return_adc_buffer();
+  uint16_t* szADCSamples = return_adc_buffer();
   float vDiff, tc;
+  printf("[RANGE:%f,%f]", cStart*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
+  printf("[RGAIN:%i][RESULTS:", RTIA);
   for(uint32_t i = 0; i < sampleCount; i+=4){
-    //vDiff = szADCSamples[i]*0.54+200-zeroVoltage;
-    vDiff = (szADCSamples[i] + szADCSamples[i+2])/2;
-    //tc = calcCurrent_hptia(szADCSamples[i+1]-szADCSamples[i+2], RTIA);
-    tc = calcCurrent_hptia(szADCSamples[i+1],RTIA) - calcCurrent_hptia(szADCSamples[i+3],RTIA);
+    vDiff = (zeroVoltage/1000) - adc_to_volts((szADCSamples[i] + szADCSamples[i+2])/2);
+    tc = 0-(calcCurrent_hptia(szADCSamples[i+1],RTIA) - calcCurrent_hptia(szADCSamples[i+3],RTIA));
     printf("%f,%f\n", vDiff, tc);
-    //printf("%f,%f,%f\n", vDiff,calcCurrent_hptia(szADCSamples[i+1],RTIA),calcCurrent_hptia(szADCSamples[i+2],RTIA));
   }
+  printf("]");
 }
 /*************END SQUARE WAVE VOLTAMMETRY**************************/
