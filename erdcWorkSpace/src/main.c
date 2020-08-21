@@ -69,9 +69,9 @@ void runTest(char mode){
   
   if(mode=='2'){
         while(testComplete==false){
-            printf("Running SWV...\n");
+            printf("[START:SWV]");
             runSWV();  
-            printf("...SWV concluded\n\n");
+            printf("[END:CV]");
             
             flag_reset();
             testComplete = true;
