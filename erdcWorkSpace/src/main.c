@@ -71,7 +71,7 @@ void runTest(char mode){
         while(testComplete==false){
             printf("[START:SWV]");
             runSWV();  
-            printf("[END:CV]");
+            printf("[END:SWV]");
             
             flag_reset();
             testComplete = true;

@@ -366,6 +366,7 @@ void runSWV(void){
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
+  printf("[END:SWV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
