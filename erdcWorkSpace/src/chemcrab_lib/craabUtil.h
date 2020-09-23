@@ -39,8 +39,8 @@ extern volatile uint8_t dftRdy;
 extern volatile uint8_t adcRdy;
 
 //KEITH'S ORIGINAL UTIL FUNCTIONS
-void adcCurrentSetup_hptia(void);
-void adcVoltageSetup_hptia(int mode);
+//void adcCurrentSetup_hptia(void);
+void adcVoltageSetup_lptia();
 float calcCurrent_hptia(uint16_t DAT, int RGAIN);
 void adcCurrentSetup_lptia(void);
 float calcADCVolt(uint16_t DAT);
@@ -56,6 +56,7 @@ void sensor_setup_cv(void);
 void hptia_setup(void);
 
 uint16_t RTIA_LOOKUP(uint8_t choice);
+void AFE_SETUP_LPTIA_LPDAC(void);
 void hptia_setup_parameters(uint32_t RTIA);
 void lptia_setup_parameters(uint32_t RTIA);
 int RTIA_VAL_LOOKUP(uint32_t RGAIN);
@@ -70,6 +71,7 @@ uint16_t getAdcVal(void);
 void setAdcMode(uint8_t mode);
 int burstSample(int mode);
 float adc_to_volts(float adcVal);
+float adc_to_current(float adcVal, int RTIA);
 
 //Interrupt handlers
 void AfeAdc_Int_Handler(void);
