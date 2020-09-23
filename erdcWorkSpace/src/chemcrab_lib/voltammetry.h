@@ -25,7 +25,7 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
 //Square-wave Voltammetry Functions
 void runSWV(void);
 void equilibrium_delay(uint16_t start, uint16_t zero , uint16_t time);
-void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, int dep, uint16_t freq);
+void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
 void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA);
 
 #endif
