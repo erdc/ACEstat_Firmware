@@ -98,10 +98,10 @@ void turn_off_afe_power_things_down(void){
   AfePwrCfg(AFE_HIBERNATE); //put analog die to sleep
 }
 
-void adcCurrentSetup_hptia(void){
-  AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-  AfeAdcPgaCfg(GNPGA_4,0); //for current use GNPGA_4
-  AfeAdcChan(MUXSELP_HPTIA_P,MUXSELN_HPTIA_N);
+void adcCurrentSetup_lptia(void){
+  //AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
+  AfeAdcPgaCfg(GNPGA_1_5,0); //for current use GNPGA_4
+  AfeAdcChan(MUXSELP_LPTIA0_P,MUXSELN_LPTIA0_N);
   AfeAdcChopEn(1);
   AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
   NVIC_EnableIRQ(AFE_ADC_IRQn);
@@ -112,8 +112,7 @@ void adcCurrentSetup_hptia(void){
   delay_10us(5);
 }
 
-void adcVoltageSetup_hptia(int mode){
-  if(mode == 0){
+void adcVoltageSetup_lptia(){
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);
     AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
@@ -125,20 +124,6 @@ void adcVoltageSetup_hptia(int mode){
     AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_NOBYP,ADCSAMPLERATE_800K);
     pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
     delay_10us(5);
-  }
-  else{
-    AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-    AfeAdcPgaCfg(GNPGA_1,0);
-    AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
-    AfeAdcChopEn(1);
-    AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
-    NVIC_EnableIRQ(AFE_ADC_IRQn);
-    AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
-    
-    AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_NOBYP,ADCSAMPLERATE_800K);
-    pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
-    delay_10us(5);
-  }
 }
 
 //return current in uA;
@@ -149,17 +134,17 @@ float calcCurrent_hptia(uint16_t DAT, int RGAIN){
   return -1*((vv/(RGAIN-(RLOAD-100)) *1000)+1)/2;
 }
 
-void adcCurrentSetup_lptia(void){
-  AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
-  AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-  AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
-  AfeAdcChopEn(1);
-
-  AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
-  AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
-  pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
-  delay_10us(5);  //50uS
-}
+//void adcCurrentSetup_lptia(void){
+//  AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
+//  AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
+//  AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
+//  AfeAdcChopEn(1);
+//
+//  AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
+//  AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
+//  pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
+//  delay_10us(5);  //50uS
+//}
 
 void powerDownADC(void){
   /*power down ADC*/
@@ -225,22 +210,50 @@ void hptia_setup(void){
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
 }
 
+//THIS IS A TEMPORARY FIX TO ADDRESS ISSUES WE'VE BEEN HAVING WITH THE HSTIA, SHOULD BE REPLACED WITH A MORE MODULAR SETUP FUNCTION
+void AFE_SETUP_LPTIA_LPDAC(void){
+  pADI_ALLON->PWRMOD=0x8009;
+  pADI_AFE->AFECON=0x90000;
+  pADI_AFE->PMBW=0x4200C;
+  pADI_AFE->ADCFILTERCON=0x2A11;
+  pADI_AFE->ADCINTIEN=0x0;
+  pADI_AFE->DFTCON=0x0;
+  pADI_AFE->ADCCON=0x10221;
+  pADI_AFE->CALDATLOCK=0xDE87A5A0;
+  pADI_AFE->LPREFBUFCON=0x0;
+  pADI_AFE->LPTIASW1=0x0;
+  pADI_AFE->LPTIASW0=0x34;
+  pADI_AFE->LPTIACON0=0x4038;
+  pADI_AFE->LPDACSW0=0x34;
+  pADI_AFE->LPDACCON0=0x1;
+  pADI_AFE->LPDACCON1=0x2;
+  pADI_AFE->HSDACCON=0x1FE;
+  pADI_AFE->WGCON=0x4;
+  pADI_AFE->WGFCW=0x45D1;
+  pADI_AFE->WGAMPLITUDE=0x516;
+  pADI_AFE->HSRTIACON=0x3E0;
+  pADI_AFE->DE1RESCON=0xFD;
+  pADI_AFE->DE0RESCON=0xFD;
+  pADI_AFE->TSWFULLCON=0x0;
+  delay_10us(1000);
+}
+
 void hptia_setup_parameters(uint32_t RTIA){
   pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
   AfeHpTiaSeCfg(RTIA,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
 
   LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
   LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
-  AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
+  //AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
+  //AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
 
   AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
   AfeHpTiaPwrUp(true);
 
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
+  //AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
   LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
 
-  AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
+  //AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
 }
 
 void lptia_setup_parameters(uint32_t RTIA){
@@ -441,17 +454,12 @@ void setAdcMode(uint8_t mode){
 int burstSample(int mode){
   int sum = 0;
   int numSamples = 32;
-  if(mode == 0){        //ADC is sampling from the HPTIA to measure current
-    //AfeAdcChan(MUXSELP_HPTIA_P,MUXSELN_HPTIA_N);  //ADC mux configuration to measure WE current
-    adcCurrentSetup_hptia();
+  if(mode == 0){        //ADC is sampling from the LPTIA to measure current
+    adcCurrentSetup_lptia();
+
   }
-  if(mode == 1){         //ADC is sampling from VBIAS and VZERO to measure sensor potential
-    //AfeAdcChan(MUXSELP_VRE0,MUXSELN_VBIAS0);  
-    adcVoltageSetup_hptia(0);
-  }
-  if(mode == 2){         //ADC is sampling from VBIAS and VZERO to measure sensor potential
-    //AfeAdcChan(MUXSELP_VRE0,MUXSELN_VBIAS0);  
-    adcVoltageSetup_hptia(1);
+  if(mode == 1){         //ADC is sampling from VREO to Reference capacitor to measure sensor potential
+    adcVoltageSetup_lptia();
   }
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   for(int i = 0 ; i<numSamples ; ++i){
@@ -462,12 +470,21 @@ int burstSample(int mode){
   return sum/numSamples;
 }
 
+//converts ADC value to volts for data outputting
 float adc_to_volts(float adcVal){
   float VREF = 1.82;
   float ADCVBIAS_CAP = 1.11;
   float VIN = (VREF*((adcVal-32768)/(32768)))+ADCVBIAS_CAP;
-  float shift = 0.015;
+  float shift = 0.030;
   return (VIN + shift);
+}
+
+//converts ADC value from LPTIA to microamps(uA) for data outputting
+float adc_to_current(float adcVal, int RTIA){
+  float kFactor = 1.835/1.82;
+  float PGA_GAIN = 1.5;
+  float fVolt = ((adcVal-32768)/PGA_GAIN)*V_ADC_REF_mV/32768*kFactor;
+  return ((10*fVolt/RTIA*1000)-3.5)*0.8333;
 }
 
 void AfeAdc_Int_Handler(void){
