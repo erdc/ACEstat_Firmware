@@ -204,91 +204,52 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
   //Ramp function goes from negative to positive voltage
   if(startV < endV){
     for (cBias = cStart; cBias < cEnd; cBias = cBias + inc){
-      //Squarewave high
-      LPDacWr(CHAN0, cZero, cBias+amp);        //Squarewave peak, voltage = cBias+0.5amp
-      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
-      
-      //Measure the voltage and current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(1);
-      sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0);
-      sampleCount++;           
-      
-      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflow
-        printf("MEMORY OVERFLOW\n");            
-        sampleCount=0;
-        break;
-      }
-      
-      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflows
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
       
       //Squarewave low
-      LPDacWr(CHAN0, cZero, cBias-amp);        //Squarewave-low, voltage = cBias-0.5amp
+      LPDacWr(CHAN0, cZero, cBias);
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
-      //Measure the voltage and current at the squarewave LOW side
+      //Measure the starting voltage and current
       szADCSamples[sampleCount]=burstSample(1);
       sampleCount++;
       szADCSamples[sampleCount]=burstSample(0);
-      sampleCount++;     
+      sampleCount++;
       
-      if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
+      //Squarewave high
+      LPDacWr(CHAN0, cZero, cBias+2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
+      
+      //Measure the current at the squarewave HIGH side
+      szADCSamples[sampleCount]=burstSample(0);
+      sampleCount++;     
     }
   }
-  
   //Ramp function goes from positive to negative voltage
   else{
     for (cBias = cStart; cBias > cEnd; cBias = cBias - inc){
-      //Squarewave high
-      LPDacWr(CHAN0, cZero, cBias+amp);        //Squarewave peak, voltage = cBias+0.5amp
-      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
-      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
-      
-      //Measure the voltage and current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(1);
-      sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0);
-      sampleCount++;                       
-      
-      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflow
-        printf("MEMORY OVERFLOW\n");            
-        sampleCount=0;
-        break;
-      }
-      
-      if(sampleCount>MAX_BUFFER_LENGTH) {         //check for buffer length overflows
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
       
       //Squarewave low
-      LPDacWr(CHAN0, cZero, cBias-amp);        //Squarewave-low, voltage = cBias-0.5amp
+      LPDacWr(CHAN0, cZero, cBias);
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
-      //Measure the voltage and current at the squarewave LOW side
+      //Measure the starting voltage and current
       szADCSamples[sampleCount]=burstSample(1);
       sampleCount++;
       szADCSamples[sampleCount]=burstSample(0);
-      sampleCount++;     
+      sampleCount++;
       
-      if(sampleCount>MAX_BUFFER_LENGTH) {
-        printf("MEMORY OVERFLOW\n");
-        sampleCount=0;
-        break;
-      }
-    }  
+      //Squarewave high
+      LPDacWr(CHAN0, cZero, cBias-2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
+      
+      //Measure the current at the squarewave HIGH side
+      szADCSamples[sampleCount]=burstSample(0);
+      sampleCount++;     
+    }
   }
   
   //Open the RE/CE connections to put the sensor in "open circuit" state
@@ -363,13 +324,13 @@ void runSWV(void){
 void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA){
   float zeroVoltage = 200+(cZero*34.38);
   uint16_t* szADCSamples = return_adc_buffer();
-  float vDiff, tc;
+  float v, tc;
   printf("[RANGE:%f,%f]", cStart*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
   printf("[RGAIN:%i][RESULTS:", RTIA);
-  for(uint32_t i = 0; i < sampleCount; i+=4){
-    vDiff = (zeroVoltage/1000) - adc_to_volts((szADCSamples[i] + szADCSamples[i+2])/2);
-    tc = 0-(calcCurrent_hptia(szADCSamples[i+1],RTIA) - calcCurrent_hptia(szADCSamples[i+3],RTIA));
-    printf("%f,%f\n", vDiff, tc);
+  for(uint32_t i = 0; i < sampleCount; i+=3){
+    v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
+    tc = 0-(adc_to_current(szADCSamples[i+1],RTIA)-adc_to_current(szADCSamples[i+2],RTIA));
+    printf("%f,%f\n", v, 1.13*tc);
   }
   printf("]");
 }
