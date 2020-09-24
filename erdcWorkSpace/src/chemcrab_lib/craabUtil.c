@@ -481,10 +481,11 @@ float adc_to_volts(float adcVal){
 
 //converts ADC value from LPTIA to microamps(uA) for data outputting
 float adc_to_current(float adcVal, int RTIA){
+  RTIA = 200;
   float kFactor = 1.835/1.82;
   float PGA_GAIN = 1.5;
   float fVolt = ((adcVal-32768)/PGA_GAIN)*V_ADC_REF_mV/32768*kFactor;
-  return ((10*fVolt/RTIA*1000)-3.5)*0.8333;
+  return 1+2*(((fVolt/RTIA*1000)-1)*0.8333);
 }
 
 void AfeAdc_Int_Handler(void){
