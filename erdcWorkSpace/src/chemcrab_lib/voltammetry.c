@@ -173,9 +173,10 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
   endV = (2*zeroV)-endV;
   uint16_t SETTLING_DELAY = 5;
   uint16_t cBias, cZero;
+  uint16_t DACSHIFT = 40;
   
-  uint16_t cStart = (startV-200)/0.54-10;
-  uint16_t cEnd =(endV-200)/0.54-10;
+  uint16_t cStart = (startV-200)/0.54-DACSHIFT;
+  uint16_t cEnd =(endV-200)/0.54-DACSHIFT;
   int RTIA = RTIA_VAL_LOOKUP(RGAIN);
   
   uint16_t delayVal = (50000/freq/3);        //delay required to maintain specified squarewave frequency
