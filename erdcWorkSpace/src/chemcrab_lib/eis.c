@@ -618,7 +618,6 @@ void getEISFrequencies(void){
     //printf(\nFrequency test points per pecade
     printf("[:PPD]");
     int ppd = getParameter(2);
-    printf("\nT\n");
     
     //Calculate the number of frequencies to test, repeat prompt if it exceeds ImpResult max size
     float numDecades = log10(endFreq)-log10(startFreq);
