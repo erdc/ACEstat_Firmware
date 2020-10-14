@@ -8,8 +8,9 @@ SNS_CFG_Type * pSnsCfg0;
 SNS_CFG_Type * pSnsCfg1;
 volatile uint32_t u32AFEDieStaRdy =0;         // Variable used to load AFEDIESTA
 float FCW_Val = 0;
-const int numFreqs = 40;
-ImpResult_t ImpResult[40];
+const int maxNumFreqs = 80;
+int numTestPoints = 0;
+ImpResult_t ImpResult[80];
 bool EISdebugMode = false;
 
 //END EIS GLOBALS
@@ -299,8 +300,8 @@ uint8_t SnsACSigChainCfg(float freq)
 */
 uint8_t SnsACTest(uint8_t channel)
 {
-   uint32_t freqNum = sizeof(ImpResult)/sizeof(ImpResult_t);
-   for(uint32_t i=0;i<freqNum;i++)
+   //uint32_t freqNum = sizeof(ImpResult)/sizeof(ImpResult_t);
+   for(uint32_t i=0;i<numTestPoints;i++)
    {
       SnsACSigChainCfg(ImpResult[i].freq);
       pADI_AFE->AFECON &= ~(BITM_AFE_AFECON_WAVEGENEN|BITM_AFE_AFECON_EXBUFEN|   \
@@ -444,7 +445,6 @@ uint8_t SnsMagPhaseCal(void)
    //float Mag[4];
    float Phase[4];
    float Var1,Var2;
-
 
    uint32_t testNum = sizeof(ImpResult)/sizeof(ImpResult_t);
    for(uint32_t i=0;i<testNum;i++)
@@ -603,38 +603,37 @@ void runEIS(void){
 //NOTE: Using frequencies below 5Hz cause the test to run extremely slowly, possibly as long as 40 minutes
 void getEISFrequencies(void){
 
-  //printf("Lower-bound test frequency(between 0000Hz and 9999Hz) : ");
-  printf("[:LBF]");
-  float startFreq = getParameter(4);
-  
-  //printf("\nUpper-bound test frequency(between 0000Hz and 9999Hz) : ");
-  printf("[:UBF]");
-  float endFreq = getParameter(4);
-  
-  //Generate llinVec and logVec
-  float range = endFreq-startFreq;
-  float logVec[40];
-  float linVec[40];
-  for(int i=0 ; i<numFreqs ; ++i){
-    float inc = i;
-    linVec[i] = 100*inc/numFreqs;
-    logVec[i] = exp(0.04722*linVec[i]);
+  float startFreq,endFreq;
+  uint32_t numPoints;
+  //While loop to repeat parameter input until number of points fits within ImpResult test structure
+  while(1){
+    //printf("Lower-bound test frequency(between 0000Hz and 99999Hz) : ");
+    printf("[:LBF]");
+    startFreq = getParameter(5);
+    
+    //printf("\nUpper-bound test frequency(between 0000Hz and 99999Hz) : ");
+    printf("[:UBF]");
+    endFreq = getParameter(5);
+    
+    //printf(\nFrequency test points per pecade
+    printf("[:PPD]");
+    int ppd = getParameter(2);
+    printf("\nT\n");
+    
+    //Calculate the number of frequencies to test, repeat prompt if it exceeds ImpResult max size
+    float numDecades = log10(endFreq)-log10(startFreq);
+    numPoints = floor(numDecades*ppd);
+    if(numPoints < maxNumFreqs+1){
+        numTestPoints = numPoints+1;
+        break;
+    }
+    printf("%s,%i,%s,%i,%s","Frequency vector size(",numPoints,",) > Maximum available(",maxNumFreqs,")\nTry reducing points-per-decade\n");
   }
-  
-  
-  //using the mapping from logVec, determine the testing frequencies
-  for(int i=0 ; i<numFreqs ; ++i){
-
-    if(i==0){
-      ImpResult[i].freq = startFreq;
-    }
-    else{
-      ImpResult[i].freq = startFreq + (logVec[i])*range/100 ;
-    }
-    if(EISdebugMode==true){
-      printf("%f"EOL , ImpResult[i].freq);
-      //printf("\n");
-    }
+  //Populate ImpResult[0:numPoints].freq with log-spaced frequencies
+  for(int i=0 ; i<numPoints+1 ; ++i){
+    float linVal = 100*i/numPoints;
+    float logVal = exp(0.046155*linVal)-1;
+    ImpResult[i].freq = startFreq + (logVal*(endFreq-startFreq)/100);
   }
 }
 
@@ -644,7 +643,7 @@ void printEISResults(void){
   printf("[RESULTS:");
   //printf("Frequencey,RxRload_REAL,RxRload_IMG,Rload_REAL,Rload_IMG,Rcal_REAL,Rcal_IMG,Mag_Rx,Mag_Rload,Mag_Rcal,Mag_Rload-Rx,MAG,PHASE"EOL);
   //printf("Frequency, MAG, PHASE, Re_Mag, Im_Mag "EOL);
-  for(uint32_t i=0;i<sizeof(ImpResult)/sizeof(ImpResult_t);i++){
+  for(uint32_t i=0;i<numTestPoints;i++){
     //phase magnitude is correct, but inverted relative to the palmsens
     printf("%6f,%.4f,%.4f,%.4f,%.4f"EOL,
            ImpResult[i].freq,
