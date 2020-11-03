@@ -607,11 +607,11 @@ void getEISFrequencies(void){
   uint32_t numPoints;
   //While loop to repeat parameter input until number of points fits within ImpResult test structure
   while(1){
-    //printf("Lower-bound test frequency(between 0000Hz and 99999Hz) : ");
+    //printf("Lower-bound test frequency(between 00000Hz and 99999Hz) : ");
     printf("[:LBF]");
     startFreq = getParameter(5);
     
-    //printf("\nUpper-bound test frequency(between 0000Hz and 99999Hz) : ");
+    //printf("\nUpper-bound test frequency(between 00000Hz and 99999Hz) : ");
     printf("[:UBF]");
     endFreq = getParameter(5);
     
