@@ -388,7 +388,16 @@ uint16_t getParameter(int dec){
       }
       
       if(dec==2){
-        //Blank, have not required a 2-digit paramter yet
+          char v[2];
+          uint8_t *uBuffer;
+          uBuffer=return_uart_buffer();
+          for(int i=0 ; i<dec ; ++i){
+            v[i] = uBuffer[i];
+          }
+          parameter+=(v[1]-48);
+          parameter+=(v[0]-48)*10;
+          flag_reset();
+          return parameter;
       }
       
       if(dec==1){
