@@ -601,39 +601,38 @@ void runEIS(void){
 
 //Modifies the Impresult array to use N=numFreqs logarithmically spaced frequencies between the values defined by user over UART
 //NOTE: Using frequencies below 5Hz cause the test to run extremely slowly, possibly as long as 40 minutes
-void getEISFrequencies(void){
+uint16_t getEISFrequencies(){
 
   float startFreq,endFreq;
   uint32_t numPoints;
-  //While loop to repeat parameter input until number of points fits within ImpResult test structure
-  while(1){
-    //printf("Lower-bound test frequency(between 00000Hz and 99999Hz) : ");
-    printf("[:LBF]");
-    startFreq = getParameter(5);
+  //Request user input for frequency range and points-per-decade
+    //printf("Lower-bound test frequency(between 0000Hz and 99999Hz) : ");
+  printf("[:LBF]");
+  startFreq = getParameter(5);
     
-    //printf("\nUpper-bound test frequency(between 00000Hz and 99999Hz) : ");
-    printf("[:UBF]");
-    endFreq = getParameter(5);
+  //printf("\nUpper-bound test frequency(between 0000Hz and 99999Hz) : ");
+  printf("[:UBF]");
+  endFreq = getParameter(5);
     
-    //printf(\nFrequency test points per pecade
-    printf("[:PPD]");
-    int ppd = getParameter(2);
-    
-    //Calculate the number of frequencies to test, repeat prompt if it exceeds ImpResult max size
-    float numDecades = log10(endFreq)-log10(startFreq);
-    numPoints = floor(numDecades*ppd);
-    if(numPoints < maxNumFreqs+1){
-        numTestPoints = numPoints+1;
-        break;
-    }
-    printf("%s,%i,%s,%i,%s","Frequency vector size(",numPoints,",) > Maximum available(",maxNumFreqs,")\nTry reducing points-per-decade\n");
+  //printf(\nFrequency test points per pecade
+  printf("[:PPD]");
+  int ppd = getParameter(2);
+  
+  //Calculate the number of frequencies to test, exit test if it exceeds ImpResult max size
+  float numDecades = log10(endFreq)-log10(startFreq);
+  numPoints = floor(numDecades*ppd);
+  if(numPoints > maxNumFreqs){
+      printf("[ERR:Frequency vector size(%i) > Maximum available(%i)\nTry reducing points-per-decade]", numPoints, maxNumFreqs);
+      return 0;
   }
+  numTestPoints = numPoints+1;
   //Populate ImpResult[0:numPoints].freq with log-spaced frequencies
   for(int i=0 ; i<numPoints+1 ; ++i){
     float linVal = 100*i/numPoints;
     float logVal = exp(0.046155*linVal)-1;
     ImpResult[i].freq = startFreq + (logVal*(endFreq-startFreq)/100);
   }
+  return 1;
 }
 
 void printEISResults(void){
