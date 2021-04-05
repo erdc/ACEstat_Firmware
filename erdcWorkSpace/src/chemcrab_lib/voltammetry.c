@@ -27,6 +27,13 @@ void runCV(void){
   printf("[:TEI]");
   uint16_t tEquilibrium = getParameter(4);
   
+  if(rheostat_available()){
+    //printf("Rheostat resistance 0000ohm - 9999ohm);
+    printf("[:RRI]");
+    uint16_t rheostatRes = getParameter(4);
+    uint16_t rheostatInput = rheostat_resistance(rheostatRes);
+  }
+  
   //printf("Current Limit:\n");
   //printf("0: 1.125mA\n1: 225uA\n2: 45uA\n3: 22.5uA\n4: 11.25uA\n5: 5.625uA\n6: 2.8uA\n7: 1.4uA\n");
   printf("[:CLI]");
@@ -289,6 +296,13 @@ void runSWV(void){
   printf("[:TEI]");
   //printf("Equilibrium time between 0000s and 9999s : ");
   uint16_t tEquilibrium = getParameter(4);
+  
+  if(rheostat_available()){
+    //printf("Rheostat resistance 0000ohm - 9999ohm);
+    printf("[:RRI]");
+    uint16_t rheostatRes = getParameter(4);
+    uint16_t rheostatInput = rheostat_resistance(rheostatRes);
+  }
   
   //printf("Current Limit:\n");
   //printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
