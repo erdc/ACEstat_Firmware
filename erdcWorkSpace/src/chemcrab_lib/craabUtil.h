@@ -63,6 +63,11 @@ int RTIA_VAL_LOOKUP(uint32_t RGAIN);
 //Retrieves voltammetry parameters from UART input
 uint16_t getParameter(int dec);
 
+//Temporary definition to run tests with/without the rheostat input until app is updated to take new input
+int rheostat_available(void);
+uint16_t rheostat_resistance(uint16_t target_resistance);
+
+
 //Used to configure voltammetry sweeprates using digital timers
 void GptCfgVoltammetry(uint16_t mvRate);
 void GptWaitForFlag(void);
