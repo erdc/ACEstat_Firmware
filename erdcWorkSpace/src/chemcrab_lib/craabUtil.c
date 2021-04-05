@@ -304,6 +304,29 @@ int RTIA_VAL_LOOKUP(uint32_t RGAIN){
   return 0;
 }
 
+//Temporary function to run tests with/without rheostat parameter input
+//Set the return value to 0 to exclude rheostat resistance (RRI) from parameter input prompts
+int rheostat_available(void){
+  return 0;
+}
+
+//Identifies the int to pass to the Rheostat in order to set the comnfigurable rheostat resistance
+//Returns an int between 0 and numPoints
+uint16_t rheostat_resistance(uint16_t target_resistance){
+  uint16_t numPoints = 256;
+  uint16_t minRes = 0;
+  uint16_t maxRes = 10000;
+  uint16_t stepSize = (int)(maxRes-minRes)/numPoints;
+  uint16_t i = 0;
+  while(stepSize*i < target_resistance){
+    i = i + 1;
+  }
+  if(stepSize*i-target_resistance > target_resistance - stepSize*(i-1)){
+    i = i - 1;
+  }
+  return i;
+}
+
 //Returns a uint16_t representing  the UART input
 uint16_t getParameter(int dec){
   
@@ -388,16 +411,7 @@ uint16_t getParameter(int dec){
       }
       
       if(dec==2){
-          char v[2];
-          uint8_t *uBuffer;
-          uBuffer=return_uart_buffer();
-          for(int i=0 ; i<dec ; ++i){
-            v[i] = uBuffer[i];
-          }
-          parameter+=(v[1]-48);
-          parameter+=(v[0]-48)*10;
-          flag_reset();
-          return parameter;
+        //Blank, have not required a 2-digit paramter yet
       }
       
       if(dec==1){
