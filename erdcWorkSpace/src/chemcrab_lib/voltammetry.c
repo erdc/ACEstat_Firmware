@@ -37,8 +37,8 @@ void runCV(void){
   //printf("Current Limit:\n");
   //printf("0: 1.125mA\n1: 225uA\n2: 45uA\n3: 22.5uA\n4: 11.25uA\n5: 5.625uA\n6: 2.8uA\n7: 1.4uA\n");
   printf("[:CLI]");
-  uint8_t RTIACHOICE = getParameter(1);
-  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48); //PASS INT VAL RATHER THAN ASCII
+  uint8_t RTIACHOICE = getParameter(2);
+  uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE); //PASS INT VAL RATHER THAN ASCII
   
   /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
@@ -55,6 +55,7 @@ void runCV(void){
   
   //Temporary fix to test LPTIA functionality.  Sets up AFE according to example configuration
   AFE_SETUP_LPTIA_LPDAC();
+  AfeLpTiaCon(CHAN0, LPTIA_RLOAD_100, RGAIN, LPTIA_RFILTER_DISCONNECT);   //temporary re-introduction of configrable gain for testing
 
   /*RAMP HERE*/
   equilibrium_delay(cvStartVolt, cvZeroVolt, tEquilibrium);
@@ -78,7 +79,7 @@ void cv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint1
   uint16_t cStart = ((startV-200)/0.54)-DACSHIFT;
   uint16_t cVertex = ((vertexV-200)/0.54)-DACSHIFT;
   uint16_t cEnd =((endV-200)/0.54)-DACSHIFT;
-  int RTIA = RTIA_VAL_LOOKUP(RGAIN);
+  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   
   cZero = (zeroV-200)/34.38;
   cBias = cStart;
@@ -184,7 +185,7 @@ void sqv_ramp_parameters(uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_
   
   uint16_t cStart = (startV-200)/0.54-DACSHIFT;
   uint16_t cEnd =(endV-200)/0.54-DACSHIFT;
-  int RTIA = RTIA_VAL_LOOKUP(RGAIN);
+  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   
   uint16_t delayVal = (50000/freq/3);        //delay required to maintain specified squarewave frequency
 
@@ -307,8 +308,8 @@ void runSWV(void){
   //printf("Current Limit:\n");
   //printf("0: 4.5mA\n1: 900uA\n2: 180uA\n3: 90uA\n4: 45uA\n5: 22.5uA\n6: 11.25uA\n7: 5.625uA\n");
   printf("[:CLI]");
-  uint8_t RTIACHOICE = getParameter(1);
-  uint32_t RGAIN = RTIA_LOOKUP(RTIACHOICE-48); //-48 because an ascii character is passed. 
+  uint8_t RTIACHOICE = getParameter(2);
+  uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE-48); //-48 because an ascii character is passed. 
   
   /*swv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
@@ -325,6 +326,7 @@ void runSWV(void){
   
   //Temporary fix to test LPTIA functionality.  Sets up AFE according to example configuration
   AFE_SETUP_LPTIA_LPDAC();
+  AfeLpTiaCon(CHAN0, LPTIA_RLOAD_10, RGAIN, LPTIA_RFILTER_DISCONNECT);   //temporary re-introduction of configrable gain for testing
 
   /*RAMP HERE*/
   equilibrium_delay(swvStartVolt, swvZeroVolt , tEquilibrium);
