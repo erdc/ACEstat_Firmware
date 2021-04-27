@@ -38,11 +38,10 @@ extern uint8_t adcModeSel;
 extern volatile uint8_t dftRdy;
 extern volatile uint8_t adcRdy;
 
-//KEITH'S ORIGINAL UTIL FUNCTIONS
 //void adcCurrentSetup_hptia(void);
-void adcVoltageSetup_lptia();
+void adcVoltageSetup_lptia(uint8_t channel);
 float calcCurrent_hptia(uint16_t DAT, int RGAIN);
-void adcCurrentSetup_lptia(void);
+void adcCurrentSetup_lptia(uint8_t channel);
 float calcADCVolt(uint16_t DAT);
 float calcCurrent_lptia(uint16_t DAT, int RGAIN, int RLOAD);
 void powerDownADC(void);
@@ -57,13 +56,14 @@ void hptia_setup(void);
 
 uint16_t HSRTIA_LOOKUP(uint8_t choice);
 uint16_t LPRTIA_LOOKUP(uint8_t choice);
-void AFE_SETUP_LPTIA_LPDAC(void);
+void AFE_SETUP_LPTIA_LPDAC(uint8_t channel);
 void hptia_setup_parameters(uint32_t RTIA);
 void lptia_setup_parameters(uint32_t RTIA);
 int HSRTIA_VAL_LOOKUP(uint32_t RGAIN);
 int LPRTIA_VAL_LOOKUP(uint32_t RGAIN);
 //Retrieves voltammetry parameters from UART input
 uint16_t getParameter(int dec);
+uint8_t getSensorChannel(void);
 
 //Temporary definition to run tests with/without the rheostat input until app is updated to take new input
 int rheostat_available(void);
@@ -76,7 +76,7 @@ void GptWaitForFlag(void);
 uint16_t sweeprateLookup(uint16_t mvRate);
 uint16_t getAdcVal(void);
 void setAdcMode(uint8_t mode);
-int burstSample(int mode);
+int burstSample(int mode, uint8_t chan);
 float adc_to_volts(float adcVal);
 float adc_to_current(float adcVal, int RTIA);
 
