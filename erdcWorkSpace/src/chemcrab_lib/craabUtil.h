@@ -55,11 +55,13 @@ uint16_t* return_adc_buffer(void);
 void sensor_setup_cv(void);
 void hptia_setup(void);
 
-uint16_t RTIA_LOOKUP(uint8_t choice);
+uint16_t HSRTIA_LOOKUP(uint8_t choice);
+uint16_t LPRTIA_LOOKUP(uint8_t choice);
 void AFE_SETUP_LPTIA_LPDAC(void);
 void hptia_setup_parameters(uint32_t RTIA);
 void lptia_setup_parameters(uint32_t RTIA);
-int RTIA_VAL_LOOKUP(uint32_t RGAIN);
+int HSRTIA_VAL_LOOKUP(uint32_t RGAIN);
+int LPRTIA_VAL_LOOKUP(uint32_t RGAIN);
 //Retrieves voltammetry parameters from UART input
 uint16_t getParameter(int dec);
 
