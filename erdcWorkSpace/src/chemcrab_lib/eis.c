@@ -602,7 +602,9 @@ void runEIS(void){
 //Modifies the Impresult array to use N=numFreqs logarithmically spaced frequencies between the values defined by user over UART
 //NOTE: Using frequencies below 5Hz cause the test to run extremely slowly, possibly as long as 40 minutes
 uint16_t getEISFrequencies(){
-
+  
+  uint8_t eisSensChan = getSensorChannel();     //Currently doesn't do anything, need to look more into channel setup for EIS functions first
+  
   float startFreq,endFreq;
   uint32_t numPoints;
   //Request user input for frequency range and points-per-decade
