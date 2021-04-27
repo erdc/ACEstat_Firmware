@@ -102,6 +102,7 @@ void adcCurrentSetup_lptia(void){
   //AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
   AfeAdcPgaCfg(GNPGA_1_5,0); //for current use GNPGA_4
   AfeAdcChan(MUXSELP_LPTIA0_P,MUXSELN_LPTIA0_N);
+  //AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
   AfeAdcChopEn(1);
   AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
   NVIC_EnableIRQ(AFE_ADC_IRQn);
@@ -274,7 +275,7 @@ void lptia_setup_parameters(uint32_t RTIA){
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
 }
 
-uint16_t RTIA_LOOKUP(uint8_t choice){
+uint16_t HSRTIA_LOOKUP(uint8_t choice){
   switch(choice){
   case 0: return HPTIASE_RTIA_200;
   case 1: return HPTIASE_RTIA_1K;
@@ -289,7 +290,40 @@ uint16_t RTIA_LOOKUP(uint8_t choice){
   return 0;
 }
 
-int RTIA_VAL_LOOKUP(uint32_t RGAIN){
+uint16_t LPRTIA_LOOKUP(uint8_t choice){
+  switch(choice){
+    case 0: return LPTIA_RGAIN_DISCONNECT;
+    case 1: return LPTIA_RGAIN_1K;
+    case 2: return LPTIA_RGAIN_2K;
+    case 3: return LPTIA_RGAIN_3K;
+    case 4: return LPTIA_RGAIN_4K;
+    case 5: return LPTIA_RGAIN_6K;
+    case 6: return LPTIA_RGAIN_8K;
+    case 7: return LPTIA_RGAIN_10K;
+    case 8: return LPTIA_RGAIN_12K;
+    case 9: return LPTIA_RGAIN_16K;
+    case 10: return LPTIA_RGAIN_20K;
+    case 11: return LPTIA_RGAIN_24K;
+    case 12: return LPTIA_RGAIN_30K;
+    case 13: return LPTIA_RGAIN_32K;
+    case 14: return LPTIA_RGAIN_40K;
+    case 15: return LPTIA_RGAIN_48K;
+    case 16: return LPTIA_RGAIN_64K;
+    case 17: return LPTIA_RGAIN_85K;
+    case 18: return LPTIA_RGAIN_96K;
+    case 19: return LPTIA_RGAIN_100K;
+    case 20: return LPTIA_RGAIN_120K;
+    case 21: return LPTIA_RGAIN_128K;
+    case 22: return LPTIA_RGAIN_160K;
+    case 23: return LPTIA_RGAIN_196K;
+    case 24: return LPTIA_RGAIN_256K;
+    case 25: return LPTIA_RGAIN_512K;
+    default: return LPTIA_RGAIN_1K;
+  }
+  return 0;
+}
+
+int HSRTIA_VAL_LOOKUP(uint32_t RGAIN){
   switch(RGAIN){
     case HPTIASE_RTIA_200:  return    200;
     case HPTIASE_RTIA_1K:   return   1000;
@@ -300,6 +334,39 @@ int RTIA_VAL_LOOKUP(uint32_t RGAIN){
     case HPTIASE_RTIA_80K:  return  80000;
     case HPTIASE_RTIA_160K: return 160000;
   default : return 80000;
+  }
+  return 0;
+}
+
+int LPRTIA_VAL_LOOKUP(uint32_t RGAIN){
+  switch(RGAIN){
+    case LPTIA_RGAIN_DISCONNECT:        return 0;
+    case LPTIA_RGAIN_1K:                return 1000;             
+    case LPTIA_RGAIN_2K:                return 2000;
+    case LPTIA_RGAIN_3K:                return 3000;
+    case LPTIA_RGAIN_4K:                return 4000;
+    case LPTIA_RGAIN_6K:                return 6000;
+    case LPTIA_RGAIN_8K:                return 8000;                
+    case LPTIA_RGAIN_10K:               return 10000;
+    case LPTIA_RGAIN_12K:               return 12000;
+    case LPTIA_RGAIN_16K:               return 16000;
+    case LPTIA_RGAIN_20K:               return 20000;
+    case LPTIA_RGAIN_24K:               return 24000;
+    case LPTIA_RGAIN_30K:               return 30000;
+    case LPTIA_RGAIN_32K:               return 32000;
+    case LPTIA_RGAIN_40K:               return 40000;
+    case LPTIA_RGAIN_48K:               return 48000;
+    case LPTIA_RGAIN_64K:               return 64000;
+    case LPTIA_RGAIN_85K:               return 85000;
+    case LPTIA_RGAIN_96K:               return 96000;
+    case LPTIA_RGAIN_100K:              return 100000;
+    case LPTIA_RGAIN_120K:              return 120000;
+    case LPTIA_RGAIN_128K:              return 128000;
+    case LPTIA_RGAIN_160K:              return 160000;
+    case LPTIA_RGAIN_196K:              return 196000;
+    case LPTIA_RGAIN_256K:              return 256000;
+    case LPTIA_RGAIN_512K:              return 512000;
+    default: return 1000;
   }
   return 0;
 }
@@ -513,11 +580,11 @@ float adc_to_volts(float adcVal){
 
 //converts ADC value from LPTIA to microamps(uA) for data outputting
 float adc_to_current(float adcVal, int RTIA){
-  RTIA = 200;
   float kFactor = 1.835/1.82;
   float PGA_GAIN = 1.5;
   float fVolt = ((adcVal-32768)/PGA_GAIN)*V_ADC_REF_mV/32768*kFactor;
-  return 1+2*(((fVolt/RTIA*1000)-1)*0.8333);
+  //return 1+2*(((fVolt/RTIA*1000)-1)*0.8333);
+  return (((fVolt/RTIA*1000)-1));
 }
 
 void AfeAdc_Int_Handler(void){
