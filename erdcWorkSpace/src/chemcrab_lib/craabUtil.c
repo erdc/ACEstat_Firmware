@@ -98,11 +98,19 @@ void turn_off_afe_power_things_down(void){
   AfePwrCfg(AFE_HIBERNATE); //put analog die to sleep
 }
 
-void adcCurrentSetup_lptia(void){
+void adcCurrentSetup_lptia(uint8_t channel){
   //AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
   AfeAdcPgaCfg(GNPGA_1_5,0); //for current use GNPGA_4
-  AfeAdcChan(MUXSELP_LPTIA0_P,MUXSELN_LPTIA0_N);
-  //AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
+  
+  if(channel > 0){
+    AfeAdcChan(MUXSELP_LPTIA1_P,MUXSELN_LPTIA1_N);
+    //AfeAdcChan(MUXSELP_LPTIA1_LPF,MUXSELN_LPTIA1_N);
+  }
+  else{
+    AfeAdcChan(MUXSELP_LPTIA0_P,MUXSELN_LPTIA0_N);
+    //AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
+  }
+  
   AfeAdcChopEn(1);
   AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
   NVIC_EnableIRQ(AFE_ADC_IRQn);
@@ -113,10 +121,19 @@ void adcCurrentSetup_lptia(void){
   delay_10us(5);
 }
 
-void adcVoltageSetup_lptia(){
+void adcVoltageSetup_lptia(uint8_t channel){
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);
-    AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
+    
+    if(channel > 0){
+      AfeAdcChan(MUXSELP_VRE1,MUXSELN_VSET1P1);
+    }
+    else{
+      AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
+    }
+    
+    
+    
     AfeAdcChopEn(1);
     AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
     NVIC_EnableIRQ(AFE_ADC_IRQn);
@@ -212,31 +229,61 @@ void hptia_setup(void){
 }
 
 //THIS IS A TEMPORARY FIX TO ADDRESS ISSUES WE'VE BEEN HAVING WITH THE HSTIA, SHOULD BE REPLACED WITH A MORE MODULAR SETUP FUNCTION
-void AFE_SETUP_LPTIA_LPDAC(void){
-  pADI_ALLON->PWRMOD=0x8009;
-  pADI_AFE->AFECON=0x90000;
-  pADI_AFE->PMBW=0x4200C;
-  pADI_AFE->ADCFILTERCON=0x2A11;
-  pADI_AFE->ADCINTIEN=0x0;
-  pADI_AFE->DFTCON=0x0;
-  pADI_AFE->ADCCON=0x10221;
-  pADI_AFE->CALDATLOCK=0xDE87A5A0;
-  pADI_AFE->LPREFBUFCON=0x0;
-  pADI_AFE->LPTIASW1=0x0;
-  pADI_AFE->LPTIASW0=0x34;
-  pADI_AFE->LPTIACON0=0x4038;
-  pADI_AFE->LPDACSW0=0x34;
-  pADI_AFE->LPDACCON0=0x1;
-  pADI_AFE->LPDACCON1=0x2;
-  pADI_AFE->HSDACCON=0x1FE;
-  pADI_AFE->WGCON=0x4;
-  pADI_AFE->WGFCW=0x45D1;
-  pADI_AFE->WGAMPLITUDE=0x516;
-  pADI_AFE->HSRTIACON=0x3E0;
-  pADI_AFE->DE1RESCON=0xFD;
-  pADI_AFE->DE0RESCON=0xFD;
-  pADI_AFE->TSWFULLCON=0x0;
-  delay_10us(1000);
+void AFE_SETUP_LPTIA_LPDAC(uint8_t channel){
+  if(channel == CHAN0){
+    pADI_ALLON->PWRMOD=0x8009;
+    pADI_AFE->AFECON=0x90000;
+    pADI_AFE->PMBW=0x4200C;
+    pADI_AFE->ADCFILTERCON=0x2A11;
+    pADI_AFE->ADCINTIEN=0x0;
+    pADI_AFE->DFTCON=0x0;
+    pADI_AFE->ADCCON=0x10221;
+    pADI_AFE->CALDATLOCK=0xDE87A5A0;
+    pADI_AFE->LPREFBUFCON=0x0;
+    pADI_AFE->LPTIASW1=0x0;
+    pADI_AFE->LPTIASW0=0x34;
+    pADI_AFE->LPTIACON0=0x4038;
+    pADI_AFE->LPDACSW0=0x34;
+    pADI_AFE->LPDACCON0=0x1;
+    pADI_AFE->LPDACCON1=0x2;
+    pADI_AFE->HSDACCON=0x1FE;
+    pADI_AFE->WGCON=0x4;
+    pADI_AFE->WGFCW=0x45D1;
+    pADI_AFE->WGAMPLITUDE=0x516;
+    pADI_AFE->HSRTIACON=0x3E0;
+    pADI_AFE->DE1RESCON=0xFD;
+    pADI_AFE->DE0RESCON=0xFD;
+    pADI_AFE->TSWFULLCON=0x0;
+    delay_10us(1000);
+  }
+  else{
+    pADI_ALLON->PWRMOD=0x8009;
+    pADI_AFE->AFECON=0x90000;
+    pADI_AFE->PMBW=0x4200C;
+    pADI_AFE->ADCFILTERCON=0x2A11;
+    pADI_AFE->ADCINTIEN=0x0;
+    pADI_AFE->DFTCON=0x0;
+    pADI_AFE->ADCCON=0x40322;   //Changed to connect ADC to CHAN1
+    pADI_AFE->CALDATLOCK=0xDE87A5A0;
+    pADI_AFE->LPREFBUFCON=0x0;
+    pADI_AFE->LPTIASW1=0x34;     //Swapped CHAN0 and CHAN1 values here and below
+    pADI_AFE->LPTIASW0=0x0;
+    pADI_AFE->LPTIACON0=0x0;
+    pADI_AFE->LPTIACON1=0x4038;
+    pADI_AFE->LPDACSW0=0x0;
+    pADI_AFE->LPDACSW1=0x34;
+    pADI_AFE->LPDACCON0=0x2;
+    pADI_AFE->LPDACCON1=0x1;
+    pADI_AFE->HSDACCON=0x1FE;
+    pADI_AFE->WGCON=0x4;
+    pADI_AFE->WGFCW=0x45D1;
+    pADI_AFE->WGAMPLITUDE=0x516;
+    pADI_AFE->HSRTIACON=0x3E0;
+    pADI_AFE->DE1RESCON=0xFD;
+    pADI_AFE->DE0RESCON=0xFD;
+    pADI_AFE->TSWFULLCON=0x0;
+    delay_10us(1000); 
+  }
 }
 
 void hptia_setup_parameters(uint32_t RTIA){
@@ -501,6 +548,16 @@ uint16_t getParameter(int dec){
   }
 }
 
+uint8_t getSensorChannel(void){
+  //printf("Sensor Channel(0 or 1) : ");
+  printf("[:SCI]");
+  uint16_t sensChanIn = getParameter(1)-48;
+  if(sensChanIn > 0){
+    return CHAN1;
+  }
+  return CHAN0;
+}
+
 void GptCfgVoltammetry(uint16_t mvRate){
    GptLd(pADI_TMR2, sweeprateLookup(mvRate));      // Load timer 2
    GptCfg(pADI_TMR2,TCTL_CLK_HFOSC, TCTL_PRE_DIV64,
@@ -550,15 +607,15 @@ void setAdcMode(uint8_t mode){
   adcModeSel = mode;
 }
 
-int burstSample(int mode){
+int burstSample(int mode, uint8_t chan){
   int sum = 0;
   int numSamples = 32;
   if(mode == 0){        //ADC is sampling from the LPTIA to measure current
-    adcCurrentSetup_lptia();
+    adcCurrentSetup_lptia(chan);
 
   }
-  if(mode == 1){         //ADC is sampling from VREO to Reference capacitor to measure sensor potential
-    adcVoltageSetup_lptia();
+  if(mode == 1){         //ADC is sampling from VREO/VRE1 to Reference capacitor to measure sensor potential
+    adcVoltageSetup_lptia(chan);
   }
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   for(int i = 0 ; i<numSamples ; ++i){
@@ -583,7 +640,6 @@ float adc_to_current(float adcVal, int RTIA){
   float kFactor = 1.835/1.82;
   float PGA_GAIN = 1.5;
   float fVolt = ((adcVal-32768)/PGA_GAIN)*V_ADC_REF_mV/32768*kFactor;
-  //return 1+2*(((fVolt/RTIA*1000)-1)*0.8333);
   return (((fVolt/RTIA*1000)-1));
 }
 
