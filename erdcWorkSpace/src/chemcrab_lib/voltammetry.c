@@ -71,12 +71,11 @@ void runCV(void){
 }
 
 void cv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate){    
+
   
-  startV = (2*zeroV)-startV;
-  vertexV = (2*zeroV)-vertexV;
-  endV = (2*zeroV)-endV;
+  
   uint16_t SETTLING_DELAY = 5;
-  uint16_t DACSHIFT = 40;
+  uint16_t DACSHIFT = 0;
   uint16_t cBias, cZero;
   GptCfgVoltammetry(sweepRate); //configure general-purpose digital timer to use chosen sweeprate
   uint16_t cStart = ((startV-200)/0.54)-DACSHIFT;
@@ -247,11 +246,10 @@ void runSWV(void){
 }
 
 void sqv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq){
-  startV = (2*zeroV)-startV;
-  endV = (2*zeroV)-endV;
+
   uint16_t SETTLING_DELAY = 5;
   uint16_t cBias, cZero;
-  uint16_t DACSHIFT = 40;
+  uint16_t DACSHIFT = 0;
   
   uint16_t cStart = (startV-200)/0.54-DACSHIFT;
   uint16_t cEnd =(endV-200)/0.54-DACSHIFT;
@@ -345,7 +343,7 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
 
 /*equilibrium delay is in seconds*/
 void equilibrium_delay(uint8_t chan, uint16_t start, uint16_t zero, uint16_t time){
-  start = (2*zero)-start;
-  LPDacWr(chan, (zero-200)/34.38, (start-200)/0.54-30);    //Write the DAC to its starting voltage during the quilibrium period
+  uint16_t DACSHIFT = 0;
+  LPDacWr(chan, (zero-200)/34.38, (start-200)/0.54-DACSHIFT);    //Write the DAC to its starting voltage during the quilibrium period
   delay_10us(100000*time);
 }
