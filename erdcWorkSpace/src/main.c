@@ -19,6 +19,8 @@
 void runTest(char mode);
 char getTestMode(void);
 
+char* version = "2021.05.11";
+
 int main(void){
   /*setup functions. only run when board powers on*/
   AfeWdtGo(false);
@@ -28,6 +30,7 @@ int main(void){
   /*End powerup setup*/
   
   char testMode = 0;
+  
   while(1){
     /*****************************
      *1 Cyclic Voltammetry       *
@@ -35,7 +38,7 @@ int main(void){
      *3 EIS                      *
     ******************************/
     while(1){
-      printf("[:MAIN]");
+      printf("%s%s%s", "[:MAIN:", version, "]");     //NEED TO ADD BETTER SYSTEM FOR VERSIONING
       
       testMode = getTestMode();         //test mode input, reads only the first character in szInString
       
