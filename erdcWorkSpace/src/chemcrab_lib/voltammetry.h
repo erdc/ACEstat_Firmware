@@ -19,15 +19,16 @@
 
 //Cyclic Voltammetry Functions
 void runCV(void);
-void cv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate);
+void set_CV_voltages(int relative_voltages[3], uint16_t absolute_voltages[4]);
+void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32_t RGAIN, uint16_t sweepRate);
 void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA);
+void equilibrium_delay_CV(uint16_t chan, int startV, int vertexV, int endV, uint16_t time);
 
 //Square-wave Voltammetry Functions
 void runSWV(void);
-void sqv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
+void set_SWV_voltages(int relative_voltages[3], uint16_t absolute_voltages[3]);
+void sqv_ramp_parameters(uint16_t chan, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
 void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA);
-
-//Shared Functions
-void equilibrium_delay(uint8_t chan, uint16_t start, uint16_t zero , uint16_t time);
+void equilibrium_delay_SWV(uint16_t chan, int startV, int endV, uint16_t amp, uint16_t time);
 
 #endif
