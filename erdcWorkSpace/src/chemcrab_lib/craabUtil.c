@@ -242,6 +242,7 @@ void AFE_SETUP_LPTIA_LPDAC(uint8_t channel){
     pADI_AFE->LPREFBUFCON=0x0;
     pADI_AFE->LPTIASW1=0x0;
     pADI_AFE->LPTIASW0=0x34;
+    //pADI_AFE->LPTIASW0=0x3C;    //trying to fix high IR drop between RE and CE
     pADI_AFE->LPTIACON0=0x4038;
     pADI_AFE->LPDACSW0=0x34;
     pADI_AFE->LPDACCON0=0x1;
@@ -267,6 +268,7 @@ void AFE_SETUP_LPTIA_LPDAC(uint8_t channel){
     pADI_AFE->CALDATLOCK=0xDE87A5A0;
     pADI_AFE->LPREFBUFCON=0x0;
     pADI_AFE->LPTIASW1=0x34;     //Swapped CHAN0 and CHAN1 values here and below
+    //pADI_AFE->LPTIASW1=0x3C;
     pADI_AFE->LPTIASW0=0x0;
     pADI_AFE->LPTIACON0=0x0;
     pADI_AFE->LPTIACON1=0x4038;
@@ -441,6 +443,32 @@ uint16_t rheostat_resistance(uint16_t target_resistance){
   return i;
 }
 
+int getVoltageInput(void){
+
+  int voltage = 0;
+  
+  while(1){
+    if(get_flag()){
+      char v[5];
+      uint8_t *uBuffer;
+      uBuffer=return_uart_buffer();
+      for(int i=0 ; i<5 ; ++i){
+        v[i] = uBuffer[i];
+      }
+      
+      voltage+=(v[4]-48)*1;
+      voltage+=(v[3]-48)*10;
+      voltage+=(v[2]-48)*100;
+      voltage+=(v[1]-48)*1000;
+      if(v[0] == '-'){
+        voltage = -1*voltage;
+      }
+      flag_reset();
+      return voltage;
+    }
+  }
+}
+
 //Returns a uint16_t representing  the UART input
 uint16_t getParameter(int dec){
   
@@ -548,7 +576,7 @@ uint16_t getParameter(int dec){
   }
 }
 
-uint8_t getSensorChannel(void){
+uint16_t getSensorChannel(void){
   //printf("Sensor Channel(0 or 1) : ");
   printf("[:SCI]");
   uint16_t sensChanIn = getParameter(1)-48;
