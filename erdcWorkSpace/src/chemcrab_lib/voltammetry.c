@@ -4,23 +4,19 @@
 void runCV(void){
   setAdcMode(0);
   
-  uint8_t cvSensChan = getSensorChannel();
-  
-  //printf("Zero voltage between 0000mV - 9999mV : ");
-  printf("[:ZVI]");
-  uint16_t cvZeroVolt = getParameter(4);
+  uint16_t cvSensChan = getSensorChannel();
   
   //printf("Starting voltage between 0000mV - 9999mV : ");
   printf("[:SVI]");
-  uint16_t cvStartVolt = getParameter(4);
+  int cvStartVolt = getVoltageInput();
   
   //printf("Vertex voltage between 0000mV - 9999mV : ");
   printf("[:VVI]");
-  uint16_t cvVertexVolt = getParameter(4);
+  int cvVertexVolt = getVoltageInput();
   
   //printf("Ending voltage between 0000mV - 9999mV : ");
   printf("[:EVI]");
-  uint16_t cvEndVolt = getParameter(4);
+  int cvEndVolt = getVoltageInput();
   
   //printf("Voltage sweep rate between 000mV/s - 999mV/s : ");
   printf("[:SRI]");
@@ -61,8 +57,8 @@ void runCV(void){
   AfeLpTiaCon(cvSensChan, LPTIA_RLOAD_100, RGAIN, LPTIA_RFILTER_DISCONNECT);   //temporary re-introduction of configrable gain for testing
 
   /*RAMP HERE*/
-  equilibrium_delay(cvSensChan, cvStartVolt, cvZeroVolt, tEquilibrium);
-  cv_ramp_parameters(cvSensChan, cvZeroVolt,cvStartVolt,cvVertexVolt,cvEndVolt,RGAIN, sweepRate);
+  equilibrium_delay_CV(cvSensChan, cvStartVolt, cvVertexVolt, cvEndVolt, tEquilibrium);
+  cv_ramp_parameters(cvSensChan, cvStartVolt, cvVertexVolt, cvEndVolt, RGAIN, sweepRate);
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
@@ -70,20 +66,54 @@ void runCV(void){
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
-void cv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t vertexV, uint16_t endV, uint32_t RGAIN, uint16_t sweepRate){    
-
+//Picks an ideal VZERO level based on required test range for cyclic voltammetry 
+//Added this to reduce likelihood of control-amp saturation at 0v or 3.3v
+//relative_voltages = [vStart, vVert, vEnd]
+//absolute_voltages = [vZero_abs, vStart_abs, vVert_abs, vEnd_abs]
+void set_CV_voltages(int relative_voltages[3], uint16_t absolute_voltages[4]){
+  uint16_t vMax = 2200; //maximum DAC output voltage
+  uint16_t vMin = 200;  //minimum DAC output voltage(accordingg to hardware reference but in practice higher than this???)
   
+  //identify the minimum value in relative_voltages
+  int minVal = relative_voltages[0];
+  for(int i=1 ; i<3 ; ++i){
+    if(relative_voltages[i] < minVal){
+      minVal = relative_voltages[i];
+    }
+  }
+  
+  //assign vZero based on the minVal
+  absolute_voltages[0] = vMax - abs(minVal);    //set vZero_abs
+  
+  //assign absolute voltages to each remaining test parameter based on the calculated vZero level
+  absolute_voltages[1] = absolute_voltages[0] - relative_voltages[0];   //set vStart_abs
+  absolute_voltages[2] = absolute_voltages[0] - relative_voltages[1];   //set vVert_abs
+  absolute_voltages[3] = absolute_voltages[0] - relative_voltages[2];   //set vEnd_abs
+}
+
+void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32_t RGAIN, uint16_t sweepRate){   
+  
+  //Use set_CV_voltages to get absolute voltages from relative voltage inputs
+  uint16_t abs_voltages[4] = {0, 0, 0, 0};
+  int rel_voltages[3] = {startV, vertexV, endV};
+  set_CV_voltages(rel_voltages, abs_voltages);
+  
+  //absolute_voltages = [vZero_abs, vStart_abs, vVert_abs, vEnd_abs]
+  uint16_t vZero = abs_voltages[0];
+  uint16_t vStart = abs_voltages[1];
+  uint16_t vVertex = abs_voltages[2];
+  uint16_t vEnd = abs_voltages[3];
   
   uint16_t SETTLING_DELAY = 5;
-  uint16_t DACSHIFT = 0;
+  uint16_t DACSHIFT = 40;
   uint16_t cBias, cZero;
   GptCfgVoltammetry(sweepRate); //configure general-purpose digital timer to use chosen sweeprate
-  uint16_t cStart = ((startV-200)/0.54)-DACSHIFT;
-  uint16_t cVertex = ((vertexV-200)/0.54)-DACSHIFT;
-  uint16_t cEnd =((endV-200)/0.54)-DACSHIFT;
+  uint16_t cStart = ((vStart-200)/0.54)-DACSHIFT;
+  uint16_t cVertex = ((vVertex-200)/0.54)-DACSHIFT;
+  uint16_t cEnd =((vEnd-200)/0.54)-DACSHIFT;
   int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   
-  cZero = (zeroV-200)/34.38;
+  cZero = (vZero-200)/34.38;
   cBias = cStart;
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
@@ -93,10 +123,10 @@ void cv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t 
   uint16_t inc = 1;
   
   //Sweep starts at a negative voltage
-  if(startV < vertexV){
+  if(vStart < vVertex){
     for (cBias = cStart; cBias < cVertex; cBias = cBias + inc){
-      LPDacWr(chan, cZero, cBias);         // Set VBIAS/VZERO output voltages
-      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      LPDacWr(chan, cZero, cBias);        // Set VBIAS/VZERO output voltages
+      delay_10us(SETTLING_DELAY);         // allow LPDAC to settle
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
@@ -157,7 +187,7 @@ void cv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t 
 
 void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA){
   float zeroVoltage = 200+(cZero*34.38);
-  printf("[RANGE:%f,%f,%f]", cStart*0.54+200-zeroVoltage, cVertex*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
+  printf("[RANGE:%f,%f,%f]", (cStart*0.54+200-zeroVoltage)*-1, (cVertex*0.54+200-zeroVoltage)*-1, (cEnd*0.54+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
   uint16_t* szADCSamples = return_adc_buffer();
   float tc, vDiff;
@@ -168,7 +198,33 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
   }
   printf("]");
 }
+
+/*equilibrium delay is in seconds*/
+void equilibrium_delay_CV(uint16_t chan, int startV, int vertexV, int endV, uint16_t time){
+  
+  //Use set_CV_voltages to get absolute voltages from relative voltage inputs
+  uint16_t abs_voltages[4] = {0, 0, 0, 0};
+  int rel_voltages[3] = {startV, vertexV, endV};
+  set_CV_voltages(rel_voltages, abs_voltages);
+  //absolute_voltages = [vZero_abs, vStart_abs, vVert_abs, vEnd_abs]
+  uint16_t vZero = abs_voltages[0];
+  uint16_t vStart = abs_voltages[1];
+  uint16_t vVertex = abs_voltages[2];
+  uint16_t vEnd = abs_voltages[3];
+  
+  uint16_t DACSHIFT = 40;
+  LPDacWr(chan, (vZero-200)/34.38, (vStart-200)/0.54-DACSHIFT);    //Write the DAC to its starting voltage during the quilibrium period
+  delay_10us(100000*time);
+}
 /****************END CYCLIC VOLTAMMETRY**********************/
+
+
+
+
+
+
+
+
 
 /****************SQUARE WAVE VOLTAMMETRY***************************/
 
@@ -177,17 +233,13 @@ void runSWV(void){
   
   uint8_t swvSensChan = getSensorChannel();
   
-  //printf("Zero voltage (0000mV - 9999mV) : ");
-  printf("[:ZVI]");
-  uint16_t swvZeroVolt = getParameter(4);
-  
+  //printf("Starting voltage between 0000mV - 9999mV : ");
   printf("[:SVI]");
-  //printf("Starting voltage (0000mV - 9999mV) : ");
-  uint16_t swvStartVolt = getParameter(4);
+  int swvStartVolt = getVoltageInput();
   
-  //printf("Ending voltage (0000mV - 9999mV) : ");
+  //printf("Ending voltage between 0000mV - 9999mV : ");
   printf("[:EVI]");
-  uint16_t swvEndVolt = getParameter(4);
+  int swvEndVolt = getVoltageInput();
   
   printf("[:AMPI]");
   //printf("Squarewave Pk-Pk amplitude (000mV - 999mV) : ");
@@ -236,8 +288,8 @@ void runSWV(void){
   AfeLpTiaCon(swvSensChan, LPTIA_RLOAD_10, RGAIN, LPTIA_RFILTER_DISCONNECT);   //temporary re-introduction of configrable gain for testing
 
   /*RAMP HERE*/
-  equilibrium_delay(swvSensChan, swvStartVolt, swvZeroVolt , tEquilibrium);
-  sqv_ramp_parameters(swvSensChan, swvZeroVolt, swvStartVolt, swvEndVolt, RGAIN, swvAmp, swvStep, swvFreq);
+  equilibrium_delay_SWV(swvSensChan, swvStartVolt, swvEndVolt, swvAmp, tEquilibrium);
+  sqv_ramp_parameters(swvSensChan, swvStartVolt, swvEndVolt, RGAIN, swvAmp, swvStep, swvFreq);
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
@@ -245,21 +297,58 @@ void runSWV(void){
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
-void sqv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq){
+//Picks an ideal VZERO level based on required test range for square wave voltammetry
+//Added this to reduce likelihood of control-amp saturation at 0v or 3.3v
+//relative_voltages = [vStart, vEnd, vAmp]
+//absolute_voltages = [vZero_abs, vStart_abs, vEnd_abs]
+void set_SWV_voltages(int relative_voltages[3], uint16_t absolute_voltages[3]){
+  uint16_t vMax = 2200; //maximum DAC output voltage
+  uint16_t vMin = 200;  //minimum DAC output voltage(accordingg to hardware reference but in practice higher than this???)
+  
+  //identify the minimum value between vStart and vEnd
+  int minVal = relative_voltages[0];
+  if(relative_voltages[1] < minVal){
+    minVal = relative_voltages[1];
+  }
+  
+  //assign vZero based on the minVal and square wave amplitude
+  if(relative_voltages[0] < relative_voltages[1]){
+    absolute_voltages[0] = vMax - (abs(minVal));    //set vZero_abs
+  }
+  else{
+    absolute_voltages[0] = vMax - (abs(minVal) + relative_voltages[2]);    //set vZero_abs with buffer for square wave amplitude
+  }
+  
+  //assign absolute voltages to each remaining test parameter based on the calculated vZero level
+  absolute_voltages[1] = absolute_voltages[0] - relative_voltages[0];   //set vStart_abs
+  absolute_voltages[2] = absolute_voltages[0] - relative_voltages[1];   //set vEnd_abs
+}
+
+void sqv_ramp_parameters(uint16_t chan, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq){
+  
+  //Use set_SWV_voltages to get absolute voltages from relative voltage inputs
+  uint16_t abs_voltages[3] = {0, 0, 0};
+  int rel_voltages[3] = {startV, endV, amplitude};
+  set_SWV_voltages(rel_voltages, abs_voltages);
+  
+  //absolute_voltages = [vZero_abs, vStart_abs, vEnd_abs]
+  uint16_t vZero = abs_voltages[0];
+  uint16_t vStart = abs_voltages[1];
+  uint16_t vEnd = abs_voltages[2];
 
   uint16_t SETTLING_DELAY = 5;
   uint16_t cBias, cZero;
-  uint16_t DACSHIFT = 0;
+  uint16_t DACSHIFT = 40;
   
-  uint16_t cStart = (startV-200)/0.54-DACSHIFT;
-  uint16_t cEnd =(endV-200)/0.54-DACSHIFT;
+  uint16_t cStart = (vStart-200)/0.54-DACSHIFT;
+  uint16_t cEnd =(vEnd-200)/0.54-DACSHIFT;
   int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   
   uint16_t delayVal = (50000/freq/3);        //delay required to maintain specified squarewave frequency
 
   uint16_t amp = (amplitude)/0.54;
-
-  cZero = (zeroV-200)/34.38;
+  
+  cZero = (vZero-200)/34.38;
   cBias = cStart;
 
   int sampleCount = 0;
@@ -269,7 +358,7 @@ void sqv_ramp_parameters(uint8_t chan, uint16_t zeroV, uint16_t startV, uint16_t
   uint16_t inc = 2*step;
   
   //Ramp function goes from negative to positive voltage
-  if(startV < endV){
+  if(vStart < vEnd){
     for (cBias = cStart; cBias < cEnd; cBias = cBias + inc){
       
       //Squarewave low
@@ -330,7 +419,7 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
   float zeroVoltage = 200+(cZero*34.38);
   uint16_t* szADCSamples = return_adc_buffer();
   float v, tc;
-  printf("[RANGE:%f,%f]", cStart*0.54+200-zeroVoltage, cEnd*0.54+200-zeroVoltage);
+  printf("[RANGE:%f,%f]", (cStart*0.54+200-zeroVoltage)*-1, (cEnd*0.54+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
   for(uint32_t i = 0; i < sampleCount; i+=3){
     v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
@@ -339,11 +428,25 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
   }
   printf("]");
 }
-/*************END SQUARE WAVE VOLTAMMETRY**************************/
 
 /*equilibrium delay is in seconds*/
-void equilibrium_delay(uint8_t chan, uint16_t start, uint16_t zero, uint16_t time){
-  uint16_t DACSHIFT = 0;
-  LPDacWr(chan, (zero-200)/34.38, (start-200)/0.54-DACSHIFT);    //Write the DAC to its starting voltage during the quilibrium period
+void equilibrium_delay_SWV(uint16_t chan, int startV, int endV, uint16_t amp, uint16_t time){
+  
+  //Use set_CV_voltages to get absolute voltages from relative voltage inputs
+  uint16_t abs_voltages[3] = {0, 0, 0};
+  int rel_voltages[3] = {startV, endV, amp};
+  set_SWV_voltages(rel_voltages, abs_voltages);
+  //absolute_voltages = [vZero_abs, vStart_abs, vVert_abs, vEnd_abs]
+  uint16_t vZero = abs_voltages[0];
+  uint16_t vStart = abs_voltages[1];
+  uint16_t vEnd = abs_voltages[2];
+
+  uint16_t DACSHIFT = 40;
+  LPDacWr(chan, (vZero-200)/34.38, (vStart-200)/0.54-DACSHIFT);    //Write the DAC to its starting voltage during the quilibrium period
   delay_10us(100000*time);
 }
+
+/*************END SQUARE WAVE VOLTAMMETRY**************************/
+
+
+
