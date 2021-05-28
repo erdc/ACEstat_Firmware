@@ -19,7 +19,7 @@
 void runTest(char mode);
 char getTestMode(void);
 
-char* version = "2021.05.11";
+char* version = "2021.05.28";
 
 int main(void){
   /*setup functions. only run when board powers on*/
