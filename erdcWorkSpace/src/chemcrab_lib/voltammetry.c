@@ -71,7 +71,7 @@ void runCV(void){
 //relative_voltages = [vStart, vVert, vEnd]
 //absolute_voltages = [vZero_abs, vStart_abs, vVert_abs, vEnd_abs]
 void set_CV_voltages(int relative_voltages[3], uint16_t absolute_voltages[4]){
-  uint16_t vMax = 2200; //maximum DAC output voltage
+  uint16_t vMax = 2300; //maximum DAC output voltage
   uint16_t vMin = 200;  //minimum DAC output voltage(accordingg to hardware reference but in practice higher than this???)
   
   //identify the minimum value in relative_voltages
@@ -302,7 +302,7 @@ void runSWV(void){
 //relative_voltages = [vStart, vEnd, vAmp]
 //absolute_voltages = [vZero_abs, vStart_abs, vEnd_abs]
 void set_SWV_voltages(int relative_voltages[3], uint16_t absolute_voltages[3]){
-  uint16_t vMax = 2200; //maximum DAC output voltage
+  uint16_t vMax = 2300; //maximum DAC output voltage
   uint16_t vMin = 200;  //minimum DAC output voltage(accordingg to hardware reference but in practice higher than this???)
   
   //identify the minimum value between vStart and vEnd
@@ -319,12 +319,16 @@ void set_SWV_voltages(int relative_voltages[3], uint16_t absolute_voltages[3]){
     absolute_voltages[0] = vMax - (abs(minVal) + relative_voltages[2]);    //set vZero_abs with buffer for square wave amplitude
   }
   
+  if(relative_voltages[0] < 0 && relative_voltages[1] < 0){      //if vStart and vEnd are both less than zero shift downwards further
+    absolute_voltages[0] = 1000;
+  }
+  
   //assign absolute voltages to each remaining test parameter based on the calculated vZero level
   absolute_voltages[1] = absolute_voltages[0] - relative_voltages[0];   //set vStart_abs
   absolute_voltages[2] = absolute_voltages[0] - relative_voltages[1];   //set vEnd_abs
 }
 
-void sqv_ramp_parameters(uint16_t chan, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq){
+void sqv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq){
   
   //Use set_SWV_voltages to get absolute voltages from relative voltage inputs
   uint16_t abs_voltages[3] = {0, 0, 0};
@@ -436,7 +440,7 @@ void equilibrium_delay_SWV(uint16_t chan, int startV, int endV, uint16_t amp, ui
   uint16_t abs_voltages[3] = {0, 0, 0};
   int rel_voltages[3] = {startV, endV, amp};
   set_SWV_voltages(rel_voltages, abs_voltages);
-  //absolute_voltages = [vZero_abs, vStart_abs, vVert_abs, vEnd_abs]
+  //absolute_voltages = [vZero_abs, vStart_abs, vEnd_abs]
   uint16_t vZero = abs_voltages[0];
   uint16_t vStart = abs_voltages[1];
   uint16_t vEnd = abs_voltages[2];
