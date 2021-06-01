@@ -27,7 +27,7 @@ void equilibrium_delay_CV(uint16_t chan, int startV, int vertexV, int endV, uint
 //Square-wave Voltammetry Functions
 void runSWV(void);
 void set_SWV_voltages(int relative_voltages[3], uint16_t absolute_voltages[3]);
-void sqv_ramp_parameters(uint16_t chan, uint16_t startV, uint16_t endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
+void sqv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
 void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA);
 void equilibrium_delay_SWV(uint16_t chan, int startV, int endV, uint16_t amp, uint16_t time);
 
