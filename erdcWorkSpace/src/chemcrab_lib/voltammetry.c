@@ -55,7 +55,7 @@ void runCV(void){
   //Temporary fix to test LPTIA functionality.  Sets up AFE according to example configuration
   AFE_SETUP_LPTIA_LPDAC(cvSensChan);
   AfeLpTiaCon(cvSensChan, LPTIA_RLOAD_100, RGAIN, LPTIA_RFILTER_DISCONNECT);   //temporary re-introduction of configrable gain for testing
-
+  
   /*RAMP HERE*/
   equilibrium_delay_CV(cvSensChan, cvStartVolt, cvVertexVolt, cvEndVolt, tEquilibrium);
   cv_ramp_parameters(cvSensChan, cvStartVolt, cvVertexVolt, cvEndVolt, RGAIN, sweepRate);
@@ -89,6 +89,7 @@ void set_CV_voltages(int relative_voltages[3], uint16_t absolute_voltages[4]){
   absolute_voltages[1] = absolute_voltages[0] - relative_voltages[0];   //set vStart_abs
   absolute_voltages[2] = absolute_voltages[0] - relative_voltages[1];   //set vVert_abs
   absolute_voltages[3] = absolute_voltages[0] - relative_voltages[2];   //set vEnd_abs
+  
 }
 
 void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32_t RGAIN, uint16_t sweepRate){   
