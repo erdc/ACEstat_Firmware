@@ -51,8 +51,11 @@ int main(void){
       }
       
       if(testMode=='3'){
+        runTest(testMode);              //Cyclic Squarewave Voltammetry
+      }
+      if(testMode=='4'){
         runTest(testMode);              //Electrochemical Impedance Spectroscopy
-      }  
+      }
     }
   }
   return 0;
@@ -83,6 +86,12 @@ void runTest(char mode){
   }
   
   if(mode=='3'){
+        printf("[START:CSWV]");
+        runCSWV();
+        printf("[END:CSWV]");
+  }
+  
+  if(mode=='4'){
         printf("[START:EIS]");
         getEISFrequencies();
         runEIS();
