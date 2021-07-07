@@ -217,14 +217,6 @@ void equilibrium_delay_CV(uint16_t chan, int startV, int vertexV, int endV, uint
 }
 /****************END CYCLIC VOLTAMMETRY**********************/
 
-
-
-
-
-
-
-
-
 /****************SQUARE WAVE VOLTAMMETRY***************************/
 
 void runSWV(void){
@@ -311,12 +303,7 @@ void set_SWV_voltages(int relative_voltages[3], uint16_t absolute_voltages[3]){
   }
   
   //assign vZero based on the minVal and square wave amplitude
-  if(relative_voltages[0] < relative_voltages[1]){
-    absolute_voltages[0] = vMax - (abs(minVal));    //set vZero_abs
-  }
-  else{
-    absolute_voltages[0] = vMax - (abs(minVal) + relative_voltages[2]);    //set vZero_abs with buffer for square wave amplitude
-  }
+  absolute_voltages[0] = vMax - (abs(minVal) + (2*relative_voltages[2]));
   
   if(relative_voltages[0] < 0 && relative_voltages[1] < 0){      //if vStart and vEnd are both less than zero shift downwards further
     absolute_voltages[0] = 1000;
@@ -450,8 +437,6 @@ void equilibrium_delay_SWV(uint16_t chan, int startV, int endV, uint16_t amp, ui
 
 /*************END SQUARE WAVE VOLTAMMETRY**************************/
 
-
-
 /****************CYCLIC SQUARE WAVE VOLTAMMETRY***************************/
 void runCSWV(void){
   setAdcMode(0);
@@ -522,7 +507,7 @@ void runCSWV(void){
   /*END RAMP*/
 
   turn_off_afe_power_things_down();
-  printf("[END:SWV]");
+  printf("[END:CSWV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
@@ -540,15 +525,8 @@ void set_CSWV_voltages(int relative_voltages[4], uint16_t absolute_voltages[4]){
       minVal = relative_voltages[i];
     }
   }
-  
   //assign vZero based on the minVal and square wave amplitude
-  if(relative_voltages[0] < relative_voltages[1]){
-    absolute_voltages[0] = vMax - (abs(minVal));    //set vZero_abs
-  }
-  
-  else{
-    absolute_voltages[0] = vMax - (abs(minVal) + relative_voltages[3]);    //set vZero_abs with buffer for square wave amplitude
-  }
+  absolute_voltages[0] = vMax - (abs(minVal) + (2*relative_voltages[3]));
   
   if(relative_voltages[0] < 0 && relative_voltages[1] < 0){      //if vStart and vEnd are both less than zero shift downwards further
     absolute_voltages[0] = 1000;
@@ -559,6 +537,7 @@ void set_CSWV_voltages(int relative_voltages[4], uint16_t absolute_voltages[4]){
   absolute_voltages[2] = absolute_voltages[0] - relative_voltages[1];   //set vVertex_abs
   absolute_voltages[3] = absolute_voltages[0] - relative_voltages[2];   //set vEnd_abs
 }
+
 void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq){
   
   //Use set_CSWV_voltages to get absolute voltages from relative voltage inputs
@@ -571,6 +550,11 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
   uint16_t vStart = abs_voltages[1];
   uint16_t vVertex = abs_voltages[2];
   uint16_t vEnd = abs_voltages[3];
+  
+  printf("%i\n", vZero); 
+  printf("%i\n", vStart); 
+  printf("%i\n", vVertex); 
+  printf("%i\n", vEnd); 
   
   //printf("%i%s%i%s%i%s%i\n", vZero, ", ", vStart, ", " , vVertex, ", ", vEnd);
 
@@ -599,7 +583,6 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
   //Ramp function goes from negative to positive voltage
   if(vStart < vVertex){
     for (cBias = cStart; cBias < cVertex; cBias = cBias + inc){
-      
       //Squarewave low
       LPDacWr(chan, cZero, cBias);
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
@@ -621,7 +604,6 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
       sampleCount++;     
     }
     for (cBias = cVertex; cBias > cEnd; cBias = cBias - inc){
-      
       //Squarewave high
       LPDacWr(chan, cZero, cBias);
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
@@ -668,7 +650,6 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
       sampleCount++;     
     }
     for (cBias = cVertex; cBias < cEnd; cBias = cBias + inc){
-
       //Squarewave low
       LPDacWr(chan, cZero, cBias);
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
@@ -712,7 +693,7 @@ void printCSWVResults(float cZero, float cStart, float cVertex, float cEnd, int 
 }
 void equilibrium_delay_CSWV(uint16_t chan, int startV, int vertexV, int endV, uint16_t amp, uint16_t time){
   
-  //Use set_CV_voltages to get absolute voltages from relative voltage inputs
+  //Use set_CSWV_voltages to get absolute voltages from relative voltage inputs
   uint16_t abs_voltages[4] = {0, 0, 0, 0};
   int rel_voltages[4] = {startV, vertexV, endV, amp};
   set_CSWV_voltages(rel_voltages, abs_voltages);
@@ -726,4 +707,144 @@ void equilibrium_delay_CSWV(uint16_t chan, int startV, int vertexV, int endV, ui
 }
 /****************END CYCLIC SQUARE WAVE VOLTAMMETRY***************************/
 
+/****************CHRONOAMPEROMETRY***************************/
 
+void runCA(void){
+  setAdcMode(0);
+  
+  uint16_t caChan = getSensorChannel();
+  
+  //printf("Starting voltage between 0000mV - 9999mV : ");
+  printf("[:STEPVI]");
+  int stepVoltage = getVoltageInput();
+  
+  //printf("Step duration between 0000ms - 9999ms : ");
+  printf("[:SLI]");
+  uint16_t stepLength = getParameter(4);
+  
+  //printf("Step delay between 0000ms - 9999ms : ");
+  printf("[:SDI]");
+  uint16_t stepDelay = getParameter(4);
+  
+  if(rheostat_available()){
+    //printf("Rheostat resistance 0000ohm - 9999ohm);
+    printf("[:RRI]");
+    uint16_t rheostatRes = getParameter(4);
+    uint16_t rheostatInput = rheostat_resistance(rheostatRes);
+  }
+  
+  //printf("TIA Gain Resistor:\n");
+  //printf("2 Digits 00-25\n");
+  printf("[:RTIAI]");
+  uint8_t RTIACHOICE = getParameter(2);
+  uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE); //PASS INT VAL RATHER THAN ASCII
+  
+  /*cv ramp setup*/
+  AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
+
+  LPDacPwrCtrl(caChan,PWR_UP);
+  LPDacCfg(caChan,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
+
+  /*LPTIA REQUIRED TO HAVE DAC OUTPUT*/
+  /*power up PA,TIA,no boost, full power*/
+  AfeLpTiaPwrDown(caChan,0);
+  AfeLpTiaAdvanced(caChan,BANDWIDTH_NORMAL,CURRENT_NOR);
+  AfeLpTiaCon(caChan,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
+  delay_10us(1000);
+  
+  //Temporary fix to test LPTIA functionality.  Sets up AFE according to example configuration
+  AFE_SETUP_LPTIA_LPDAC(caChan);
+  AfeLpTiaCon(caChan, LPTIA_RLOAD_100, RGAIN, LPTIA_RFILTER_DISCONNECT);
+  
+  ca_step_parameters(caChan, stepVoltage, stepLength, stepDelay, RGAIN);
+  
+  turn_off_afe_power_things_down();
+  printf("[END:CA]");
+  NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
+}
+
+void set_ca_voltages(int vStep, uint16_t absolute_voltages[2]){
+  uint16_t vMax = 2300; //maximum DAC output voltage
+  //Set vZero
+  if(vStep > 0){
+    absolute_voltages[0] = vMax;
+  }
+  else{
+    absolute_voltages[0] = vMax - abs(vStep) - 500;     //-500 to keep the opamp voltage further from 3.3v
+  }
+  
+  absolute_voltages[1] = absolute_voltages[0] - vStep;
+}
+
+void ca_step_parameters(uint16_t chan, int stepV, uint16_t length, uint16_t delay, uint32_t RGAIN){
+  uint16_t absolute_voltages[2] = {0, 0};
+  set_ca_voltages(stepV, absolute_voltages);
+  uint16_t vZero = absolute_voltages[0];
+  uint16_t vStep = absolute_voltages[1];
+  
+  uint16_t SETTLING_DELAY = 5;
+  uint16_t DACSHIFT = 40;
+  uint16_t cZero, cStep;
+  cStep = (int)((vStep-200)/0.54)-DACSHIFT;
+  cZero = (int)((vZero-200)/34.38);
+  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
+  
+  uint16_t totalSamples = 500;
+  
+  int sampleCount = 0;
+  uint16_t* szADCSamples = return_adc_buffer();
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
+  
+  //Set sensor voltage to zero and maintain for the delay time
+  LPDacWr(chan, (int)((vZero-200)/34.38), (int)((vZero-200)/0.54-DACSHIFT));
+  delay_10us(100000*delay);
+  
+  //Set the sensor to the step voltage and record N=totalSamples while holding for the step length
+  LPDacWr(chan, cZero, cStep);
+  delay_10us(SETTLING_DELAY);
+  
+  //Calculate timing parameters for step length
+  float sample_interval_ms = (1000*length)/totalSamples;
+  printf("%f", sample_interval_ms);
+  float sample_interval_s = sample_interval_ms/1000;
+  
+  for(int i=0 ; i<totalSamples ; ++i){
+    //Measure the voltage and current
+    szADCSamples[sampleCount]=burstSample(1,chan);
+    sampleCount++;
+    szADCSamples[sampleCount]=burstSample(0,chan);
+    sampleCount++;
+    delay_10us((int)length/(3*totalSamples*(10E-6)));
+  }
+  
+  //Set the sensor back to 0V and record N=totalSamples while holding for the step length
+  LPDacWr(chan, cZero, (int)((vZero-200)/0.54-DACSHIFT));
+  delay_10us(SETTLING_DELAY);
+  for(int i=0 ; i<totalSamples ; ++i){
+    //Measure the voltage and current
+    szADCSamples[sampleCount]=burstSample(1,chan);
+    sampleCount++;
+    szADCSamples[sampleCount]=burstSample(0,chan);
+    sampleCount++;
+    delay_10us((int)length/(3*totalSamples*(10E-6)));
+  }
+  printCAResults(cZero, cStep, length, RTIA, sampleCount, sample_interval_ms);
+}
+
+void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCount, float timeStep){
+  float zeroVoltage = 200+(cZero*34.38);
+  uint16_t* szADCSamples = return_adc_buffer();
+  float v, tc;
+  printf("[STEP:%f]", (cStep*0.54+200-zeroVoltage)*-1);
+  printf("[RGAIN:%i][RESULTS:", RTIA);
+  int index = 0;
+  for(uint32_t i = 0; i < sampleCount; i+=2){
+    //v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
+    tc = adc_to_current(szADCSamples[i+1],RTIA);
+    printf("%f,%f\n", index*timeStep, tc);       //chronoamperometry plotted vs.time instead of voltage?
+    ++index;
+  }
+  printf("]");
+}
+
+/****************END CHRONOAMPEROMETRY***************************/
