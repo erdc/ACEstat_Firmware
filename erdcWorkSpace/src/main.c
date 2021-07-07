@@ -49,11 +49,16 @@ int main(void){
       if(testMode=='2'){  
         runTest(testMode);              //Squarewave Voltammetry 
       }
-      
+
       if(testMode=='3'){
         runTest(testMode);              //Cyclic Squarewave Voltammetry
       }
+      
       if(testMode=='4'){
+        runTest(testMode);              //Chrono-Amperometry
+      }
+      
+      if(testMode=='5'){
         runTest(testMode);              //Electrochemical Impedance Spectroscopy
       }
     }
@@ -92,6 +97,12 @@ void runTest(char mode){
   }
   
   if(mode=='4'){
+        printf("[START:CA]");
+        runCA();
+        printf("[END:CA]");
+  }
+  
+  if(mode=='5'){
         printf("[START:EIS]");
         getEISFrequencies();
         runEIS();
