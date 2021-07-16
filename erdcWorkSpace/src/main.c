@@ -19,7 +19,7 @@
 void runTest(char mode);
 char getTestMode(void);
 
-char* version = "2021.05.28";
+char* version = "2021.06.29";
 
 int main(void){
   /*setup functions. only run when board powers on*/
@@ -35,7 +35,9 @@ int main(void){
     /*****************************
      *1 Cyclic Voltammetry       *
      *2 Square Wave Voltammetry  *
-     *3 EIS                      *
+     *3 Cyclic Square Wave       *
+     *4 Chronoamperometry        *
+     *5 EIS                      *
     ******************************/
     while(1){
       printf("%s%s%s", "[:MAIN:", version, "]");     //NEED TO ADD BETTER SYSTEM FOR VERSIONING
@@ -72,7 +74,7 @@ void runTest(char mode){
   
   if(mode=='1'){
         while(testComplete==false){
-              printf("[START:CV]");
+              //printf("[START:CV]");
               runCV();
               printf("[END:CV]");
         }
@@ -80,7 +82,7 @@ void runTest(char mode){
   
   if(mode=='2'){
         while(testComplete==false){
-            printf("[START:SWV]");
+            //printf("[START:SWV]");
             runSWV();  
             printf("[END:SWV]");
             
@@ -91,13 +93,13 @@ void runTest(char mode){
   }
   
   if(mode=='3'){
-        printf("[START:CSWV]");
+        //printf("[START:CSWV]");
         runCSWV();
         printf("[END:CSWV]");
   }
   
   if(mode=='4'){
-        printf("[START:CA]");
+        //printf("[START:CA]");
         runCA();
         printf("[END:CA]");
   }

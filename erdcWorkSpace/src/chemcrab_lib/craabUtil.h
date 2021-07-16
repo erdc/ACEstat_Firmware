@@ -75,11 +75,14 @@ uint16_t rheostat_resistance(uint16_t target_resistance);
 void GptCfgVoltammetry(uint16_t mvRate);
 void GptWaitForFlag(void);
 uint16_t sweeprateLookup(uint16_t mvRate);
+
+//Used for ADC sampling and filtering
 uint16_t getAdcVal(void);
 void setAdcMode(uint8_t mode);
 int burstSample(int mode, uint8_t chan);
 float adc_to_volts(float adcVal);
 float adc_to_current(float adcVal, int RTIA);
+float voltammetryMovAvg(float* arr, float* newarr, float val, int w);
 
 //Interrupt handlers
 void AfeAdc_Int_Handler(void);

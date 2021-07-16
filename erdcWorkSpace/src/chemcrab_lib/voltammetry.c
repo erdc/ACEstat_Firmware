@@ -39,6 +39,8 @@ void runCV(void){
   uint8_t RTIACHOICE = getParameter(2);
   uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE); //PASS INT VAL RATHER THAN ASCII
   
+  printf("[START:CV]");
+  
   /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
 
@@ -261,6 +263,8 @@ void runSWV(void){
   uint8_t RTIACHOICE = getParameter(2);
   uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE-48); //-48 because an ascii character is passed. 
   
+  printf("[START:SWV]");
+  
   /*swv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
 
@@ -398,22 +402,37 @@ void swv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, ui
     }
   }
   
-  //Open the RE/CE connections to put the sensor in "open circuit" state
-  pADI_AFE->LPTIASW0=0x0;
-  pADI_AFE->LPDACSW0=0x20;
+  //put the sensor in "open circuit" state
+  turn_off_afe_power_things_down();
   
   printSWVResults(cZero, cStart, cEnd, sampleCount, RTIA);
 }
 
+//Added moving average filter for clean data until better filtering is implemented
 void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA){
   float zeroVoltage = 200+(cZero*34.38);
   uint16_t* szADCSamples = return_adc_buffer();
   float v, tc;
   printf("[RANGE:%f,%f]", (cStart*0.54+200-zeroVoltage)*-1, (cEnd*0.54+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
-  for(uint32_t i = 0; i < sampleCount; i+=3){
+  
+  float arr[20] = {0};        //declare arrays to hold previous current measurements
+  float newarr[20] = {0};
+  uint8_t use_mov_avg = 1;
+  //Initialize arr[] to the first N values in szADCSamples instead of zero
+  for(uint16_t i = 0; i < 60; i+=3){
+    arr[(int)(i/3)] = adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA);
+  }
+  
+  for(uint16_t i = 0; i < sampleCount; i+=3){
     v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
-    tc = 0-(adc_to_current(szADCSamples[i+1],RTIA)-adc_to_current(szADCSamples[i+2],RTIA));
+    tc = adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA);
+    
+    //Moving average filter for voltammetry data
+    if(use_mov_avg){
+      tc = voltammetryMovAvg(arr, newarr, tc, 20);
+    }
+    
     printf("%f,%f\n", v, tc);
   }
   printf("]");
@@ -483,6 +502,8 @@ void runCSWV(void){
   printf("[:RTIAI]");
   uint8_t RTIACHOICE = getParameter(2);
   uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE-48); //-48 because an ascii character is passed. 
+  
+  printf("[START:CSWV]");
   
   /*cswv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
@@ -739,6 +760,8 @@ void runCA(void){
   uint8_t RTIACHOICE = getParameter(2);
   uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE); //PASS INT VAL RATHER THAN ASCII
   
+  printf("[START:CA]");
+  
   /*cv ramp setup*/
   AfePwrCfg(AFE_ACTIVE);  //set AFE power mode to active
 
@@ -806,7 +829,7 @@ void ca_step_parameters(uint16_t chan, int stepV, uint16_t length, uint16_t dela
   //Calculate timing parameters for step length
   float sample_interval_ms = (1000*length)/totalSamples;
   printf("%f", sample_interval_ms);
-  float sample_interval_s = sample_interval_ms/1000;
+  //float sample_interval_s = sample_interval_ms/1000;
   
   for(int i=0 ; i<totalSamples ; ++i){
     //Measure the voltage and current
@@ -834,7 +857,7 @@ void ca_step_parameters(uint16_t chan, int stepV, uint16_t length, uint16_t dela
 void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCount, float timeStep){
   float zeroVoltage = 200+(cZero*34.38);
   uint16_t* szADCSamples = return_adc_buffer();
-  float v, tc;
+  float tc;
   printf("[STEP:%f]", (cStep*0.54+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
   int index = 0;

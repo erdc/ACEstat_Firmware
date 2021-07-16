@@ -671,6 +671,28 @@ float adc_to_current(float adcVal, int RTIA){
   return (((fVolt/RTIA*1000)-1));
 }
 
+//Simple moing average filter for Voltammetry data
+float voltammetryMovAvg(float* arr, float* newarr, float val, int w){
+
+  //Add val to the front of newarr, remove oldest element in arr
+  for(int j=0 ; j<w-1 ; ++j){
+    newarr[j+1] = arr[j];
+  }
+  newarr[0] = val;
+  //Overwrite arr with newarr to save for next iteration
+  for(int j=0 ; j<w ; ++j){
+    arr[j] = newarr[j];
+  }
+  
+  //Calc average of newarr
+  float sum = 0;
+  for(int j=0 ; j<w ; ++j){
+    sum+=arr[j];
+  }
+  
+  return sum/(w);
+}
+
 void AfeAdc_Int_Handler(void){
   uint32_t sta;
   sta = pADI_AFE->ADCINTSTA;

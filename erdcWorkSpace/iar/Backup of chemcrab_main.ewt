@@ -9,9 +9,9 @@
         <debug>1</debug>
         <settings>
             <name>C-STAT</name>
-            <archiveVersion>515</archiveVersion>
+            <archiveVersion>263</archiveVersion>
             <data>
-                <version>515</version>
+                <version>263</version>
                 <cstatargs>
                     <useExtraArgs>0</useExtraArgs>
                     <extraArgs></extraArgs>
@@ -22,10 +22,9 @@
                     <enableFalsePositives>0</enableFalsePositives>
                     <messagesLimitEnabled>1</messagesLimitEnabled>
                     <messagesLimit>100</messagesLimit>
-                    <outputDir>Debug\C-STAT</outputDir>
                 </cstatargs>
                 <cstat_settings>
-                    <cstat_version>2.3.1</cstat_version>
+                    <cstat_version>1.7.0</cstat_version>
                     <checks_tree>
                         <package enabled="true" name="STDCHECKS">
                             <group enabled="true" name="ARR">
@@ -805,18 +804,6 @@
                                 <check enabled="true" name="MISRAC2012-Dir-4.13_f" />
                                 <check enabled="true" name="MISRAC2012-Dir-4.13_g" />
                                 <check enabled="false" name="MISRAC2012-Dir-4.13_h" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_a" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_b" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_c" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_d" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_e" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_f" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_g" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_h" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_i" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_j" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_l" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_m" />
                             </group>
                             <group enabled="true" name="MISRAC2012-Rule-1">
                                 <check enabled="true" name="MISRAC2012-Rule-1.3_a" />
@@ -946,7 +933,6 @@
                                 <check enabled="false" name="MISRAC2012-Rule-12.1" />
                                 <check enabled="true" name="MISRAC2012-Rule-12.2" />
                                 <check enabled="false" name="MISRAC2012-Rule-12.3" />
-                                <check enabled="true" name="MISRAC2012-Rule-12.5" />
                             </group>
                             <group enabled="true" name="MISRAC2012-Rule-13">
                                 <check enabled="true" name="MISRAC2012-Rule-13.1" />
@@ -1048,21 +1034,6 @@
                                 <check enabled="true" name="MISRAC2012-Rule-21.11" />
                                 <check enabled="false" name="MISRAC2012-Rule-21.12_a" />
                                 <check enabled="false" name="MISRAC2012-Rule-21.12_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.13" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.14" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.15" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.16" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_c" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_d" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_e" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_f" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.18_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.18_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.19_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.19_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.20" />
                             </group>
                             <group enabled="true" name="MISRAC2012-Rule-22">
                                 <check enabled="true" name="MISRAC2012-Rule-22.1_a" />
@@ -1075,11 +1046,6 @@
                                 <check enabled="true" name="MISRAC2012-Rule-22.5_a" />
                                 <check enabled="true" name="MISRAC2012-Rule-22.5_b" />
                                 <check enabled="true" name="MISRAC2012-Rule-22.6" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.7_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.7_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.8" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.9" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.10" />
                             </group>
                         </package>
                         <package enabled="false" name="MISRAC++2008">
@@ -1176,7 +1142,8 @@
                             </group>
                             <group enabled="true" name="MISRAC++2008-5-3">
                                 <check enabled="true" name="MISRAC++2008-5-3-1" />
-                                <check enabled="true" name="MISRAC++2008-5-3-2" />
+                                <check enabled="true" name="MISRAC++2008-5-3-2_a" />
+                                <check enabled="true" name="MISRAC++2008-5-3-2_b" />
                                 <check enabled="true" name="MISRAC++2008-5-3-3" />
                                 <check enabled="true" name="MISRAC++2008-5-3-4" />
                             </group>
@@ -1428,9 +1395,9 @@
         <debug>0</debug>
         <settings>
             <name>C-STAT</name>
-            <archiveVersion>515</archiveVersion>
+            <archiveVersion>263</archiveVersion>
             <data>
-                <version>515</version>
+                <version>263</version>
                 <cstatargs>
                     <useExtraArgs>0</useExtraArgs>
                     <extraArgs></extraArgs>
@@ -1441,10 +1408,9 @@
                     <enableFalsePositives>0</enableFalsePositives>
                     <messagesLimitEnabled>1</messagesLimitEnabled>
                     <messagesLimit>100</messagesLimit>
-                    <outputDir>Release\C-STAT</outputDir>
                 </cstatargs>
                 <cstat_settings>
-                    <cstat_version>2.3.1</cstat_version>
+                    <cstat_version>1.7.0</cstat_version>
                     <checks_tree>
                         <package enabled="true" name="STDCHECKS">
                             <group enabled="true" name="ARR">
@@ -2224,18 +2190,6 @@
                                 <check enabled="true" name="MISRAC2012-Dir-4.13_f" />
                                 <check enabled="true" name="MISRAC2012-Dir-4.13_g" />
                                 <check enabled="false" name="MISRAC2012-Dir-4.13_h" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_a" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_b" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_c" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_d" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_e" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_f" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_g" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_h" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_i" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_j" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_l" />
-                                <check enabled="true" name="MISRAC2012-Dir-4.14_m" />
                             </group>
                             <group enabled="true" name="MISRAC2012-Rule-1">
                                 <check enabled="true" name="MISRAC2012-Rule-1.3_a" />
@@ -2365,7 +2319,6 @@
                                 <check enabled="false" name="MISRAC2012-Rule-12.1" />
                                 <check enabled="true" name="MISRAC2012-Rule-12.2" />
                                 <check enabled="false" name="MISRAC2012-Rule-12.3" />
-                                <check enabled="true" name="MISRAC2012-Rule-12.5" />
                             </group>
                             <group enabled="true" name="MISRAC2012-Rule-13">
                                 <check enabled="true" name="MISRAC2012-Rule-13.1" />
@@ -2467,21 +2420,6 @@
                                 <check enabled="true" name="MISRAC2012-Rule-21.11" />
                                 <check enabled="false" name="MISRAC2012-Rule-21.12_a" />
                                 <check enabled="false" name="MISRAC2012-Rule-21.12_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.13" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.14" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.15" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.16" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_c" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_d" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_e" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.17_f" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.18_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.18_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.19_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.19_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-21.20" />
                             </group>
                             <group enabled="true" name="MISRAC2012-Rule-22">
                                 <check enabled="true" name="MISRAC2012-Rule-22.1_a" />
@@ -2494,11 +2432,6 @@
                                 <check enabled="true" name="MISRAC2012-Rule-22.5_a" />
                                 <check enabled="true" name="MISRAC2012-Rule-22.5_b" />
                                 <check enabled="true" name="MISRAC2012-Rule-22.6" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.7_a" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.7_b" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.8" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.9" />
-                                <check enabled="true" name="MISRAC2012-Rule-22.10" />
                             </group>
                         </package>
                         <package enabled="false" name="MISRAC++2008">
@@ -2595,7 +2528,8 @@
                             </group>
                             <group enabled="true" name="MISRAC++2008-5-3">
                                 <check enabled="true" name="MISRAC++2008-5-3-1" />
-                                <check enabled="true" name="MISRAC++2008-5-3-2" />
+                                <check enabled="true" name="MISRAC++2008-5-3-2_a" />
+                                <check enabled="true" name="MISRAC++2008-5-3-2_b" />
                                 <check enabled="true" name="MISRAC++2008-5-3-3" />
                                 <check enabled="true" name="MISRAC++2008-5-3-4" />
                             </group>
