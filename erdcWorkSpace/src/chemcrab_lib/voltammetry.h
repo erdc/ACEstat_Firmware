@@ -41,7 +41,7 @@ void equilibrium_delay_CSWV(uint16_t chan, int startV, int vertexV, int endV, ui
 //Chrono-Amperometry (CA)
 void runCA(void);
 void set_ca_voltages(int vStep, uint16_t absolute_voltages[2]);
-void ca_step_parameters(uint16_t chan, int stepV, uint16_t length, uint16_t delay, uint32_t RGAIN);
+void ca_step_parameters(uint16_t chan, int vStep, uint16_t length, uint16_t delay, uint32_t RGAIN);
 void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCount, float timeStep);
 
 #endif

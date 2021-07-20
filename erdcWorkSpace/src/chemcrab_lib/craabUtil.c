@@ -659,7 +659,7 @@ float adc_to_volts(float adcVal){
   float VREF = 1.82;
   float ADCVBIAS_CAP = 1.11;
   float VIN = (VREF*((adcVal-32768)/(32768)))+ADCVBIAS_CAP;
-  float shift = 0.030;
+  float shift = 0.0;    //not needed anymore to have serial output match actual sensor voltages
   return (VIN + shift);
 }
 
@@ -691,6 +691,19 @@ float voltammetryMovAvg(float* arr, float* newarr, float val, int w){
   }
   
   return sum/(w);
+}
+
+//Converts a voltage input in mV to a DAC(either 12b or 6b) value passable to the LpDacWr function
+uint16_t mV_to_DAC(uint16_t mV, uint8_t nBits){
+  uint16_t shift = 0;
+  //to be written to 12b DAC channel(0.537mV res)
+  if(nBits==12){
+    return (int)((mV-200)/0.537)-shift;
+  }
+  //to be written to 6b DAC channel(34.38mV res)
+  if(nBits==6){
+    return (int)((mV-200)/34.38); //DONT use shift here
+  }
 }
 
 void AfeAdc_Int_Handler(void){

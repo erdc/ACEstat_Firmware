@@ -107,25 +107,25 @@ void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32
   uint16_t vVertex = abs_voltages[2];
   uint16_t vEnd = abs_voltages[3];
   
+  //Setup timing parameters
   uint16_t SETTLING_DELAY = 5;
-  uint16_t DACSHIFT = 40;
-  uint16_t cBias, cZero;
   GptCfgVoltammetry(sweepRate); //configure general-purpose digital timer to use chosen sweeprate
-  uint16_t cStart = (int)((vStart-200)/0.54)-DACSHIFT;
-  uint16_t cVertex = (int)((vVertex-200)/0.54)-DACSHIFT;
-  uint16_t cEnd = (int)((vEnd-200)/0.54)-DACSHIFT;
-  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   
-  cZero = (int)((vZero-200)/34.38);
-  cBias = cStart;
+  //Convert test voltages to DAC inputs
+  uint16_t cStart = mV_to_DAC(vStart,12);
+  uint16_t cVertex = mV_to_DAC(vVertex,12);
+  uint16_t cEnd = mV_to_DAC(vEnd,12);
+  uint16_t cZero = mV_to_DAC(vZero,6);
+  uint16_t cBias = cStart;
+  uint16_t inc = 1;     //DAC step increment.  Step size is inc*0.537mV
+  
+  //Initialize ADC parameters
+  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   
-  //DAC step increment.  Step size is roughly inc*0.54mV
-  uint16_t inc = 1;
-  
-  //Sweep starts at a negative voltage
+  //"upwards" sweep
   if(vStart < vVertex){
     for (cBias = cStart; cBias < cVertex; cBias = cBias + inc){
       LPDacWr(chan, cZero, cBias);        // Set VBIAS/VZERO output voltages
@@ -133,9 +133,9 @@ void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(1,chan);
+        szADCSamples[sampleCount]=burstSample(1,chan);  //measure V_RE with 32x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(0,chan);
+        szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
         sampleCount++;
       }
     }
@@ -145,52 +145,51 @@ void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(1,chan);
+        szADCSamples[sampleCount]=burstSample(1,chan);  //measure V_RE with 32x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(0,chan);
+        szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
         sampleCount++;
       }
     }
   }
-  //Sweep starts at a positive voltage
+  
+  //"downwards" sweep
   else{
     for (cBias = cStart; cBias > cVertex; cBias = cBias - inc){
-      LPDacWr(chan, cZero, cBias);         // Set VBIAS/VZERO output voltages
-      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      LPDacWr(chan, cZero, cBias);        // Set VBIAS/VZERO output voltages
+      delay_10us(SETTLING_DELAY);         // allow LPDAC to settle
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(1,chan);
+        szADCSamples[sampleCount]=burstSample(1,chan);  //measure V_RE with 32x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(0,chan);
+        szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
         sampleCount++;
       }
     }
     
     for (cBias = cVertex; cBias < cEnd; cBias = cBias + inc){
-      LPDacWr(chan, cZero, cBias);         // Set VBIAS/VZERO output voltages
-      delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
+      LPDacWr(chan, cZero, cBias);        // Set VBIAS/VZERO output voltages
+      delay_10us(SETTLING_DELAY);         // allow LPDAC to settle
       GptWaitForFlag();                   //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                    //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=burstSample(1,chan);
+        szADCSamples[sampleCount]=burstSample(1,chan);  //measure V_RE with 32x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=burstSample(0,chan);
+        szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
         sampleCount++;
       }
     }
   }
 
-  //Open the RE/CE connections to put the sensor in "open circuit" state
-  pADI_AFE->LPTIASW0=0x0;
-  pADI_AFE->LPDACSW0=0x20;
-  
+  //put the sensor in "open circuit" state
+  turn_off_afe_power_things_down();
   printCVResults(cZero,cStart,cVertex,cEnd,sampleCount,RTIA);
 }
 
 void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA){
   float zeroVoltage = 200+(cZero*34.38);
-  printf("[RANGE:%f,%f,%f]", (cStart*0.54+200-zeroVoltage)*-1, (cVertex*0.54+200-zeroVoltage)*-1, (cEnd*0.54+200-zeroVoltage)*-1);
+  printf("[RANGE:%f,%f,%f]", (cStart*0.537+200-zeroVoltage)*-1, (cVertex*0.54+200-zeroVoltage)*-1, (cEnd*0.537+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
   uint16_t* szADCSamples = return_adc_buffer();
   float tc, vDiff;
@@ -213,8 +212,7 @@ void equilibrium_delay_CV(uint16_t chan, int startV, int vertexV, int endV, uint
   uint16_t vZero = abs_voltages[0];
   uint16_t vStart = abs_voltages[1];
   
-  uint16_t DACSHIFT = 40;
-  LPDacWr(chan, (int)((vZero-200)/34.38), (int)((vStart-200)/0.54-DACSHIFT));    //Write the DAC to its starting voltage during the quilibrium period
+  LPDacWr(chan, mV_to_DAC(vZero,6) , mV_to_DAC(vStart,12));    //Write the DAC to its starting voltage during the quilibrium period
   delay_10us(100000*time);
 }
 /****************END CYCLIC VOLTAMMETRY**********************/
@@ -329,29 +327,26 @@ void swv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, ui
   uint16_t vZero = abs_voltages[0];
   uint16_t vStart = abs_voltages[1];
   uint16_t vEnd = abs_voltages[2];
+  
+  //Convert test voltages to DAC inputs
+  uint16_t cStart = mV_to_DAC(vStart,12);
+  uint16_t cEnd = mV_to_DAC(vEnd,12);
+  uint16_t cZero = mV_to_DAC(vZero,6);
+  uint16_t cBias = cStart;
+  uint16_t cAmp = (int)((amplitude)/0.537);
+  uint16_t inc = 2*step;        //DAC bit is 0.537mV, x2 to make inc ~1mV
 
+  //Square wave timing parameters
   uint16_t SETTLING_DELAY = 5;
-  uint16_t cBias, cZero;
-  uint16_t DACSHIFT = 40;
-  
-  uint16_t cStart = (int)((vStart-200)/0.54-DACSHIFT);
-  uint16_t cEnd =(int)((vEnd-200)/0.54-DACSHIFT);
-  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
-  
   uint16_t delayVal = (50000/freq/3);        //delay required to maintain specified squarewave frequency
 
-  uint16_t amp = (int)((amplitude)/0.54);
-  
-  cZero = (int)((vZero-200)/34.38);
-  cBias = cStart;
-
+  //Initialize ADC parameters
+  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
-
-  uint16_t inc = 2*step;
   
-  //Ramp function goes from negative to positive voltage
+  //ramp function is "upwards"
   if(vStart < vEnd){
     for (cBias = cStart; cBias < cEnd; cBias = cBias + inc){
       
@@ -361,22 +356,22 @@ void swv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, ui
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the starting voltage and current
-      szADCSamples[sampleCount]=burstSample(1,chan);
+      szADCSamples[sampleCount]=burstSample(1,chan);    //measure V_RE with 32x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;
       
       //Squarewave high
-      LPDacWr(chan, cZero, cBias+2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(chan, cZero, cBias+2*cAmp);               //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;     
     }
   }
-  //Ramp function goes from positive to negative voltage
+  //ramp function is "downwards"
   else{
     for (cBias = cStart; cBias > cEnd; cBias = cBias - inc){
       
@@ -386,18 +381,18 @@ void swv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, ui
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the starting voltage and current
-      szADCSamples[sampleCount]=burstSample(1,chan);
+      szADCSamples[sampleCount]=burstSample(1,chan);    //measure V_RE with 32x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;
       
       //Squarewave high
-      LPDacWr(chan, cZero, cBias-2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(chan, cZero, cBias-2*cAmp);               //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;     
     }
   }
@@ -413,12 +408,13 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
   float zeroVoltage = 200+(cZero*34.38);
   uint16_t* szADCSamples = return_adc_buffer();
   float v, tc;
-  printf("[RANGE:%f,%f]", (cStart*0.54+200-zeroVoltage)*-1, (cEnd*0.54+200-zeroVoltage)*-1);
+  printf("[RANGE:%f,%f]", (cStart*0.537+200-zeroVoltage)*-1, (cEnd*0.537+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
   
   float arr[20] = {0};        //declare arrays to hold previous current measurements
   float newarr[20] = {0};
   uint8_t use_mov_avg = 1;
+  
   //Initialize arr[] to the first N values in szADCSamples instead of zero
   for(uint16_t i = 0; i < 60; i+=3){
     arr[(int)(i/3)] = adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA);
@@ -449,8 +445,7 @@ void equilibrium_delay_SWV(uint16_t chan, int startV, int endV, uint16_t amp, ui
   uint16_t vZero = abs_voltages[0];
   uint16_t vStart = abs_voltages[1];
 
-  uint16_t DACSHIFT = 40;
-  LPDacWr(chan, (int)((vZero-200)/34.38), (int)((vStart-200)/0.54-DACSHIFT));    //Write the DAC to its starting voltage during the quilibrium period
+  LPDacWr(chan, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));    //Write the DAC to its starting voltage during the quilibrium period
   delay_10us(100000*time);
 }
 
@@ -572,36 +567,26 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
   uint16_t vVertex = abs_voltages[2];
   uint16_t vEnd = abs_voltages[3];
   
-  printf("%i\n", vZero); 
-  printf("%i\n", vStart); 
-  printf("%i\n", vVertex); 
-  printf("%i\n", vEnd); 
-  
-  //printf("%i%s%i%s%i%s%i\n", vZero, ", ", vStart, ", " , vVertex, ", ", vEnd);
+  //Convert test voltages to DAC inputs
+  uint16_t cStart = mV_to_DAC(vStart,12);
+  uint16_t cVertex = mV_to_DAC(vVertex,12);
+  uint16_t cEnd = mV_to_DAC(vEnd,12);
+  uint16_t cZero = mV_to_DAC(vZero,6);
+  uint16_t cBias = cStart;
+  uint16_t cAmp = (int)((amplitude)/0.537);
+  uint16_t inc = 2*step;        //DAC bit is 0.537mV, x2 to make inc ~1mV
 
+  //Square wave timing parameters
   uint16_t SETTLING_DELAY = 5;
-  uint16_t cBias, cZero;
-  uint16_t DACSHIFT = 40;
-  
-  uint16_t cStart = (int)((vStart-200)/0.54-DACSHIFT);
-  uint16_t cVertex = (int)((vVertex-200)/0.54-DACSHIFT);
-  uint16_t cEnd = (int)((vEnd-200)/0.54-DACSHIFT);
-  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
-  
   uint16_t delayVal = (50000/freq/3);        //delay required to maintain specified squarewave frequency
 
-  uint16_t amp = (int)((amplitude)/0.54);
-  
-  cZero = (int)((vZero-200)/34.38);
-  cBias = cStart;
-
+  //Initialize ADC parameters
+  int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
-
-  uint16_t inc = 2*step;
   
-  //Ramp function goes from negative to positive voltage
+  //ramp function is "upwards"
   if(vStart < vVertex){
     for (cBias = cStart; cBias < cVertex; cBias = cBias + inc){
       //Squarewave low
@@ -610,18 +595,18 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the starting voltage and current
-      szADCSamples[sampleCount]=burstSample(1,chan);
+      szADCSamples[sampleCount]=burstSample(1,chan);    //measure V_RE with 32x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;
       
       //Squarewave high
-      LPDacWr(chan, cZero, cBias+2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(chan, cZero, cBias+2*cAmp);               //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;     
     }
     for (cBias = cVertex; cBias > cEnd; cBias = cBias - inc){
@@ -631,22 +616,23 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the starting voltage and current
-      szADCSamples[sampleCount]=burstSample(1,chan);
+      szADCSamples[sampleCount]=burstSample(1,chan);    //measure V_RE with 32x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;
       
       //Squarewave low
-      LPDacWr(chan, cZero, cBias-2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(chan, cZero, cBias-2*cAmp);               //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;     
     }
   }
-  //Ramp function goes from positive to negative voltage
+  
+  //ramp function is "downwards"
   else{
     for (cBias = cStart; cBias > cVertex; cBias = cBias - inc){
       
@@ -656,18 +642,18 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the starting voltage and current
-      szADCSamples[sampleCount]=burstSample(1,chan);
+      szADCSamples[sampleCount]=burstSample(1,chan);    //measure V_RE with 32x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;
       
       //Squarewave low
-      LPDacWr(chan, cZero, cBias-2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(chan, cZero, cBias-2*cAmp);               //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;     
     }
     for (cBias = cVertex; cBias < cEnd; cBias = cBias + inc){
@@ -677,33 +663,32 @@ void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the starting voltage and current
-      szADCSamples[sampleCount]=burstSample(1,chan);
+      szADCSamples[sampleCount]=burstSample(1,chan);    //measure V_RE with 32x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;
       
       //Squarewave high
-      LPDacWr(chan, cZero, cBias+2*amp);               //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(chan, cZero, cBias+2*cAmp);               //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
       
       //Measure the current at the squarewave HIGH side
-      szADCSamples[sampleCount]=burstSample(0,chan);
+      szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;     
     }
   }
   
-  //Open the RE/CE connections to put the sensor in "open circuit" state
-  pADI_AFE->LPTIASW0=0x0;
-  pADI_AFE->LPDACSW0=0x20;
-  
+  //put the sensor in "open circuit" state
+  turn_off_afe_power_things_down();
   printCSWVResults(cZero, cStart, cVertex, cEnd, sampleCount, RTIA);
 }
+
 void printCSWVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA){
   float zeroVoltage = 200+(cZero*34.38);
   uint16_t* szADCSamples = return_adc_buffer();
   float v, tc;
-  printf("[RANGE:%f,%f,%f]", (cStart*0.54+200-zeroVoltage)*-1, (cVertex*0.54+200-zeroVoltage)*-1, (cEnd*0.54+200-zeroVoltage)*-1);
+  printf("[RANGE:%f,%f,%f]", (cStart*0.537+200-zeroVoltage)*-1, (cVertex*0.537+200-zeroVoltage)*-1, (cEnd*0.537+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
   for(uint32_t i = 0; i < sampleCount; i+=3){
     v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
@@ -722,8 +707,7 @@ void equilibrium_delay_CSWV(uint16_t chan, int startV, int vertexV, int endV, ui
   uint16_t vZero = abs_voltages[0];
   uint16_t vStart = abs_voltages[1];
 
-  uint16_t DACSHIFT = 40;
-  LPDacWr(chan, (int)((vZero-200)/34.38), (int)((vStart-200)/0.54-DACSHIFT));    //Write the DAC to its starting voltage during the quilibrium period
+  LPDacWr(chan, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));    //Write the DAC to its starting voltage during the quilibrium period
   delay_10us(100000*time);
 }
 /****************END CYCLIC SQUARE WAVE VOLTAMMETRY***************************/
@@ -800,56 +784,54 @@ void set_ca_voltages(int vStep, uint16_t absolute_voltages[2]){
 }
 
 void ca_step_parameters(uint16_t chan, int stepV, uint16_t length, uint16_t delay, uint32_t RGAIN){
+  
+  //Convert relative voltages from inputs to absolute voltages for differential DAC 
   uint16_t absolute_voltages[2] = {0, 0};
   set_ca_voltages(stepV, absolute_voltages);
   uint16_t vZero = absolute_voltages[0];
   uint16_t vStep = absolute_voltages[1];
+
+  //Set p CA voltage parameters for DAC input
+  uint16_t cZero = mV_to_DAC(vZero,6);
+  uint16_t cStep = mV_to_DAC(vStep, 12);
   
+  //CA timing parameters
   uint16_t SETTLING_DELAY = 5;
-  uint16_t DACSHIFT = 40;
-  uint16_t cZero, cStep;
-  cStep = (int)((vStep-200)/0.54)-DACSHIFT;
-  cZero = (int)((vZero-200)/34.38);
+  uint16_t samples = 500;
+  float sample_interval_ms = (1000*length)/samples;
+  
+  //Initialize ADC parameters
   int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
-  
-  uint16_t totalSamples = 500;
-  
   int sampleCount = 0;
   uint16_t* szADCSamples = return_adc_buffer();
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   
   //Set sensor voltage to zero and maintain for the delay time
-  LPDacWr(chan, (int)((vZero-200)/34.38), (int)((vZero-200)/0.54-DACSHIFT));
+  LPDacWr(chan, cZero, mV_to_DAC(vZero,12));
   delay_10us(100000*delay);
   
-  //Set the sensor to the step voltage and record N=totalSamples while holding for the step length
+  //Set the sensor to the step voltage and record N=samples while holding for the step length
   LPDacWr(chan, cZero, cStep);
   delay_10us(SETTLING_DELAY);
-  
-  //Calculate timing parameters for step length
-  float sample_interval_ms = (1000*length)/totalSamples;
-  printf("%f", sample_interval_ms);
-  //float sample_interval_s = sample_interval_ms/1000;
-  
-  for(int i=0 ; i<totalSamples ; ++i){
+  for(int i=0 ; i<samples ; ++i){
     //Measure the voltage and current
-    szADCSamples[sampleCount]=burstSample(1,chan);
+    szADCSamples[sampleCount]=burstSample(1,chan);      //measure V_RE with 32x oversampling
     sampleCount++;
-    szADCSamples[sampleCount]=burstSample(0,chan);
+    szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
     sampleCount++;
-    delay_10us((int)length/(3*totalSamples*(10E-6)));
+    delay_10us((int)length/(3*samples*(10E-6)));   /* !!!!!This timing is not accurate, need to improve this!!!!  */
   }
   
-  //Set the sensor back to 0V and record N=totalSamples while holding for the step length
-  LPDacWr(chan, cZero, (int)((vZero-200)/0.54-DACSHIFT));
+  //Set the sensor back to 0V and record N=samples while holding for the step length
+  LPDacWr(chan, cZero, mV_to_DAC(vZero,12));
   delay_10us(SETTLING_DELAY);
-  for(int i=0 ; i<totalSamples ; ++i){
+  for(int i=0 ; i<samples ; ++i){
     //Measure the voltage and current
-    szADCSamples[sampleCount]=burstSample(1,chan);
+    szADCSamples[sampleCount]=burstSample(1,chan);      //measure V_RE with 32x oversampling
     sampleCount++;
-    szADCSamples[sampleCount]=burstSample(0,chan);
+    szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
     sampleCount++;
-    delay_10us((int)length/(3*totalSamples*(10E-6)));
+    delay_10us((int)length/(3*samples*(10E-6)));
   }
   printCAResults(cZero, cStep, length, RTIA, sampleCount, sample_interval_ms);
 }
@@ -858,13 +840,13 @@ void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCo
   float zeroVoltage = 200+(cZero*34.38);
   uint16_t* szADCSamples = return_adc_buffer();
   float tc;
-  printf("[STEP:%f]", (cStep*0.54+200-zeroVoltage)*-1);
+  printf("[STEP:%f]", (cStep*0.537+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
   int index = 0;
   for(uint32_t i = 0; i < sampleCount; i+=2){
-    //v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
+    //v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);   //Later, may want to plot measured voltages as well as current vs. time
     tc = adc_to_current(szADCSamples[i+1],RTIA);
-    printf("%f,%f\n", index*timeStep, tc);       //chronoamperometry plotted vs.time instead of voltage?
+    printf("%f,%f\n", index*timeStep, tc);       //chronoamperometry plotted vs.time instead of voltage
     ++index;
   }
   printf("]");

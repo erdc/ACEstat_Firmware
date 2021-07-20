@@ -76,13 +76,14 @@ void GptCfgVoltammetry(uint16_t mvRate);
 void GptWaitForFlag(void);
 uint16_t sweeprateLookup(uint16_t mvRate);
 
-//Used for ADC sampling and filtering
+//Used for ADC/DAC
 uint16_t getAdcVal(void);
 void setAdcMode(uint8_t mode);
 int burstSample(int mode, uint8_t chan);
 float adc_to_volts(float adcVal);
 float adc_to_current(float adcVal, int RTIA);
 float voltammetryMovAvg(float* arr, float* newarr, float val, int w);
+uint16_t mV_to_DAC(uint16_t mV, uint8_t nBits);
 
 //Interrupt handlers
 void AfeAdc_Int_Handler(void);
