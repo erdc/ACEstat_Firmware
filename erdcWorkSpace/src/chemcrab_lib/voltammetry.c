@@ -91,7 +91,6 @@ void set_CV_voltages(int relative_voltages[3], uint16_t absolute_voltages[4]){
   absolute_voltages[1] = absolute_voltages[0] - relative_voltages[0];   //set vStart_abs
   absolute_voltages[2] = absolute_voltages[0] - relative_voltages[1];   //set vVert_abs
   absolute_voltages[3] = absolute_voltages[0] - relative_voltages[2];   //set vEnd_abs
-  
 }
 
 void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32_t RGAIN, uint16_t sweepRate){   
@@ -375,7 +374,7 @@ void swv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, ui
   else{
     for (cBias = cStart; cBias > cEnd; cBias = cBias - inc){
       
-      //Squarewave low
+      //Squarewave high
       LPDacWr(chan, cZero, cBias);
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
@@ -386,7 +385,7 @@ void swv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, ui
       szADCSamples[sampleCount]=burstSample(0,chan);      //measure current from LPTIA with 32x oversampling
       sampleCount++;
       
-      //Squarewave high
+      //Squarewave low
       LPDacWr(chan, cZero, cBias-2*cAmp);               //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                  // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);         //holding delay to maintain squarewave frequency
@@ -410,23 +409,18 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
   float v, tc;
   printf("[RANGE:%f,%f]", (cStart*0.537+200-zeroVoltage)*-1, (cEnd*0.537+200-zeroVoltage)*-1);
   printf("[RGAIN:%i][RESULTS:", RTIA);
-  
-  float arr[20] = {0};        //declare arrays to hold previous current measurements
-  float newarr[20] = {0};
-  uint8_t use_mov_avg = 1;
-  
-  //Initialize arr[] to the first N values in szADCSamples instead of zero
-  for(uint16_t i = 0; i < 60; i+=3){
-    arr[(int)(i/3)] = adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA);
-  }
+  uint8_t use_mov_avg = 0;
   
   for(uint16_t i = 0; i < sampleCount; i+=3){
     v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);
-    tc = adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA);
     
     //Moving average filter for voltammetry data
     if(use_mov_avg){
-      tc = voltammetryMovAvg(arr, newarr, tc, 20);
+      int filterWidth = 20;
+      tc = voltammetryMovAvg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
+    }
+    else{
+      tc = adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA);
     }
     
     printf("%f,%f\n", v, tc);

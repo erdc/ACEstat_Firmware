@@ -82,7 +82,7 @@ void setAdcMode(uint8_t mode);
 int burstSample(int mode, uint8_t chan);
 float adc_to_volts(float adcVal);
 float adc_to_current(float adcVal, int RTIA);
-float voltammetryMovAvg(float* arr, float* newarr, float val, int w);
+float voltammetryMovAvg(int w, uint16_t *arr, int pos, uint16_t sc, int RTIA);
 uint16_t mV_to_DAC(uint16_t mV, uint8_t nBits);
 
 //Interrupt handlers

@@ -671,26 +671,31 @@ float adc_to_current(float adcVal, int RTIA){
   return (((fVolt/RTIA*1000)-1));
 }
 
-//Simple moing average filter for Voltammetry data
-float voltammetryMovAvg(float* arr, float* newarr, float val, int w){
-
-  //Add val to the front of newarr, remove oldest element in arr
-  for(int j=0 ; j<w-1 ; ++j){
-    newarr[j+1] = arr[j];
-  }
-  newarr[0] = val;
-  //Overwrite arr with newarr to save for next iteration
-  for(int j=0 ; j<w ; ++j){
-    arr[j] = newarr[j];
-  }
-  
-  //Calc average of newarr
+//Simple moving average filter for Voltammetry data
+float voltammetryMovAvg(int w, uint16_t *arr, int pos, uint16_t sc, int RTIA){
+  //all indexing mult. by 2 because of how szADCSamples stores SWV data
   float sum = 0;
-  for(int j=0 ; j<w ; ++j){
-    sum+=arr[j];
-  }
+  float ctr = 0;
   
-  return sum/(w);
+  if(pos < 3*w){
+    for(int j=1 ; j<pos+3*w ; j+=3){
+      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  if(pos>3*w && pos<sc-3*w){
+    for(int j=pos-3*w ; j<pos+3*w ; j+=3){
+      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  if(pos > sc-3*w){
+    for(int j=pos-3*w ; j<sc ; j+=3){
+      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  return sum/ctr;
 }
 
 //Converts a voltage input in mV to a DAC(either 12b or 6b) value passable to the LpDacWr function
