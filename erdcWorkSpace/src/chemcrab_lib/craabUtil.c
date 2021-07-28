@@ -98,7 +98,49 @@ void turn_off_afe_power_things_down(void){
   AfePwrCfg(AFE_HIBERNATE); //put analog die to sleep
 }
 
-void adcCurrentSetup_lptia(uint8_t channel){
+void adcVoltageSetupVRE(uint8_t channel){
+    AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
+    AfeAdcPgaCfg(GNPGA_1,0);
+    
+    if(channel > 0){
+      AfeAdcChan(MUXSELP_VRE1,MUXSELN_VSET1P1);
+    }
+    else{
+      AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
+    }
+
+    AfeAdcChopEn(1);
+    AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
+    NVIC_EnableIRQ(AFE_ADC_IRQn);
+    AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
+    
+    AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_NOBYP,ADCSAMPLERATE_800K);
+    pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
+    delay_10us(5);
+}
+
+void adcVoltageSetupVSE(uint8_t channel){
+    AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
+    AfeAdcPgaCfg(GNPGA_1,0);
+    
+    if(channel > 0){
+      AfeAdcChan(MUXSELP_VSE1,MUXSELN_VSET1P1);
+    }
+    else{
+      AfeAdcChan(MUXSELP_VSE0,MUXSELN_VSET1P1);
+    }
+
+    AfeAdcChopEn(1);
+    AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
+    NVIC_EnableIRQ(AFE_ADC_IRQn);
+    AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
+    
+    AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_NOBYP,ADCSAMPLERATE_800K);
+    pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
+    delay_10us(5);
+}
+
+void adcCurrentSetupLPTIA(uint8_t channel){
   //AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
   AfeAdcPgaCfg(GNPGA_1_5,0); //for current use GNPGA_4
   
@@ -119,29 +161,6 @@ void adcCurrentSetup_lptia(uint8_t channel){
   AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_NOBYP,ADCSAMPLERATE_800K);
   pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
   delay_10us(5);
-}
-
-void adcVoltageSetup_lptia(uint8_t channel){
-    AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-    AfeAdcPgaCfg(GNPGA_1,0);
-    
-    if(channel > 0){
-      AfeAdcChan(MUXSELP_VRE1,MUXSELN_VSET1P1);
-    }
-    else{
-      AfeAdcChan(MUXSELP_VRE0,MUXSELN_VSET1P1);
-    }
-    
-    
-    
-    AfeAdcChopEn(1);
-    AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
-    NVIC_EnableIRQ(AFE_ADC_IRQn);
-    AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
-    
-    AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_NOBYP,ADCSAMPLERATE_800K);
-    pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
-    delay_10us(5);
 }
 
 //return current in uA;
@@ -637,13 +656,15 @@ void setAdcMode(uint8_t mode){
 
 int burstSample(int mode, uint8_t chan){
   int sum = 0;
-  int numSamples = 32;
+  int numSamples = 16;
   if(mode == 0){        //ADC is sampling from the LPTIA to measure current
-    adcCurrentSetup_lptia(chan);
-
+    adcCurrentSetupLPTIA(chan);
   }
-  if(mode == 1){         //ADC is sampling from VREO/VRE1 to Reference capacitor to measure sensor potential
-    adcVoltageSetup_lptia(chan);
+  if(mode == 1){         //ADC is sampling from VREO/VRE1 to reference capacitor
+    adcVoltageSetupVRE(chan);
+  }
+  if(mode == 2){        //ADC is sampling from VZERO to reference capacitor
+    adcVoltageSetupVSE(chan);  
   }
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   for(int i = 0 ; i<numSamples ; ++i){
@@ -654,16 +675,15 @@ int burstSample(int mode, uint8_t chan){
   return sum/numSamples;
 }
 
-//converts ADC value to volts for data outputting
+//converts ADC value to volts for data printing
 float adc_to_volts(float adcVal){
   float VREF = 1.82;
-  float ADCVBIAS_CAP = 1.11;
-  float VIN = (VREF*((adcVal-32768)/(32768)))+ADCVBIAS_CAP;
-  float shift = 0.0;    //not needed anymore to have serial output match actual sensor voltages
-  return (VIN + shift);
+  float ADC_MEAS_SHIFT = 0.033; //determined empirically 33mV shift to correct ADC error
+  float ADCVBIAS_CAP = 1.11 + ADC_MEAS_SHIFT;
+  return (VREF*((adcVal-32768)/(32768)))+ADCVBIAS_CAP;
 }
 
-//converts ADC value from LPTIA to microamps(uA) for data outputting
+//converts ADC value from LPTIA to microamps(uA) for data printing
 float adc_to_current(float adcVal, int RTIA){
   float kFactor = 1.835/1.82;
   float PGA_GAIN = 1.5;
@@ -709,6 +729,29 @@ uint16_t mV_to_DAC(uint16_t mV, uint8_t nBits){
   if(nBits==6){
     return (int)((mV-200)/34.38); //DONT use shift here
   }
+  return 0;
+}
+
+float DAC_to_mV(float DAC, uint8_t nBits){
+  //converting from 12b DAC value(0.537mV res)
+  if(nBits==12){
+    return (DAC*0.537+200);
+  }
+  //converting from 6b DAC value(34.38mV res)
+  if(nBits==6){
+    return (DAC*34.38+200);
+  }
+  return 0;
+}
+
+//because 12-bit DAC channel has 0.537mV res and 6-bit channel has 34.4mV res, adjustemnt is needed to ensure sensor voltage is correct
+//Returns a value to increase/decrease the 12-bit channel by, ensuring 0.54mV res for RE-CE potential
+int adjustDAC(uint16_t vZero, uint16_t vStart, int vDiffTarget, uint8_t chan){
+  LPDacWr(chan, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));
+  delay_10us(50);
+  float vDiffMeasure = 1000*adc_to_volts(burstSample(2,chan)) - 1000*adc_to_volts(burstSample(1,chan));
+  float mvShift = -1*(vDiffTarget - vDiffMeasure);
+  return (int)mvShift-4;        //manual testing shows mvShift is still of by ~4mV
 }
 
 void AfeAdc_Int_Handler(void){

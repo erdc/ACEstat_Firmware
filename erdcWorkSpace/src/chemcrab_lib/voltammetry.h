@@ -17,31 +17,30 @@
 
 #include "craabUtil.h"
 
-//Cyclic Voltammetry(CV) Functions
+//Cyclic Voltammetry(CV) 
 void runCV(void);
-void set_CV_voltages(int relative_voltages[3], uint16_t absolute_voltages[4]);
-void cv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32_t RGAIN, uint16_t sweepRate);
-void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA);
-void equilibrium_delay_CV(uint16_t chan, int startV, int vertexV, int endV, uint16_t time);
+void cvSetVoltages(int relative_voltages[3], uint16_t DACVoltages[4], uint8_t channel);
+void cvEquilibriumDelay(uint16_t chan, uint16_t DACVoltages[4], uint16_t time);
+void cvExcitationSignal(uint16_t chan, uint16_t DACvoltages[4], uint32_t RGAIN, uint16_t sweepRate);
+void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA, float vZeroMeasured);
 
-//Square-wave Voltammetry(SWV) Functions
+//Square-wave Voltammetry(SWV) 
 void runSWV(void);
-void set_SWV_voltages(int relative_voltages[3], uint16_t absolute_voltages[3]);
-void swv_ramp_parameters(uint16_t chan, int startV, int endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
-void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA);
-void equilibrium_delay_SWV(uint16_t chan, int startV, int endV, uint16_t amp, uint16_t time);
+void swvSetVoltages(int relative_voltages[3], uint16_t DACVoltages[3], uint8_t channel);
+void swvEquilibriumDelay(uint16_t chan, uint16_t DACVoltages[3], uint16_t amp, uint16_t time);
+void swvExcitationSignal(uint16_t chan, uint16_t DACvoltages[3], uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
+void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA, float vZeroMeasured);
 
-//Cyclic Square-wave Voltammetry(CSWV) Functions
+//Cyclic Square-wave Voltammetry(CSWV) 
 void runCSWV(void);
-void set_CSWV_voltages(int relative_voltages[4], uint16_t absolute_voltages[4]);
-void cswv_ramp_parameters(uint16_t chan, int startV, int vertexV, int endV, uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
-void printCSWVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA);
-void equilibrium_delay_CSWV(uint16_t chan, int startV, int vertexV, int endV, uint16_t amp, uint16_t time);
+void cswvSetVoltages(int relative_voltages[4], uint16_t DACVoltages[4], uint8_t channel);
+void cswvEquilibriumDelay(uint16_t chan, uint16_t DACVoltages[4], uint16_t amp, uint16_t time);
+void cswvExcitationSignal(uint16_t chan, uint16_t DACvoltages[4], uint32_t RGAIN, uint16_t amplitude, uint16_t step, uint16_t freq);
+void printCSWVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA, float vZeroMeasured);
 
 //Chrono-Amperometry (CA)
 void runCA(void);
-void set_ca_voltages(int vStep, uint16_t absolute_voltages[2]);
-void ca_step_parameters(uint16_t chan, int vStep, uint16_t length, uint16_t delay, uint32_t RGAIN);
-void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCount, float timeStep);
-
+void caSetVoltages(int vStep, uint16_t DACVoltages[2], uint8_t channel);
+void caExcitationSignal(uint16_t chan, uint16_t DACVoltages[2], uint16_t length, uint16_t delay, uint32_t RGAIN, int diag);
+void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCount, float timeStep, float vZeroMeasured);
 #endif

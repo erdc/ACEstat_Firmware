@@ -39,9 +39,10 @@ extern volatile uint8_t dftRdy;
 extern volatile uint8_t adcRdy;
 
 //void adcCurrentSetup_hptia(void);
-void adcVoltageSetup_lptia(uint8_t channel);
+void adcVoltageSetupVRE(uint8_t channel);
+void adcVoltageSetupVSE(uint8_t channel);
+void adcCurrentSetupLPTIA(uint8_t channel);
 float calcCurrent_hptia(uint16_t DAT, int RGAIN);
-void adcCurrentSetup_lptia(uint8_t channel);
 float calcADCVolt(uint16_t DAT);
 float calcCurrent_lptia(uint16_t DAT, int RGAIN, int RLOAD);
 void powerDownADC(void);
@@ -84,6 +85,8 @@ float adc_to_volts(float adcVal);
 float adc_to_current(float adcVal, int RTIA);
 float voltammetryMovAvg(int w, uint16_t *arr, int pos, uint16_t sc, int RTIA);
 uint16_t mV_to_DAC(uint16_t mV, uint8_t nBits);
+float DAC_to_mV(float DAC, uint8_t nBits);
+int adjustDAC(uint16_t vZero, uint16_t vStart, int vDiffTarget, uint8_t chan);
 
 //Interrupt handlers
 void AfeAdc_Int_Handler(void);
