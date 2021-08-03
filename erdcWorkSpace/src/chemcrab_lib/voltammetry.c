@@ -89,7 +89,16 @@ void cvSetVoltages(int relative_voltages[3], uint16_t DACVoltages[4], uint8_t ch
   
   //assign vZero based on the minVal
   DACVoltages[0] = vMax - abs(minVal);    //set vZero_abs
-  
+  /*------------------------------------
+  DACVoltages[0] = vZero (unsigned)
+  DACVoltages[1] = vStart (unsigned)
+  DACVotlages[2] = vVertex (unsigned)
+  DACVotlages[3] = vEnd (unsigned)
+  --------------------------------------
+  relative_voltages[0] = vStart (signed)
+  relative_voltages[1] = vVertex (signed)
+  relative_voltages[2] = vEnd (signed)
+  ------------------------------------*/
   //assign absolute voltages to each remaining test parameter based on the calculated vZero level
   DACVoltages[1] = DACVoltages[0] - relative_voltages[0];   //set vStart_abs
   DACVoltages[2] = DACVoltages[0] - relative_voltages[1];   //set vVert_abs
@@ -323,6 +332,16 @@ void swvSetVoltages(int relative_voltages[3], uint16_t DACVoltages[3], uint8_t c
   if(relative_voltages[0] < 0 && relative_voltages[1] < 0){      //if vStart and vEnd are both less than zero shift downwards further
     DACVoltages[0] = 1000;
   }
+  
+    /*------------------------------------
+  DACVoltages[0] = vZero (unsigned)
+  DACVoltages[1] = vStart (unsigned)
+  DACVotlages[2] = vEnd (unsigned)
+  --------------------------------------
+  relative_voltages[0] = vStart (signed)
+  relative_voltages[1] = vEnd (signed)
+  relative_voltages[2] = vAmplitude (unsigned)
+  ------------------------------------*/
   
   //assign absolute voltages to each remaining test parameter based on the calculated vZero level
   DACVoltages[1] = DACVoltages[0] - relative_voltages[0];   //set vStart_abs
@@ -562,6 +581,18 @@ void cswvSetVoltages(int relative_voltages[4], uint16_t DACVoltages[4], uint8_t 
   if(relative_voltages[0] < 0 && relative_voltages[1] < 0){      //if vStart and vEnd are both less than zero shift downwards further
     DACVoltages[0] = 1000;
   }
+  
+  /*------------------------------------
+  DACVoltages[0] = vZero (unsigned)
+  DACVoltages[1] = vStart (unsigned)
+  DACVoltages[2] = vVertex (unsigned)
+  DACVotlages[3] = vEnd (unsigned)
+  --------------------------------------
+  relative_voltages[0] = vStart (signed)
+  relative_voltages[1] = vVertex (signed)
+  relative_voltages[2] = vEnd (signed)
+  relative_voltages[3] = vAmplitude (unsigned)
+  ------------------------------------*/
   
   //assign absolute voltages to each remaining test parameter based on the calculated vZero level
   DACVoltages[1] = DACVoltages[0] - relative_voltages[0];   //set vStart_abs

@@ -489,9 +489,9 @@ int getVoltageInput(void){
 }
 
 //Returns a uint16_t representing  the UART input
-uint16_t getParameter(int dec){
+int getParameter(int dec){
   
-  uint16_t parameter = 0;
+  int parameter = 0;
   
   while(1){
     if(get_flag()){

@@ -64,7 +64,7 @@ int HSRTIA_VAL_LOOKUP(uint32_t RGAIN);
 int LPRTIA_VAL_LOOKUP(uint32_t RGAIN);
 //Retrieves voltammetry parameters from UART input
 int getVoltageInput(void);
-uint16_t getParameter(int dec);
+int getParameter(int dec);
 uint16_t getSensorChannel(void);
 
 //Temporary definition to run tests with/without the rheostat input until app is updated to take new input

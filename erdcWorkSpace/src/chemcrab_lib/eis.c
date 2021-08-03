@@ -528,6 +528,7 @@ uint8_t SnsMagPhaseCal(void)
 }
 
 void runEIS(void){
+  printf("[START:EIS]");
   setAdcMode(1);
       #if EIS_DCBIAS_EN //add bias voltage. Setup for O2 sensor 600mV bias
 
@@ -542,7 +543,7 @@ void runEIS(void){
            pSnsCfg1->Vzero = 1500;
            pSnsCfg1->Vbias = 900;
          }
-
+    
       #endif
 
          u32AFEDieStaRdy = AfeDieSta();              // Check if Kernel completed correctly before accessing AFE die
@@ -608,14 +609,17 @@ uint16_t getEISFrequencies(){
   float startFreq,endFreq;
   uint32_t numPoints;
   //Request user input for frequency range and points-per-decade
-    //printf("Lower-bound test frequency(between 0000Hz and 99999Hz) : ");
+    //printf("Lower-bound test frequency(between 1Hz and 250kHzHz) : ");
   printf("[:LBF]");
-  startFreq = getParameter(5);
-    
-  //printf("\nUpper-bound test frequency(between 0000Hz and 99999Hz) : ");
+  startFreq = getParameter(6);
+  
+  //printf("\nUpper-bound test frequency(between 1Hz and 250kHz) : ");
   printf("[:UBF]");
-  endFreq = getParameter(5);
-    
+  endFreq = getParameter(6);
+  if(endFreq > 240000){ ///Max frequency is 250kHz
+    endFreq = 240000;
+  }
+  
   //printf(\nFrequency test points per pecade
   printf("[:PPD]");
   int ppd = getParameter(2);
@@ -632,7 +636,8 @@ uint16_t getEISFrequencies(){
   for(int i=0 ; i<numPoints+1 ; ++i){
     float linVal = 100*i/numPoints;
     float logVal = exp(0.046155*linVal)-1;
-    ImpResult[i].freq = startFreq + (logVal*(endFreq-startFreq)/100);
+    ImpResult[i].freq = startFreq + (int)(logVal*(endFreq-startFreq)/100.0);
+    //printf("%f, %f, %f\n", linVal, logVal, ImpResult[i].freq);
   }
   return 1;
 }
