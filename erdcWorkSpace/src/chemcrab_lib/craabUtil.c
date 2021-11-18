@@ -1,3 +1,4 @@
+/**ERDC custom libraries */
 #include "craabUtil.h"
 
 /*UART*/
@@ -13,30 +14,11 @@ uint8_t* return_uart_buffer(void){
 }
 /*end UART*/
 
-uint8_t adcModeSel = 0;
 volatile uint8_t tmr2_timeout = 0;
-volatile uint8_t adcRdy = 0;
-volatile uint16_t ADCRAW = 0;
 
-/*FLAG VARIABLE CONTROL*/
-uint8_t flag = 0;
-int flag_set(void)
-{
-	flag=1;
-	return 1;
-}
 
-int flag_reset(void)
-{
-	flag=0;
-	return 1;
-}
 
-int get_flag(void)
-{
-	return flag;
-}
-/*END FLAG VARIABLE CONTROL*/
+/***************** UART and Clock setup ********************/
 
 void ClockInit(void)
 {
@@ -46,7 +28,7 @@ void ClockInit(void)
   AfeSysClkDiv(AFE_SYSCLKDIV_1);
 }
 
-// Configure the UART for 115200-8-N-1 baud rate
+// Configure the UART for 9600-8-N-1 baud rate
 void UartInit(void)
 {
   DioCfgPin(pADI_GPIO0,PIN10,1);               // Setup P0.10 as UART pin
@@ -66,43 +48,47 @@ void UartInit(void)
   /*Enable UART wakeup intterupt*/
 }
 
-void UART_Int_Handler(void)
+
+/***************** UART flag control for user input parsing********************/
+
+uint8_t uart_flag = 0;
+int uart_flag_set(void)
 {
-   UrtLinSta(pADI_UART0);
-   ucCOMIID0 = UrtIntSta(pADI_UART0);
-   if ((ucCOMIID0 & 0xE) == 0xc || (ucCOMIID0 & 0xE) == 0x4)	          // Receive byte
-   {
-     iNumBytesInFifo = pADI_UART0->COMRFC;    // read the Num of bytes in FIFO
-     for(uint8_t i = 0; i <iNumBytesInFifo;++i){
-       ucComRx = UrtRx(pADI_UART0);
-       szInSring[i]=ucComRx;
-     }
-     if (szInSring[0] == 27) {
-       NVIC_SystemReset();
-     }
-     UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR// Clear the Rx/TX FIFOs
-             |BITM_UART_COMFCR_TFCLR);
-     flag_set();
-   }
+	uart_flag=1;
+	return 1;
 }
 
-void turn_off_afe_power_things_down(void){
-  LPDacCfg(0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_ALLOPEN);
-
-  powerDownADC();
-
-  AfeLpTiaPwrDown(CHAN0, BITM_AFE_LPTIACON0_TIAPDEN|BITM_AFE_LPTIACON0_PAPDEN); //power down LPTIA and PA
-  AfeHpTiaPwrUp(0); //power down hptia
-  LPDacPwrCtrl(CHAN0, PWR_DOWN); //power down DAC
-  AfePwrCfg(AFE_HIBERNATE); //put analog die to sleep
+int uart_flag_reset(void)
+{
+	uart_flag=0;
+	return 1;
 }
 
-void adcVoltageSetupVRE(uint8_t channel){
+int uart_get_flag(void)
+{
+	return uart_flag;
+}
+
+/***************** ADC control and conversion ********************/
+
+#if defined ( __ICCARM__ )
+   #pragma location="never_retained_ram"
+   uint16_t szADCSamples[16000];   // 32KB SRAM can be used to gather ADC samples,
+#elif defined (__CC_ARM)
+  uint16_t szADCSamples[16000] __attribute__((section(".ARM.__at_0x20040000"))); // 32KB SRAM can be used to gather ADC samples,
+#else
+   #pragma message("WARNING: Need to place this variable in a large RAM section using your selected toolchain.")
+#endif
+
+volatile uint8_t adcRdy = 0;
+volatile uint16_t ADCRAW = 0;
+uint8_t adcModeSel = 0;
+
+void adc_voltage_setup_RE(uint8_t sensor_channel){
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);
     
-    if(channel > 0){
+    if(sensor_channel > 0){
       AfeAdcChan(MUXSELP_VRE1,MUXSELN_VSET1P1);
     }
     else{
@@ -119,11 +105,11 @@ void adcVoltageSetupVRE(uint8_t channel){
     delay_10us(5);
 }
 
-void adcVoltageSetupVSE(uint8_t channel){
+void adc_voltage_setup_SE(uint8_t sensor_channel){
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);
     
-    if(channel > 0){
+    if(sensor_channel > 0){
       AfeAdcChan(MUXSELP_VSE1,MUXSELN_VSET1P1);
     }
     else{
@@ -140,11 +126,11 @@ void adcVoltageSetupVSE(uint8_t channel){
     delay_10us(5);
 }
 
-void adcCurrentSetupLPTIA(uint8_t channel){
+void adc_current_setup_lptia(uint8_t sensor_channel){
   //AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
   AfeAdcPgaCfg(GNPGA_1_5,0); //for current use GNPGA_4
   
-  if(channel > 0){
+  if(sensor_channel > 0){
     AfeAdcChan(MUXSELP_LPTIA1_P,MUXSELN_LPTIA1_N);
     //AfeAdcChan(MUXSELP_LPTIA1_LPF,MUXSELN_LPTIA1_N);
   }
@@ -163,185 +149,152 @@ void adcCurrentSetupLPTIA(uint8_t channel){
   delay_10us(5);
 }
 
-//return current in uA;
-float calcCurrent_hptia(uint16_t DAT, int RGAIN){
-  float RLOAD=100;      //RLOAD is fixed to 100ohms when using SE as HPTIA input
-  int32_t adcSign = DAT;
-  float vv = (adcSign-32768.0)/65535.0*V_ADC_REF_mV*-1;
-  return -1*((vv/(RGAIN-(RLOAD-100)) *1000)+1)/2;
-}
-
-//void adcCurrentSetup_lptia(void){
-//  AfeAdcChan(MUXSELP_LPTIA0_LPF,MUXSELN_LPTIA0_N);
-//  AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
-//  AfeAdcPgaCfg(GNPGA_2,0); //for current use GNPGA_4
-//  AfeAdcChopEn(1);
-//
-//  AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
-//  AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
-//  pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
-//  delay_10us(5);  //50uS
-//}
-
-void powerDownADC(void){
-  /*power down ADC*/
-   AfeAdcPwrUp(0);
-   AfeAdcGo(ADCIDLE);
-}
-
-//return current in uA;
-float calcCurrent_lptia(uint16_t DAT, int RGAIN, int RLOAD){
-  int32_t adcSign = DAT;
-  float vv = (adcSign-32768.0)/65536.0*V_ADC_REF_mV*2;
+float calc_current_lptia(uint16_t adc_data, int RGAIN, int RLOAD){
+  int32_t current_adc_scale = adc_data;
+  float vv = (current_adc_scale-32768.0)/65536.0*V_ADC_REF_mV*2;
   return vv/(RGAIN-(RLOAD-100)) *1000;
 }
 
-float calcADCVolt(uint16_t DAT){
-  return (DAT-32768.0)/65535*3600+1100;
+float calc_voltage_adc(uint16_t adc_data){
+  return (adc_data-32768.0)/65535*3600+1100;
 }
-
-#if defined ( __ICCARM__ )
-   #pragma location="never_retained_ram"
-   uint16_t szADCSamples[16000];   // 32KB SRAM can be used to gather ADC samples,
-#elif defined (__CC_ARM)
-  uint16_t szADCSamples[16000] __attribute__((section(".ARM.__at_0x20040000"))); // 32KB SRAM can be used to gather ADC samples,
-#else
-   #pragma message("WARNING: Need to place this variable in a large RAM section using your selected toolchain.")
-#endif
 
 uint16_t* return_adc_buffer(void){
 	return szADCSamples;
 }
 
-void sensor_setup_cv(void){
-    /*SNS INIT*/
-  LPDacPwrCtrl(CHAN0,PWR_UP);
-  LPDacCfg(CHAN0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  LPDacWr(CHAN0, 62, 62*64);
-
-  /*power up PA,TIA,no boost, full power*/
-  AfeLpTiaPwrDown(CHAN0,0);
-  AfeLpTiaAdvanced(CHAN0,BANDWIDTH_NORMAL,CURRENT_NOR);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_SHORT);  /*short TIA feedback for Sensor setup*/
-
-  AfeLpTiaCon(CHAN0,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M);
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_NORM);  /*TIA switch to normal*/
-  /*END SNS INIT*/
+uint16_t get_adc_val(void){
+  return ADCRAW;
 }
 
-void hptia_setup(void){
-  pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
-  AfeHpTiaSeCfg(HPTIASE_RTIA_80K,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
-
-  LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
-  AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
-
-  AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
-  AfeHpTiaPwrUp(true);
-
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
-  LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
-
-  AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
+void set_adc_mode(uint8_t mode){
+  adcModeSel = mode;
 }
 
-//THIS IS A TEMPORARY FIX TO ADDRESS ISSUES WE'VE BEEN HAVING WITH THE HSTIA, SHOULD BE REPLACED WITH A MORE MODULAR SETUP FUNCTION
-void AFE_SETUP_LPTIA_LPDAC(uint8_t channel){
-  if(channel == CHAN0){
-    pADI_ALLON->PWRMOD=0x8009;
-    pADI_AFE->AFECON=0x90000;
-    pADI_AFE->PMBW=0x4200C;
-    pADI_AFE->ADCFILTERCON=0x2A11;
-    pADI_AFE->ADCINTIEN=0x0;
-    pADI_AFE->DFTCON=0x0;
-    pADI_AFE->ADCCON=0x10221;
-    pADI_AFE->CALDATLOCK=0xDE87A5A0;
-    pADI_AFE->LPREFBUFCON=0x0;
-    pADI_AFE->LPTIASW1=0x0;
-    pADI_AFE->LPTIASW0=0x34;
-    //pADI_AFE->LPTIASW0=0x3C;    //trying to fix high IR drop between RE and CE
-    pADI_AFE->LPTIACON0=0x4038;
-    pADI_AFE->LPDACSW0=0x34;
-    pADI_AFE->LPDACCON0=0x1;
-    pADI_AFE->LPDACCON1=0x2;
-    pADI_AFE->HSDACCON=0x1FE;
-    pADI_AFE->WGCON=0x4;
-    pADI_AFE->WGFCW=0x45D1;
-    pADI_AFE->WGAMPLITUDE=0x516;
-    pADI_AFE->HSRTIACON=0x3E0;
-    pADI_AFE->DE1RESCON=0xFD;
-    pADI_AFE->DE0RESCON=0xFD;
-    pADI_AFE->TSWFULLCON=0x0;
-    delay_10us(1000);
+int oversample_adc(int mode, uint8_t sensor_channel, uint16_t oversample_rate){
+  int sum = 0;
+  uint16_t numSamples = oversample_rate;
+  
+  if(mode == 0){        //ADC is sampling from the LPTIA to measure current
+    adc_current_setup_lptia(sensor_channel);
   }
-  else{
-    pADI_ALLON->PWRMOD=0x8009;
-    pADI_AFE->AFECON=0x90000;
-    pADI_AFE->PMBW=0x4200C;
-    pADI_AFE->ADCFILTERCON=0x2A11;
-    pADI_AFE->ADCINTIEN=0x0;
-    pADI_AFE->DFTCON=0x0;
-    pADI_AFE->ADCCON=0x40322;   //Changed to connect ADC to CHAN1
-    pADI_AFE->CALDATLOCK=0xDE87A5A0;
-    pADI_AFE->LPREFBUFCON=0x0;
-    pADI_AFE->LPTIASW1=0x34;     //Swapped CHAN0 and CHAN1 values here and below
-    //pADI_AFE->LPTIASW1=0x3C;
-    pADI_AFE->LPTIASW0=0x0;
-    pADI_AFE->LPTIACON0=0x0;
-    pADI_AFE->LPTIACON1=0x4038;
-    pADI_AFE->LPDACSW0=0x0;
-    pADI_AFE->LPDACSW1=0x34;
-    pADI_AFE->LPDACCON0=0x2;
-    pADI_AFE->LPDACCON1=0x1;
-    pADI_AFE->HSDACCON=0x1FE;
-    pADI_AFE->WGCON=0x4;
-    pADI_AFE->WGFCW=0x45D1;
-    pADI_AFE->WGAMPLITUDE=0x516;
-    pADI_AFE->HSRTIACON=0x3E0;
-    pADI_AFE->DE1RESCON=0xFD;
-    pADI_AFE->DE0RESCON=0xFD;
-    pADI_AFE->TSWFULLCON=0x0;
-    delay_10us(1000); 
+  if(mode == 1){         //ADC is sampling from VREO/VRE1 to reference capacitor
+    adc_voltage_setup_RE(sensor_channel);
   }
+  if(mode == 2){        //ADC is sampling from VZERO to reference capacitor
+    adc_voltage_setup_SE(sensor_channel);  
+  }
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
+  for(int i = 0 ; i<numSamples ; ++i){
+    while(!adcRdy){};
+    adcRdy = 0;
+    sum = sum + get_adc_val();
+  }
+
+  return sum/numSamples;
 }
 
-void hptia_setup_parameters(uint32_t RTIA){
-  pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
-  AfeHpTiaSeCfg(RTIA,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
-
-  LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  //AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
-  //AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
-
-  AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
-  AfeHpTiaPwrUp(true);
-
-  //AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
-  LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
-
-  //AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
+//converts ADC value to volts for data printing
+float adc_to_voltage(float adc_data){
+  float VREF = 1.82;
+  float ADC_MEAS_SHIFT = 0.033; //determined empirically 33mV shift to correct ADC error
+  float ADCVBIAS_CAP = 1.11 + ADC_MEAS_SHIFT;
+  return (VREF*((adc_data-32768)/(32768)))+ADCVBIAS_CAP;
 }
 
-void lptia_setup_parameters(uint32_t RTIA){
-  pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
-  AfeHpTiaSeCfg(RTIA,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
-
-  LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
-  AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
-  AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
-
-  //AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
-  AfeHpTiaPwrUp(true);
-
-  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
-  LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
-
-  AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
+//converts ADC value from LPTIA to microamps(uA) for data printing
+float adc_to_current(float adcVal, int RTIA){
+  float kFactor = 1.835/1.82;
+  float PGA_GAIN = 1.5;
+  float fVolt = ((adcVal-32768)/PGA_GAIN)*V_ADC_REF_mV/32768*kFactor;
+  return (((fVolt/RTIA*1000)-1));
 }
+
+//Simple moving average filter for Voltammetry data
+float voltammetry_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_count, int RTIA){
+  //all indexing mult. by 2 because of how szADCSamples stores SWV data
+  float sum = 0;
+  float ctr = 0;
+  
+  if(pos < 3*width){
+    for(int j=1 ; j<pos+3*width ; j+=3){
+      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  if(pos>3*width && pos<sample_count-3*width){
+    for(int j=pos-3*width ; j<pos+3*width ; j+=3){
+      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  if(pos > sample_count-3*width){
+    for(int j=pos-3*width ; j<sample_count ; j+=3){
+      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  return sum/ctr;
+}
+
+/***************** DAC control and conversion ********************/
+
+uint16_t mV_to_DAC(uint16_t mV, uint8_t nBits){
+  uint16_t shift = 0;
+  //to be written to 12b DAC sensor_channel(0.537mV res)
+  if(nBits==12){
+    return (int)((mV-200)/0.537)-shift;
+  }
+  //to be written to 6b DAC sensor_channel(34.38mV res)
+  if(nBits==6){
+    return (int)((mV-200)/34.38); //DONT use shift here
+  }
+  return 0;
+}
+
+float DAC_to_mV(float DAC, uint8_t nBits){
+  //converting from 12b DAC value(0.537mV res)
+  if(nBits==12){
+    return (DAC*0.537+200);
+  }
+  //converting from 6b DAC value(34.38mV res)
+  if(nBits==6){
+    return (DAC*34.38+200);
+  }
+  return 0;
+}
+
+int adjust_DAC(uint16_t vZero, uint16_t vStart, int vDiffTarget, uint8_t sensor_channel){
+  LPDacWr(sensor_channel, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));
+  delay_10us(50);
+  float vDiffMeasure = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16)) - 1000*adc_to_voltage(oversample_adc(1,sensor_channel,16));
+  float mvShift = -1*(vDiffTarget - vDiffMeasure);
+  return (int)mvShift-4;        //manual testing shows mvShift is still of by ~4mV
+}
+
+/***************** System shutdown control ********************/
+
+void turn_off_afe_power_things_down(void){
+  LPDacCfg(0,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
+  AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_ALLOPEN);
+
+  power_down_ADC();
+
+  AfeLpTiaPwrDown(CHAN0, BITM_AFE_LPTIACON0_TIAPDEN|BITM_AFE_LPTIACON0_PAPDEN); //power down LPTIA and PA
+  AfeHpTiaPwrUp(0); //power down hptia
+  LPDacPwrCtrl(CHAN0, PWR_DOWN); //power down DAC
+  AfePwrCfg(AFE_HIBERNATE); //put analog die to sleep
+}
+
+
+
+void power_down_ADC(void){
+  /*power down ADC*/
+   AfeAdcPwrUp(0);
+   AfeAdcGo(ADCIDLE);
+}
+
+/***************** TIA setup functions ********************/
 
 uint16_t HSRTIA_LOOKUP(uint8_t choice){
   switch(choice){
@@ -439,35 +392,109 @@ int LPRTIA_VAL_LOOKUP(uint32_t RGAIN){
   return 0;
 }
 
-//Temporary function to run tests with/without rheostat parameter input
-//Set the return value to 0 to exclude rheostat resistance (RRI) from parameter input prompts
-int rheostat_available(void){
-  return 0;
+
+void AFE_SETUP_LPTIA_LPDAC(uint8_t sensor_channel){
+  if(sensor_channel == CHAN0){
+    pADI_ALLON->PWRMOD=0x8009;
+    pADI_AFE->AFECON=0x90000;
+    pADI_AFE->PMBW=0x4200C;
+    pADI_AFE->ADCFILTERCON=0x2A11;
+    pADI_AFE->ADCINTIEN=0x0;
+    pADI_AFE->DFTCON=0x0;
+    pADI_AFE->ADCCON=0x10221;
+    pADI_AFE->CALDATLOCK=0xDE87A5A0;
+    pADI_AFE->LPREFBUFCON=0x0;
+    pADI_AFE->LPTIASW1=0x0;
+    pADI_AFE->LPTIASW0=0x34;
+    pADI_AFE->LPTIACON0=0x4038;
+    pADI_AFE->LPDACSW0=0x34;
+    pADI_AFE->LPDACCON0=0x1;
+    pADI_AFE->LPDACCON1=0x2;
+    pADI_AFE->HSDACCON=0x1FE;
+    pADI_AFE->WGCON=0x4;
+    pADI_AFE->WGFCW=0x45D1;
+    pADI_AFE->WGAMPLITUDE=0x516;
+    pADI_AFE->HSRTIACON=0x3E0;
+    pADI_AFE->DE1RESCON=0xFD;
+    pADI_AFE->DE0RESCON=0xFD;
+    pADI_AFE->TSWFULLCON=0x0;
+    delay_10us(1000);
+  }
+  else{
+    pADI_ALLON->PWRMOD=0x8009;
+    pADI_AFE->AFECON=0x90000;
+    pADI_AFE->PMBW=0x4200C;
+    pADI_AFE->ADCFILTERCON=0x2A11;
+    pADI_AFE->ADCINTIEN=0x0;
+    pADI_AFE->DFTCON=0x0;
+    pADI_AFE->ADCCON=0x40322;   //Changed to connect ADC to CHAN1
+    pADI_AFE->CALDATLOCK=0xDE87A5A0;
+    pADI_AFE->LPREFBUFCON=0x0;
+    pADI_AFE->LPTIASW1=0x34;     //Swapped CHAN0 and CHAN1 values here and below
+    //pADI_AFE->LPTIASW1=0x3C;
+    pADI_AFE->LPTIASW0=0x0;
+    pADI_AFE->LPTIACON0=0x0;
+    pADI_AFE->LPTIACON1=0x4038;
+    pADI_AFE->LPDACSW0=0x0;
+    pADI_AFE->LPDACSW1=0x34;
+    pADI_AFE->LPDACCON0=0x2;
+    pADI_AFE->LPDACCON1=0x1;
+    pADI_AFE->HSDACCON=0x1FE;
+    pADI_AFE->WGCON=0x4;
+    pADI_AFE->WGFCW=0x45D1;
+    pADI_AFE->WGAMPLITUDE=0x516;
+    pADI_AFE->HSRTIACON=0x3E0;
+    pADI_AFE->DE1RESCON=0xFD;
+    pADI_AFE->DE0RESCON=0xFD;
+    pADI_AFE->TSWFULLCON=0x0;
+    delay_10us(1000); 
+  }
 }
 
-//Identifies the int to pass to the Rheostat in order to set the comnfigurable rheostat resistance
-//Returns an int between 0 and numPoints
-uint16_t rheostat_resistance(uint16_t target_resistance){
-  uint16_t numPoints = 256;
-  uint16_t minRes = 0;
-  uint16_t maxRes = 10000;
-  uint16_t stepSize = (int)(maxRes-minRes)/numPoints;
-  uint16_t i = 0;
-  while(stepSize*i < target_resistance){
-    i = i + 1;
-  }
-  if(stepSize*i-target_resistance > target_resistance - stepSize*(i-1)){
-    i = i - 1;
-  }
-  return i;
+void hptia_setup_parameters(uint32_t RTIA){
+  pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
+  AfeHpTiaSeCfg(RTIA,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
+
+  LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
+  LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
+  //AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
+  //AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
+
+  AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
+  AfeHpTiaPwrUp(true);
+
+  //AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
+  LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
+
+  //AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
 }
 
-int getVoltageInput(void){
+void lptia_setup_parameters(uint32_t RTIA){
+  pADI_AFE->BUFSENCON = 0x37; // ADC Low Power 1.8V reference for faster wake up times, adc current limit, enables high power 1.8V adc reference
+  AfeHpTiaSeCfg(RTIA,BITM_HPTIA_CTIA_4PF,0); //RGAIN of 80K
+
+  LPDacCfg(0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
+  LPDacCfg(1,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
+  AfeLpTiaSwitchCfg(1,SWMODE_NORM);   // Ensure Channel 1 LPTIA switches set for normal mode
+  AfeLpTiaSwitchCfg(0,SWMODE_RAMP);   // Ensure Channel 0 LPTIA switches set for Ramp mode
+
+  //AfeHpTiaCon(HPTIABIAS_VZERO0); //connect vzero0 to positive input of TIA
+  AfeHpTiaPwrUp(true);
+
+  AfeLpTiaSwitchCfg(CHAN0,SWMODE_RAMP);   //setup ULP TIA for Ramp test
+  LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);  //change ULP DAC setting from DC to Diagnostic mode
+
+  AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);   //short T5,T9 for SE0
+}
+
+/***************** Command-line input parsing functions ********************/
+
+int get_voltage_input(void){
 
   int voltage = 0;
   
   while(1){
-    if(get_flag()){
+    if(uart_get_flag()){
       char v[5];
       uint8_t *uBuffer;
       uBuffer=return_uart_buffer();
@@ -482,19 +509,51 @@ int getVoltageInput(void){
       if(v[0] == '-'){
         voltage = -1*voltage;
       }
-      flag_reset();
+      uart_flag_set();
       return voltage;
     }
   }
 }
 
-//Returns a uint16_t representing  the UART input
-int getParameter(int dec){
+float get_low_frequency(void){
+  
+  float freq = 0;
+  
+  while(1){
+    if(uart_get_flag()){
+      char v[6];
+      uint8_t *uBuffer;
+      uBuffer=return_uart_buffer();
+      for(int i=0 ; i<6 ; ++i){
+        v[i] = uBuffer[i];
+      }
+      if(v[0]=='.'){
+        freq+=(v[5]-48)*0.00001;
+        freq+=(v[4]-48)*0.0001;
+        freq+=(v[3]-48)*0.001;
+        freq+=(v[2]-48)*0.01;
+        freq+=(v[1]-48)*0.1;
+      }
+      else{
+        freq+=(v[5]-48)*1;
+        freq+=(v[4]-48)*10;
+        freq+=(v[3]-48)*100;
+        freq+=(v[2]-48)*1000;
+        freq+=(v[1]-48)*10000;
+        freq+=(v[0]-48)*100000;
+      }
+      uart_flag_set();
+      return freq;
+    }
+  }
+}
+
+int get_parameter(int dec){
   
   int parameter = 0;
   
   while(1){
-    if(get_flag()){
+    if(uart_get_flag()){
       if(dec==7){
           char v[7];
           uint8_t *uBuffer;
@@ -509,7 +568,7 @@ int getParameter(int dec){
           parameter+=(v[2]-48)*10000;
           parameter+=(v[1]-48)*100000;
           parameter+=(v[0]-48)*1000000;
-          flag_reset();
+          uart_flag_set();
           return parameter;
       }
       if(dec==6){
@@ -525,7 +584,7 @@ int getParameter(int dec){
           parameter+=(v[2]-48)*1000;
           parameter+=(v[1]-48)*10000;
           parameter+=(v[0]-48)*100000;
-          flag_reset();
+          uart_flag_set();
           return parameter;
       }
       if(dec==5){
@@ -540,7 +599,7 @@ int getParameter(int dec){
           parameter+=(v[2]-48)*100;
           parameter+=(v[1]-48)*1000;
           parameter+=(v[0]-48)*10000;
-          flag_reset();
+          uart_flag_set();
           return parameter;
       }
       if(dec==4){
@@ -554,7 +613,7 @@ int getParameter(int dec){
           parameter+=(v[2]-48)*10;
           parameter+=(v[1]-48)*100;
           parameter+=(v[0]-48)*1000;
-          flag_reset();
+          uart_flag_set();
           return parameter;
       }
       if(dec==3){
@@ -567,7 +626,7 @@ int getParameter(int dec){
           parameter+=(v[2]-48);
           parameter+=(v[1]-48)*10;
           parameter+=(v[0]-48)*100;
-          flag_reset();
+          uart_flag_set();
           return parameter;
       }
       
@@ -580,7 +639,7 @@ int getParameter(int dec){
           }
           parameter+=(v[1]-48);
           parameter+=(v[0]-48)*10;
-          flag_reset();
+          uart_flag_set();
           return parameter;
       }
       
@@ -588,25 +647,26 @@ int getParameter(int dec){
           uint8_t *uBuffer;
           uBuffer=return_uart_buffer();
           parameter = uBuffer[0];
-          flag_reset();
+          uart_flag_set();
           return parameter;
       }
     }
   }
 }
 
-uint16_t getSensorChannel(void){
-  //printf("Sensor Channel(0 or 1) : ");
+uint16_t get_sensor_channel(void){
   printf("[:SCI]");
-  uint16_t sensChanIn = getParameter(1)-48;
+  uint16_t sensChanIn = get_parameter(1)-48;
   if(sensChanIn > 0){
     return CHAN1;
   }
   return CHAN0;
 }
 
-void GptCfgVoltammetry(uint16_t mvRate){
-   GptLd(pADI_TMR2, sweeprateLookup(mvRate));      // Load timer 2
+/***************** General-purpose timer configuration functions ********************/
+
+void gpt_config_scanrate(uint16_t mvRate){
+   GptLd(pADI_TMR2, scanrate_lookup(mvRate));      // Load timer 2
    GptCfg(pADI_TMR2,TCTL_CLK_HFOSC, TCTL_PRE_DIV64,
           BITM_TMR_CTL_MODE|
           BITM_TMR_CTL_RLD|
@@ -616,12 +676,12 @@ void GptCfgVoltammetry(uint16_t mvRate){
 }
 
 //Holds the program until a timeout interrupt is generated by timer 2               
-void GptWaitForFlag(void){
+void gpt_wait_for_flag(void){
   while(!tmr2_timeout){}//hold program until timer timeout flag is set
   tmr2_timeout = 0;
 }
 
-uint16_t sweeprateLookup(uint16_t mvRate){
+uint16_t scanrate_lookup(uint16_t mvRate){
   switch(mvRate){
     case 10: return 0x55B1;
     case 20: return 0x2AD8;
@@ -646,113 +706,8 @@ uint16_t sweeprateLookup(uint16_t mvRate){
   return 0;
 }
 
-uint16_t getAdcVal(void){
-  return ADCRAW;
-}
+/***************** Interrupt handlers ********************/
 
-void setAdcMode(uint8_t mode){
-  adcModeSel = mode;
-}
-
-int burstSample(int mode, uint8_t chan){
-  int sum = 0;
-  int numSamples = 16;
-  if(mode == 0){        //ADC is sampling from the LPTIA to measure current
-    adcCurrentSetupLPTIA(chan);
-  }
-  if(mode == 1){         //ADC is sampling from VREO/VRE1 to reference capacitor
-    adcVoltageSetupVRE(chan);
-  }
-  if(mode == 2){        //ADC is sampling from VZERO to reference capacitor
-    adcVoltageSetupVSE(chan);  
-  }
-  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
-  for(int i = 0 ; i<numSamples ; ++i){
-    while(!adcRdy){};
-    adcRdy = 0;
-    sum = sum + getAdcVal();
-  }
-  return sum/numSamples;
-}
-
-//converts ADC value to volts for data printing
-float adc_to_volts(float adcVal){
-  float VREF = 1.82;
-  float ADC_MEAS_SHIFT = 0.033; //determined empirically 33mV shift to correct ADC error
-  float ADCVBIAS_CAP = 1.11 + ADC_MEAS_SHIFT;
-  return (VREF*((adcVal-32768)/(32768)))+ADCVBIAS_CAP;
-}
-
-//converts ADC value from LPTIA to microamps(uA) for data printing
-float adc_to_current(float adcVal, int RTIA){
-  float kFactor = 1.835/1.82;
-  float PGA_GAIN = 1.5;
-  float fVolt = ((adcVal-32768)/PGA_GAIN)*V_ADC_REF_mV/32768*kFactor;
-  return (((fVolt/RTIA*1000)-1));
-}
-
-//Simple moving average filter for Voltammetry data
-float voltammetryMovAvg(int w, uint16_t *arr, int pos, uint16_t sc, int RTIA){
-  //all indexing mult. by 2 because of how szADCSamples stores SWV data
-  float sum = 0;
-  float ctr = 0;
-  
-  if(pos < 3*w){
-    for(int j=1 ; j<pos+3*w ; j+=3){
-      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
-      ++ctr;
-    }
-  }
-  if(pos>3*w && pos<sc-3*w){
-    for(int j=pos-3*w ; j<pos+3*w ; j+=3){
-      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
-      ++ctr;
-    }
-  }
-  if(pos > sc-3*w){
-    for(int j=pos-3*w ; j<sc ; j+=3){
-      sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
-      ++ctr;
-    }
-  }
-  return sum/ctr;
-}
-
-//Converts a voltage input in mV to a DAC(either 12b or 6b) value passable to the LpDacWr function
-uint16_t mV_to_DAC(uint16_t mV, uint8_t nBits){
-  uint16_t shift = 0;
-  //to be written to 12b DAC channel(0.537mV res)
-  if(nBits==12){
-    return (int)((mV-200)/0.537)-shift;
-  }
-  //to be written to 6b DAC channel(34.38mV res)
-  if(nBits==6){
-    return (int)((mV-200)/34.38); //DONT use shift here
-  }
-  return 0;
-}
-
-float DAC_to_mV(float DAC, uint8_t nBits){
-  //converting from 12b DAC value(0.537mV res)
-  if(nBits==12){
-    return (DAC*0.537+200);
-  }
-  //converting from 6b DAC value(34.38mV res)
-  if(nBits==6){
-    return (DAC*34.38+200);
-  }
-  return 0;
-}
-
-//because 12-bit DAC channel has 0.537mV res and 6-bit channel has 34.4mV res, adjustemnt is needed to ensure sensor voltage is correct
-//Returns a value to increase/decrease the 12-bit channel by, ensuring 0.54mV res for RE-CE potential
-int adjustDAC(uint16_t vZero, uint16_t vStart, int vDiffTarget, uint8_t chan){
-  LPDacWr(chan, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));
-  delay_10us(50);
-  float vDiffMeasure = 1000*adc_to_volts(burstSample(2,chan)) - 1000*adc_to_volts(burstSample(1,chan));
-  float mvShift = -1*(vDiffTarget - vDiffMeasure);
-  return (int)mvShift-4;        //manual testing shows mvShift is still of by ~4mV
-}
 
 void AfeAdc_Int_Handler(void){
   uint32_t sta;
@@ -782,5 +737,25 @@ void GP_Tmr2_Int_Handler(void)
    {
       GptClrInt(pADI_TMR2,BITM_TMR_CLRINT_TIMEOUT);// Clear Timer 2 timeout interrupt
       tmr2_timeout = 1;
+   }
+}
+
+void UART_Int_Handler(void)
+{
+   UrtLinSta(pADI_UART0);
+   ucCOMIID0 = UrtIntSta(pADI_UART0);
+   if ((ucCOMIID0 & 0xE) == 0xc || (ucCOMIID0 & 0xE) == 0x4)	          // Receive byte
+   {
+     iNumBytesInFifo = pADI_UART0->COMRFC;    // read the Num of bytes in FIFO
+     for(uint8_t i = 0; i <iNumBytesInFifo;++i){
+       ucComRx = UrtRx(pADI_UART0);
+       szInSring[i]=ucComRx;
+     }
+     if (szInSring[0] == 27) {
+       NVIC_SystemReset();
+     }
+     UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR// Clear the Rx/TX FIFOs
+             |BITM_UART_COMFCR_TFCLR);
+     uart_flag_set();
    }
 }
