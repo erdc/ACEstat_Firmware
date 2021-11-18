@@ -40,30 +40,10 @@ int main(void){
      *5 EIS                      *
     ******************************/
     while(1){
-      printf("%s%s%s", "[:MAIN:", version, "]");     //NEED TO ADD BETTER SYSTEM FOR VERSIONING
+      printf("%s%s%s", "[:MAIN:", version, "]");
       
       testMode = getTestMode();         //test mode input, reads only the first character in szInString
       runTest(testMode);
-      
-//      if(testMode=='1'){
-//        runTest(testMode);              //Cyclic Voltammetry
-//      }
-//      
-//      if(testMode=='2'){  
-//        runTest(testMode);              //Squarewave Voltammetry 
-//      }
-//
-//      if(testMode=='4'){
-//        runTest(testMode);              //Cyclic Squarewave Voltammetry
-//      }
-//      
-//      if(testMode=='5'){
-//        runTest(testMode);              //Chrono-Amperometry
-//      }
-//      
-//      if(testMode=='3'){
-//        runTest(testMode);              //Electrochemical Impedance Spectroscopy
-//      }
     }
   }
   return 0;
@@ -75,7 +55,6 @@ void runTest(char mode){
   
   if(mode=='1'){
         while(testComplete==false){
-              //printf("[START:CV]");
               runCV();
               printf("[END:CV]");
         }
@@ -83,7 +62,6 @@ void runTest(char mode){
   
   if(mode=='2'){
         while(testComplete==false){
-            //printf("[START:SWV]");
             runSWV();  
             printf("[END:SWV]");
             
@@ -94,20 +72,16 @@ void runTest(char mode){
   }
   
   if(mode=='4'){
-        //printf("[START:CSWV]");
         runCSWV();
         printf("[END:CSWV]");
   }
   
   if(mode=='5'){
-        //printf("[START:CA]");
         runCA();
         printf("[END:CA]");
   }
   
   if(mode=='3'){
-        //printf("[START:EIS]");
-        getEISFrequencies();
         runEIS();
         printf("[END:EIS]");
   }
