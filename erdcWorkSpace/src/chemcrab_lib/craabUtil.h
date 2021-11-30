@@ -16,7 +16,7 @@
 #include "M355_ECSns_EIS.h"
 #include "M355_ECSns_DCTest.h"
 
-/**Standard Libraries */
+/**Standard Libraries*/
 #include <stdio.h>
 #include <math.h>
 
