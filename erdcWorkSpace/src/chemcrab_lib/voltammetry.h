@@ -59,8 +59,8 @@ void cvEquilibriumDelay(uint16_t sensor_channel,
   *@param       scanrate: rate of change of voltage for CV ramp, in mV/s
   *@retval      none
 */
-void cvSignalMeasure(uint16_t channel, 
-                     uint16_t relative_voltages[4], 
+void cvSignalMeasure(uint16_t sensor_channel, 
+                     uint16_t relative_voltages[4],
                      uint32_t RGAIN, uint16_t scanrate);
 /**
   *@brief       printCVResults: prints measured voltage and current from CV test using printf()
