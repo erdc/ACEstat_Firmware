@@ -231,7 +231,7 @@ void power_down_ADC(void);
 /***************** TIA setup functions ********************/
 
 /**
-  *@brief       HSRTIA_LOOKUP: get an HSRTIA register alue from list selection
+  *@brief       HSRTIA_LOOKUP: get an HSRTIA register mask from list selection
   *@param       choice: list number selection for HSRTIA value, 0-7
   *@retval      HSRTIA register value for selected resistance
 */
