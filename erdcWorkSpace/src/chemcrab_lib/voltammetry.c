@@ -126,9 +126,9 @@ void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uin
       gpt_wait_for_flag();                         //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                         //Only store ADC data for every other DAC increment to save space
-        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure VRE with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure VRE with 16x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
         sampleCount++;
       }
     }
@@ -139,9 +139,9 @@ void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uin
       gpt_wait_for_flag();                         //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                         //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure V_RE with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure V_RE with 16x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
         sampleCount++;
       }
     }
@@ -151,27 +151,27 @@ void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uin
   else{
     /** Decrease cBias until cBias=cVertex */
     for (cBias = cStart; cBias > cVertex; cBias = cBias - inc){
-      LPDacWr(sensor_channel, cZero, cBias);              //Set 6-bit and 12-bit DAC channels
+      LPDacWr(sensor_channel, cZero, cBias);    //Set 6-bit and 12-bit DAC channels
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       gpt_wait_for_flag();                         //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                         //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure V_RE with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure V_RE with 16x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
         sampleCount++;
       }
     }
     /** Increase cBias until cBias=cEnd */
     for (cBias = cVertex; cBias < cEnd; cBias = cBias + inc){
-      LPDacWr(sensor_channel, cZero, cBias);              //Set 6-bit and 12-bit DAC channels
+      LPDacWr(sensor_channel, cZero, cBias);    //Set 6-bit and 12-bit DAC channels
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       gpt_wait_for_flag();                         //GPT delay to maintain voltage sweeprate
       
       if(cBias%2 == 0){                         //Only store ADC data for every other DAC increment
-        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure V_RE with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure V_RE with 16x oversampling
         sampleCount++;
-        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+        szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
         sampleCount++;
       }
     }
@@ -180,7 +180,7 @@ void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uin
   /**Manually measure 6-bit DAC channel (in mV) to more accurately calculate dfferential sensor potential */
   LPDacWr(sensor_channel, cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel));
+  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
   
   /**Put the sensor in "open circuit" state */
   turn_off_afe_power_things_down();
@@ -340,9 +340,9 @@ void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], ui
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);    //measure V_RE with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);    //measure V_RE with 16x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);    //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);    //measure current from LPTIA with 16x oversampling
       sampleCount++;
       
       /**Squarewave high*/
@@ -351,7 +351,7 @@ void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], ui
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);    //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);    //measure current from LPTIA with 16x oversampling
       sampleCount++;     
     }
   }
@@ -367,9 +367,9 @@ void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], ui
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);    //measure V_RE with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);    //measure V_RE with 16x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);    //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);    //measure current from LPTIA with 16x oversampling
       sampleCount++;
       
       /**Squarewave Low*/
@@ -378,7 +378,7 @@ void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], ui
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);    //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);    //measure current from LPTIA with 16x oversampling
       sampleCount++;     
     }
   }
@@ -386,7 +386,7 @@ void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], ui
   /**Manually measure the vZero voltage (in mV) to more accurately calculate differential sensor potential*/
   LPDacWr(sensor_channel, cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel));
+  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
   
   /**Put the sensor in "open circuit" state*/
   turn_off_afe_power_things_down();
@@ -565,9 +565,9 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure V_RE with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure V_RE with 16x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;
       
       /**Squarewave high*/
@@ -576,7 +576,7 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;     
     }
     /**Decrease cBias until cBias = cEnd*/
@@ -587,9 +587,9 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure V_RE with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure V_RE with 16x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;
       
       /**Squarewave low*/
@@ -598,7 +598,7 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;     
     }
   }
@@ -614,9 +614,9 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure V_RE with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure V_RE with 16x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;
       
       /**Squarewave low*/
@@ -625,7 +625,7 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;   
     }
     /**Increase cBias until cBias = cEnd*/
@@ -636,9 +636,9 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);  //measure V_RE with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);  //measure V_RE with 16x oversampling
       sampleCount++;
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;
       
       /**Squarewave high*/
@@ -647,7 +647,7 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);  //measure current from LPTIA with 16x oversampling
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);  //measure current from LPTIA with 16x oversampling
       sampleCount++;     
     }
   }
@@ -655,7 +655,7 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
   /**Manually measure the vZero voltage (in mV) to more accurately calculate dfferential sensor potential*/
   LPDacWr(sensor_channel, cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel));
+  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
   
   /**Put the sensor in "open circuit" state and print test results*/
   turn_off_afe_power_things_down();
@@ -776,9 +776,9 @@ void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uin
   for(int i=0 ; i<samples ; ++i){
     
     /**Measure the voltage and current*/
-    szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);      //measure V_RE with 16x oversampling
+    szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);      //measure V_RE with 16x oversampling
     sampleCount++;
-    szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);      //measure current from LPTIA with 16x oversampling
+    szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);      //measure current from LPTIA with 16x oversampling
     sampleCount++;
     delay_10us((int)length/(3*samples*(10E-6)));        /* !!!!!This timing is not accurate, need to improve this!!!!  */
   }
@@ -788,9 +788,9 @@ void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uin
   delay_10us(SETTLING_DELAY);
   for(int i=0 ; i<samples ; ++i){
     /**Measure the voltage and current*/
-    szADCSamples[sampleCount]=oversample_adc(1,sensor_channel);      //measure V_RE with 16x oversampling
+    szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);      //measure V_RE with 16x oversampling
     sampleCount++;
-    szADCSamples[sampleCount]=oversample_adc(0,sensor_channel);      //measure current from LPTIA with 16x oversampling
+    szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);      //measure current from LPTIA with 16x oversampling
     sampleCount++;
     delay_10us((int)length/(3*samples*(10E-6)));        /* !!!!!This timing is not accurate, need to improve this!!!!  */
   }
@@ -798,7 +798,7 @@ void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uin
   /**Manually measure the vZero voltage (in mV) to more accurately calculate dfferential sensor potential*/
   LPDacWr(sensor_channel, cZero, cStep);
   delay_10us(SETTLING_DELAY);
-  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel));
+  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
   
   /**Turn of the AFE and print test data*/
   turn_off_afe_power_things_down();
@@ -817,7 +817,7 @@ void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCo
   /**Print test data from szADCSamples*/
   int index = 0;
   for(uint32_t i = 0; i < sampleCount; i+=2){
-    //v = (zeroVoltage/1000) - adc_to_volts(szADCSamples[i]);   //Later, may want to plot measured voltages as well as current vs. time
+    //v = (zeroVoltage/1000) - adc_to_voltage(szADCSamples[i]);   //Later, may want to plot measured voltages as well as current vs. time
     tc = adc_to_current(szADCSamples[i+1],RTIA);
     printf("%f,%f\n", index*timeStep, tc);              //chronoamperometry plotted vs.time instead of voltage
     ++index;
