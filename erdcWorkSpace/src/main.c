@@ -64,8 +64,6 @@ void runTest(char mode){
         while(testComplete==false){
             runSWV();  
             printf("[END:SWV]");
-            
-            flag_reset();
             testComplete = true;
             return;
         }
@@ -92,9 +90,9 @@ char getTestMode(void){
 	uint8_t *uBuffer;
 	uBuffer=return_uart_buffer();
     while(testMode==0){
-      if(get_flag()){
+      if(uart_get_flag()){
         testMode = uBuffer[0];
-        flag_reset();
+        uart_flag_reset();
       }
     }
     return testMode;
