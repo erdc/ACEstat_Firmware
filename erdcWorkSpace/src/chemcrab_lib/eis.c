@@ -529,7 +529,7 @@ uint8_t SnsMagPhaseCal(void)
 
 void runEIS(void){
   printf("[START:EIS]");
-  setAdcMode(1);
+  set_adc_mode(1);
       #if EIS_DCBIAS_EN //add bias voltage. Setup for O2 sensor 600mV bias
 
          //Bias = Vzero - Vbias
