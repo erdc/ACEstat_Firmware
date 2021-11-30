@@ -25,7 +25,6 @@ void ClockInit(void)
   AfeSysClkDiv(AFE_SYSCLKDIV_1);                
 }
 
-
 void UartInit(void)
 {
   DioCfgPin(pADI_GPIO0,PIN10,1);                //Setup P0.10 as UART pin
@@ -40,9 +39,8 @@ void UartInit(void)
   UrtIntCfg(pADI_UART0,BITM_UART_COMIEN_ERBFI |
             BITM_UART_COMIEN_ETBEI |
             BITM_UART_COMIEN_ELSI);             //Enable Rx, Tx and Rx buffer full Interrupts
-  /*ADDED*/
+
   NVIC_EnableIRQ(UART_EVT_IRQn);                //Enable UART interrupt source in NVIC
-  /*Enable UART wakeup intterupt*/
 }
 
 uint8_t* return_uart_buffer(void){
