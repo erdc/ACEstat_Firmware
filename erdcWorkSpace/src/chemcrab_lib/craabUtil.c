@@ -5,6 +5,7 @@
 volatile uint8_t  ucInCnt;
 volatile uint32_t ucCOMIID0;
 volatile uint32_t iNumBytesInFifo;
+volatile uint16_t timer_ctr = 0;
 #define USE_SINC2_FOR_TEST 0
 
 uint8_t  ucComRx;
@@ -543,7 +544,7 @@ int get_voltage_input(void){
         voltage = -1*voltage;
       }
       
-      uart_flag_set();                          //reset the UART flag
+      uart_flag_reset();                          //reset the UART flag
       return voltage;
     }
   }
@@ -580,7 +581,7 @@ float get_low_frequency(void){
         freq+=(v[1]-48)*10000;
         freq+=(v[0]-48)*100000;
       }
-      uart_flag_set();                          //reset the UART flag
+      uart_flag_reset();                          //reset the UART flag
       return freq;
     }
   }
@@ -607,7 +608,7 @@ int get_parameter(int dec){
           parameter+=(v[2]-48)*10000;
           parameter+=(v[1]-48)*100000;
           parameter+=(v[0]-48)*1000000;
-          uart_flag_set();                      //reset the UART flag
+          uart_flag_reset();                      //reset the UART flag
           return parameter;
       }
       if(dec==6){
@@ -623,7 +624,7 @@ int get_parameter(int dec){
           parameter+=(v[2]-48)*1000;
           parameter+=(v[1]-48)*10000;
           parameter+=(v[0]-48)*100000;
-          uart_flag_set();                      //reset the UART flag
+          uart_flag_reset();                      //reset the UART flag
           return parameter;
       }
       if(dec==5){
@@ -638,7 +639,7 @@ int get_parameter(int dec){
           parameter+=(v[2]-48)*100;
           parameter+=(v[1]-48)*1000;
           parameter+=(v[0]-48)*10000;
-          uart_flag_set();                      //reset the UART flag
+          uart_flag_reset();                      //reset the UART flag
           return parameter;
       }
       if(dec==4){
@@ -652,7 +653,7 @@ int get_parameter(int dec){
           parameter+=(v[2]-48)*10;
           parameter+=(v[1]-48)*100;
           parameter+=(v[0]-48)*1000;
-          uart_flag_set();                      //reset the UART flag
+          uart_flag_reset();                      //reset the UART flag
           return parameter;
       }
       if(dec==3){
@@ -665,7 +666,7 @@ int get_parameter(int dec){
           parameter+=(v[2]-48);
           parameter+=(v[1]-48)*10;
           parameter+=(v[0]-48)*100;
-          uart_flag_set();                      //reset the UART flag
+          uart_flag_reset();                      //reset the UART flag
           return parameter;
       }
       
@@ -678,7 +679,7 @@ int get_parameter(int dec){
           }
           parameter+=(v[1]-48);
           parameter+=(v[0]-48)*10;
-          uart_flag_set();                      //reset the UART flag
+          uart_flag_reset();                      //reset the UART flag
           return parameter;
       }
       
@@ -686,7 +687,7 @@ int get_parameter(int dec){
           uint8_t *uBuffer;
           uBuffer=return_uart_buffer();
           parameter = uBuffer[0];
-          uart_flag_set();                      //reset the UART flag
+          uart_flag_reset();                      //reset the UART flag
           return parameter;
       }
     }
@@ -715,6 +716,22 @@ void gpt_config_scanrate(uint16_t mvRate){
    NVIC_EnableIRQ(TMR2_EVT_IRQn);               //Enable Timer 2 interrupt source in NVIC
 }
 
+void gpt_config_simple(void){
+   GptLd(pADI_TMR0, 0x100);      // Load timer 0 with 39.4us period
+   GptCfg(pADI_TMR0,TCTL_CLK_HFOSC, TCTL_PRE_DIV256,
+          BITM_TMR_CTL_MODE|
+          BITM_TMR_CTL_RLD|
+          BITM_TMR_CTL_EN);             // Enable Timer0 for periodic mode, counting down, using HFOSC as clock source
+   NVIC_EnableIRQ(TMR0_EVT_IRQn);       // Enable Timer 0  interrupt source in NVIC
+}
+
+void reset_timer_ctr(void){
+  timer_ctr = 0;
+}
+
+uint16_t get_timer_ctr(void){
+  return timer_ctr;
+}
              
 void gpt_wait_for_flag(void){
   
@@ -778,6 +795,17 @@ void GP_Tmr2_Int_Handler(void)
    {
       GptClrInt(pADI_TMR2,BITM_TMR_CLRINT_TIMEOUT);     //clear Timer 2 timeout interrupt
       tmr2_timeout = 1;
+   }
+}
+
+void GP_Tmr0_Int_Handler(void)
+{
+   volatile int uiT0STA = 0;
+   uiT0STA = GptSta(pADI_TMR0);
+   if((uiT0STA&0x0001)==0x0001)  //timeout event pending
+   {
+      GptClrInt(pADI_TMR0,BITM_TMR_CLRINT_TIMEOUT);// Clear Timer 0 timeout interrupt
+      timer_ctr++;
    }
 }
 
