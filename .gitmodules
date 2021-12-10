@@ -1,0 +1,3 @@
+[submodule "aducm355-examples"]
+	path = aducm355-examples
+	url = https://github.com/analogdevicesinc/aducm355-examples.git
