@@ -13,8 +13,8 @@
 #include "AfeTiaLib.h"
 #include "PwrLib.h"
 #include "AfeDacLib.h"
-#include "M355_ECSns_EIS.h"
-#include "M355_ECSns_DCTest.h"
+//#include "M355_ECSns_EIS.h"
+//#include "M355_ECSns_DCTest.h"
 
 /**Standard Libraries*/
 #include <stdio.h>
@@ -322,6 +322,27 @@ uint16_t get_sensor_channel(void);
 void gpt_config_scanrate(uint16_t mvRate);
 
 /**
+  *@brief       gpt_config_simple: setup general-purpose timer 0 to have 39.4us period.  Used for equilibrium delays and chronoamperometry
+  *@param       none
+  *@retval      none
+*/
+void gpt_config_simple(void);
+
+/**
+  *@brief       reset_timer_ctr: sets timer_ctr to 0 to restart counting
+  *@param       none
+  *@retval      none
+*/
+void reset_timer_ctr(void);
+
+/**
+  *@brief       get_timer_ctr: gets the current value of timer_ctr
+  *@param       none
+  *@retval      timer_ctr, used to count GPT cycles for equilibrium timing
+*/
+uint16_t get_timer_ctr(void);
+
+/**
   *@brief       gpt_wait_for_flag: holds voltammetry test for flag inducating GPT period has passed.  Ensures scanrate is maintained during voltammetry
   *@param       none
   *@retval      none
@@ -350,6 +371,14 @@ void AfeAdc_Int_Handler(void);
   *@retval      none
 */
 void GP_Tmr2_Int_Handler(void);
+
+/**
+  *@brief       GP_Tmr0_Int_Handler
+  *@param       none
+  *@retval      none
+*/
+void GP_Tmr0_Int_Handler(void);
+
 
 /**
   *@brief       UART_Int_Handler
