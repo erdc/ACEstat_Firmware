@@ -88,7 +88,16 @@ void cvEquilibriumDelay(uint16_t sensor_channel, uint16_t relative_voltages[4], 
   uint16_t vZero = relative_voltages[0];
   uint16_t vStart = relative_voltages[1];
   LPDacWr(sensor_channel, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));
-  delay_10us(100000*equilibrium_time);      //Hold vStart on sensor for equilibrium_time (seconds)
+  
+  /**Use GPT0 to measure time and hold the sensor voltage for the equilibrium time*/
+  gpt_config_simple();                          //setup GPT0 with 39.4us period, increments timer_ctr by 1 every 39.4us
+  reset_timer_ctr();                            //reset the timer counter just in case
+  float current_time = 0;   
+  /**Hold the starting voltage while the current time is less than equilibrium time */
+  while(current_time < equilibrium_time){
+    current_time = (float)get_timer_ctr()*2.52/1000;        //current time in seconds, 2.52/1000 conversion ratio from reference manual
+  }
+  reset_timer_ctr();                            //reset the timer counter after equilibrium time has expired
 }
 
 void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uint32_t RGAIN, uint16_t scanrate){   
@@ -100,7 +109,7 @@ void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uin
   
   /**Setup CV timing parameters */
   uint16_t SETTLING_DELAY = 5;
-  gpt_config_scanrate(scanrate); //configure general-purpose digital timer to use chosen scanrate
+  gpt_config_scanrate(scanrate);                //configure general-purpose digital timer to use chosen scanrate
   
   /**Convert voltages to 6 or 12 bit DAC-scale depending on sensor_channel */
   uint16_t cStart = mV_to_DAC(vStart,12);       //cStart on 12-bit sensor_channel
@@ -301,7 +310,16 @@ void swvEquilibriumDelay(uint16_t sensor_channel, uint16_t relative_voltages[3],
   uint16_t vZero = relative_voltages[0];
   uint16_t vStart = relative_voltages[1];
   LPDacWr(sensor_channel, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));    
-  delay_10us(100000*equilibrium_time);                      //hold vStart on the sensor for time (seconds)
+  
+  /**Use GPT0 to measure time and hold the sensor voltage for the equilibrium time*/
+  gpt_config_simple();                          //setup GPT0 with 39.4us period, increments timer_ctr by 1 every 39.4us
+  reset_timer_ctr();                            //reset the timer counter just in case
+  float current_time = 0;   
+  /**Hold the starting voltage while the current time is less than equilibrium time */
+  while(current_time < equilibrium_time){
+    current_time = (float)get_timer_ctr()*2.52/1000;        //current time in seconds, 2.52/1000 conversion ratio from reference manual
+  }
+  reset_timer_ctr();                            //reset the timer counter after equilibrium time has expired
 }
 
 void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], uint32_t RGAIN, uint16_t amplitude, uint16_t cycle_step_size, uint16_t freq){
@@ -526,7 +544,16 @@ void cswvEquilibriumDelay(uint16_t sensor_channel, uint16_t relative_voltages[4]
   uint16_t vZero = relative_voltages[0];
   uint16_t vStart = relative_voltages[1];
   LPDacWr(sensor_channel, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));    //Write the DAC to its starting voltage during the equilibrium period
-  delay_10us(100000*equilibrium_time);                                              
+  
+  /**Use GPT0 to measure time and hold the sensor voltage for the equilibrium time*/
+  gpt_config_simple();                          //setup GPT0 with 39.4us period, increments timer_ctr by 1 every 39.4us
+  reset_timer_ctr();                            //reset the timer counter just in case
+  float current_time = 0;   
+  /**Hold the starting voltage while the current time is less than equilibrium time */
+  while(current_time < equilibrium_time){
+    current_time = (float)get_timer_ctr()*2.52/1000;        //current time in seconds, 2.52/1000 conversion ratio from reference manual
+  }
+  reset_timer_ctr();                            //reset the timer counter after equilibrium time has expired
 }
 
 void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uint32_t RGAIN, uint16_t amplitude, uint16_t cycle_step_size, uint16_t freq){
