@@ -412,7 +412,7 @@
                 </option>
                 <option>
                     <name>IccAllowVLA</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IccStaticDestr</name>
@@ -420,7 +420,7 @@
                 </option>
                 <option>
                     <name>IccCppInlineSemantics</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IccCmsis</name>
@@ -776,11 +776,11 @@
                 </option>
                 <option>
                     <name>IlinkIcfOverride</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$TOOLKIT_DIR$\config\linker\AnalogDevices\ADuCM355.icf</state>
+                    <state>$PROJ_DIR$\ADuCM355_SRAM_Mode2.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
