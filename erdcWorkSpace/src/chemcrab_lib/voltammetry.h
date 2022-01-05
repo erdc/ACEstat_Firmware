@@ -232,13 +232,15 @@ void caSetVoltages(int vStep,
   *@param       step_duration: duration in ms of CA step
   *@param       pre_step_delay: delay in ms before CA step is applied
   *@param       RGAIN: TIA feedback gain resistor value
+  *@param       test_mode: controls number of data points in results
   *@retval      none
 */
 void caSignalMeasure(uint16_t sensor_channel, 
                      uint16_t relative_voltages[2], 
                      uint16_t step_duration, 
                      uint16_t pre_step_delay, 
-                     uint32_t RGAIN);
+                     uint32_t RGAIN,
+                     int test_mode);
 /**
   *@brief       printCAResults: prints measured voltage and current from CA test using printf()
   *@param       cZero,cStep: DAC-scale equivalents of relative_voltages
@@ -247,6 +249,7 @@ void caSignalMeasure(uint16_t sensor_channel,
   *@param       sampleCount: total number of collected datapoints
   *@param       timeStep: incremental time between measurements
   *@param       vZeroMeasured: measured value of vZero output for more accurate voltage calculations
+  *@param       test_mode: controls number of data points in results and some printing formatting
   *@retval      none
 */
 void printCAResults(float cZero, 
@@ -255,6 +258,21 @@ void printCAResults(float cZero,
                     int RTIA, 
                     int sampleCount, 
                     float timeStep, 
-                    float vZeroMeasured);
+                    float vZeroMeasured,
+                    int test_mode);
+                    
+                    
+/***************** Open circuit noise measurement test ********************/
+
+/**Macros for adjusting length of chronoamperometry data sets*/
+#define SHORT_TEST_MODE 0     
+#define LONG_TEST_MODE 1
+
+/**
+  *@brief       measure_system_noise: performs open-circuit or capacitor-connected measurement of internal potentiostat noise at each RTIA gain level
+  *@param       none
+  *@retval      none
+*/
+void measure_system_noise(void);
 
 #endif
