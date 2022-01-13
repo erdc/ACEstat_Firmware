@@ -432,7 +432,7 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
     /**Moving average filter for SWV data*/
     if(use_mov_avg){
       int filterWidth = 20;
-      tc = voltammetry_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
+      tc = swv_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
     }
     else{
       tc = (adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA));
@@ -570,7 +570,7 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
   uint16_t cZero = mV_to_DAC(vZero,6);          //vZero on 6-bit channel
   uint16_t cBias = cStart;                      //cBias on 12-bit channel
   uint16_t cAmp = (int)((amplitude)/0.537);     //amplitude converted to 12-bit scale
-  uint16_t inc = 2*cycle_step_size;                        //1 DAC bit is 0.537mV, x2 to make increment (~1mV)x step_size
+  uint16_t inc = 2*cycle_step_size;             //1 DAC bit is 0.537mV, x2 to make increment (~1mV)x step_size
   
   /**Square wave timing parameters*/
   uint16_t SETTLING_DELAY = 5;
@@ -746,7 +746,7 @@ void runCA(void){
   caSetVoltages(stepVoltage, relative_voltages, caChan);
   
   /**Apply CA step signal*/
-  caSignalMeasure(caChan, relative_voltages, stepLength, stepDelay, RGAIN);
+  caSignalMeasure(caChan, relative_voltages, stepLength, stepDelay, RGAIN, LONG_TEST_MODE);
   
   /**Turn off AFE and reset board*/
   turn_off_afe_power_things_down();
@@ -772,7 +772,7 @@ void caSetVoltages(int vStep, uint16_t relative_voltages[2], uint8_t sensor_chan
   relative_voltages[1] += vbiasShift;
 }
 
-void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uint16_t length, uint16_t delay, uint32_t RGAIN){
+void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uint16_t length, uint16_t delay, uint32_t RGAIN, int test_mode){
   
   /**Give names to the elements in relative_voltages*/
   uint16_t vZero = relative_voltages[0];
@@ -784,8 +784,15 @@ void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uin
   
   /**CA timing parameters*/
   uint16_t SETTLING_DELAY = 5;
-  uint16_t samples = 500;
-  float sample_interval_ms = (1000*length)/samples;
+  uint16_t samples;
+  if(test_mode == SHORT_TEST_MODE){
+    samples = 50;
+  }
+  else{
+    samples = 500;
+  }
+  
+  float sample_interval_ms = 1;                       //blank for now, will be removed when better timing is added
   
   /**Initialize ADC parameters*/
   int RTIA = LPRTIA_VAL_LOOKUP(RGAIN);
@@ -794,8 +801,10 @@ void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uin
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   
   /**Set sensor voltage to zero and maintain for the delay time*/
-  LPDacWr(sensor_channel, cZero, mV_to_DAC(vZero,12));
-  delay_10us(100000*delay);
+  if(test_mode == LONG_TEST_MODE){
+    LPDacWr(sensor_channel, cZero, mV_to_DAC(vZero,12));
+    delay_10us(100000*delay);
+  }
   
   /**Set the sensor to the step voltage and record N=samples while holding for the step length*/
   LPDacWr(sensor_channel, cZero, cStep);
@@ -807,19 +816,21 @@ void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uin
     sampleCount++;
     szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);      //measure current from LPTIA with 16x oversampling
     sampleCount++;
-    delay_10us((int)length/(3*samples*(10E-6)));        /* !!!!!This timing is not accurate, need to improve this!!!!  */
+    delay_10us(10);        /* !!!!!This timing is not accurate, need to improve this!!!!  */
   }
   
-  /**Set the sensor back to 0V and record N=samples while holding for the step length*/
-  LPDacWr(sensor_channel, cZero, mV_to_DAC(vZero,12));
-  delay_10us(SETTLING_DELAY);
-  for(int i=0 ; i<samples ; ++i){
-    /**Measure the voltage and current*/
-    szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);      //measure V_RE with 16x oversampling
-    sampleCount++;
-    szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);      //measure current from LPTIA with 16x oversampling
-    sampleCount++;
-    delay_10us((int)length/(3*samples*(10E-6)));        /* !!!!!This timing is not accurate, need to improve this!!!!  */
+  if(test_mode == LONG_TEST_MODE){
+    /**Set the sensor back to 0V and record N=samples while holding for the step length*/
+    LPDacWr(sensor_channel, cZero, mV_to_DAC(vZero,12));
+    delay_10us(SETTLING_DELAY);
+    for(int i=0 ; i<samples ; ++i){
+      /**Measure the voltage and current*/
+      szADCSamples[sampleCount]=oversample_adc(1,sensor_channel,16);      //measure V_RE with 16x oversampling
+      sampleCount++;
+      szADCSamples[sampleCount]=oversample_adc(0,sensor_channel,16);      //measure current from LPTIA with 16x oversampling
+      sampleCount++;
+      delay_10us((int)length/(3*samples*(10E-6)));        /* !!!!!This timing is not accurate, need to improve this!!!!  */
+    }
   }
   
   /**Manually measure the vZero voltage (in mV) to more accurately calculate dfferential sensor potential*/
@@ -828,11 +839,13 @@ void caSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[2], uin
   float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
   
   /**Turn of the AFE and print test data*/
-  turn_off_afe_power_things_down();
-  printCAResults(cZero, cStep, length, RTIA, sampleCount, sample_interval_ms, vZeroMeas);
+  if(test_mode == LONG_TEST_MODE){
+    turn_off_afe_power_things_down();
+  }
+  printCAResults(cZero, cStep, length, RTIA, sampleCount, sample_interval_ms, vZeroMeas, test_mode);
 }
 
-void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCount, float timeStep, float vZeroMeasured){
+void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCount, float timeStep, float vZeroMeasured, int test_mode){
   float zeroVoltage = vZeroMeasured;
   uint16_t* szADCSamples = return_adc_buffer();
   float tc;
@@ -844,12 +857,63 @@ void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCo
   /**Print test data from szADCSamples*/
   int index = 0;
   for(uint32_t i = 0; i < sampleCount; i+=2){
-    //v = (zeroVoltage/1000) - adc_to_voltage(szADCSamples[i]);   //Later, may want to plot measured voltages as well as current vs. time
+    
     tc = adc_to_current(szADCSamples[i+1],RTIA);
-    printf("%f,%f\n", index*timeStep, tc);              //chronoamperometry plotted vs.time instead of voltage
+    if(test_mode == LONG_TEST_MODE){
+      printf("%f,%f\n", index*timeStep, tc);                    //chronoamperometry plotted vs.time instead of voltage
+    }
+    if(test_mode == SHORT_TEST_MODE){
+      int filterWidth = 5;
+      tc = cv_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
+      printf("%f\n", tc);                                        //just print measured current in uA for noise measurements
+    }
     ++index;
   }
   printf("]");
 }
 
 /****************END CHRONOAMPEROMETRY***************************/
+
+
+/***************** Open circuit noise measurement test ********************/
+
+void measure_system_noise(void){
+  
+  /**Use chronoamperometry parameters specifically for noise test procedure*/
+  set_adc_mode(0);
+  uint16_t caChan = CHAN1;                      //use channel 1 for noise test
+  int stepVoltage = 200;                        //use 200mV step size
+  uint16_t stepLength = 100;                    //use 100ms step length
+  uint16_t stepDelay = 10;                      //use 10ms delay
+  uint8_t RTIACHOICE = 1;                       //start with RTIACHOICE=1 (1kOhm gain resistor)
+  uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE);   //PASS INT VAL RATHER THAN ASCII
+  printf("[START NOISE TEST]\n");
+  
+  /**Setup AFE as if for a basic chronoamperometry test*/
+  AfePwrCfg(AFE_ACTIVE);                        //set AFE power mode to active
+  LPDacPwrCtrl(caChan,PWR_UP);
+  LPDacCfg(caChan,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);
+  AfeLpTiaPwrDown(caChan,0);
+  AfeLpTiaAdvanced(caChan,BANDWIDTH_NORMAL,CURRENT_NOR);
+  AfeLpTiaCon(caChan,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
+  delay_10us(1000);
+  AFE_SETUP_LPTIA_LPDAC(caChan);                //double check that registers match required configs for CA
+  AfeLpTiaCon(caChan, LPTIA_RLOAD_100, RGAIN, LPTIA_RFILTER_DISCONNECT);
+  
+  /**Convert signed voltages from user input to unsigned voltages for DAC channels*/
+  uint16_t relative_voltages[2] = {0,0};
+  caSetVoltages(stepVoltage, relative_voltages, caChan);
+  
+  /**Iterate through all available RTIA gain resistor values, measuring noise at each step*/
+  for(uint8_t rtia_id=1 ; rtia_id<=25 ; ++rtia_id){
+    printf("RTIA setting: %i\n", rtia_id);
+    RGAIN = LPRTIA_LOOKUP(rtia_id);
+    caSignalMeasure(caChan, relative_voltages, stepLength, stepDelay, RGAIN, SHORT_TEST_MODE);
+  }
+  
+  /**Turn off AFE and reset board*/
+  turn_off_afe_power_things_down();
+  printf("[END:CA]");
+  NVIC_SystemReset();                           //ARM DIGITAL SOFTWARE RESET
+  
+}

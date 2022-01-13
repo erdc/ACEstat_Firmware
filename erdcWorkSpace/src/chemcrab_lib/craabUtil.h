@@ -165,7 +165,7 @@ float adc_to_current(float adc_data,
                      int RTIA);
 
 /**
-  *@brief       voltammetry_mov_avg: testing a basic moving average filter for squarewave voltametry data
+  *@brief       swv_mov_avg: basic moving average filter for squarewave voltametry data
   *@param       width: moving average window width
   *@param       arr: pointer to adc samples array
   *@param       pos: current position in *arr
@@ -173,11 +173,26 @@ float adc_to_current(float adc_data,
   *@param       RTIA: LPTIA feedback gain resistance
   *@retval      adjusted value for measurement at pos based on local average
 */
-float voltammetry_mov_avg(int width, 
-                          uint16_t *arr, 
-                          int pos,
-                          uint16_t sample_count,
-                          int RTIA);
+float swv_mov_avg(int width, 
+                   uint16_t *arr, 
+                   int pos,
+                   uint16_t sample_count,
+                   int RTIA);
+                      
+/**
+  *@brief       cv_mov_avg: basic moving average filter for cyclic voltammetry data
+  *@param       width: moving average window width
+  *@param       arr: pointer to adc samples array
+  *@param       pos: current position in *arr
+  *@param       sample_count: length of *arr
+  *@param       RTIA: LPTIA feedback gain resistance
+  *@retval      adjusted value for measurement at pos based on local average
+*/
+float cv_mov_avg(int width, 
+                  uint16_t *arr, 
+                  int pos,
+                  uint16_t sample_count,
+                  int RTIA);
 
 /***************** DAC control and conversion ********************/
 

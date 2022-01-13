@@ -226,7 +226,7 @@ float adc_to_current(float adcVal, int RTIA){
   return (((fVolt/RTIA*1000)-1));
 }
 
-float voltammetry_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_count, int RTIA){
+float swv_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_count, int RTIA){
   
   float sum = 0;
   float ctr = 0;
@@ -251,6 +251,38 @@ float voltammetry_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_cou
   if(pos > sample_count-3*width){
     for(int j=pos-3*width ; j<sample_count ; j+=3){
       sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  
+  return sum/ctr;               
+}
+
+float cv_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_count, int RTIA){
+  
+  float sum = 0;
+  float ctr = 0;
+  
+  /**Case where pos is close to beginning of szADCSamples*/
+  if(pos < 2*width){
+    for(int j=1 ; j<pos+2*width ; j+=2){
+      sum += adc_to_current(arr[j],RTIA);
+      ++ctr;
+    }
+  }
+  
+  /**Case where pos is in the middle of szADCSamples*/
+  if(pos>2*width && pos<sample_count-2*width){
+    for(int j=pos-2*width ; j<pos+2*width ; j+=2){
+      sum += adc_to_current(arr[j],RTIA);
+      ++ctr;
+    }
+  }
+  
+  /**Case where pos is close to end of szADCSamples*/
+  if(pos > sample_count-2*width){
+    for(int j=pos-2*width ; j<sample_count ; j+=2){
+      sum += adc_to_current(arr[j],RTIA);
       ++ctr;
     }
   }
