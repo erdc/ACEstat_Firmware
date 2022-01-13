@@ -1,6 +1,10 @@
-# ADUCM355_Template
+# ACESTAT
 
-A git repo for the ADUCM355 template for use with IAR EWARM.
+A git repo for the ERDC ACESTAT
 
 To use 
-Open ADuCM355/erdcWorkSpace/erdcTemplate/iar and load the workspace file into IAR.
+First initialize submodules
+Open $(PROJ_DIR)/acestat/iar and load the workspace file into IAR.
+
+Citation 
+--CITATION HERE
