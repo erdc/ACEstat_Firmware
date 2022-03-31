@@ -20,7 +20,8 @@
 void runTest(char mode);
 char getTestMode(void);
 
-char* version = "2021.06.29";
+//char* version = "2021.06.29";
+char* version = "2022.02.18";
 
 int main(void){
   /*setup functions. only run when board powers on*/
@@ -54,35 +55,33 @@ void runTest(char mode){
   
   bool testComplete = false;
   
+  if(mode=='0'){
+    runCV(1);                    //quick test with preset parameters for debugging
+    printf("[END:CV]");
+  }
   if(mode=='1'){
-        while(testComplete==false){
-              runCV();
-              printf("[END:CV]");
-        }
+    runCV(0);
+    printf("[END:CV]");
   }
-  
   if(mode=='2'){
-        while(testComplete==false){
-            runSWV();  
-            printf("[END:SWV]");
-            testComplete = true;
-            return;
-        }
+    runSWV();
+    printf("[END:SWV]");
   }
-  
-  if(mode=='4'){
-        runCSWV();
-        printf("[END:CSWV]");
-  }
-  
-  if(mode=='5'){
-        runCA();
-        printf("[END:CA]");
-  }
-  
   if(mode=='3'){
-        runEIS();
-        printf("[END:EIS]");
+    runCSWV();
+    printf("[END:CSWV]");
+  }
+  if(mode=='4'){
+    runCA();
+    printf("[END:CA]");
+  }
+  if(mode=='5'){
+    runEIS();
+    printf("[END:EIS]");
+  }
+  if(mode=='6'){
+    runOCP();
+    printf("[END:OCP]");
   }
 }  
 

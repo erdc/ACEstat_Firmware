@@ -5,7 +5,7 @@
 volatile uint8_t  ucInCnt;
 volatile uint32_t ucCOMIID0;
 volatile uint32_t iNumBytesInFifo;
-volatile uint16_t timer_ctr = 0;
+volatile uint32_t timer_ctr = 0;
 #define USE_SINC2_FOR_TEST 0
 
 uint8_t  ucComRx;
@@ -16,6 +16,7 @@ uint8_t szInSring[UART_INBUFFER_LEN];
 static uint32_t clkHclkSpeed  = 6500000u;       //6.5MHz
 static uint32_t AfeRootClkSpeed = 16000000u;    //16MHz
 static uint32_t AfeSysClkSpeed = 16000000u;     //16MHz
+
 /**
    @brief uint8_t AfeClkSel(uint32_t clkSource)
           ======Select clock source for AFE system
@@ -24,6 +25,7 @@ static uint32_t AfeSysClkSpeed = 16000000u;     //16MHz
    @note set ADC and SYS clock the same source for better performance
    @note when use AFECLK_SOURCE_EXT, update clock speed seperately by calling clockUpdate()
 **/
+
 uint8_t AfeClkSel(uint32_t clkSource)
 {
    if(clkSource == (pADI_AFECON->CLKSEL&BITM_AFECON_CLKSEL_SYSCLKSEL))
@@ -194,7 +196,7 @@ volatile uint16_t ADCRAW = 0;
 uint8_t adcModeSel = 0;
 
 void adc_voltage_setup_RE(uint8_t sensor_channel){
-  
+    
     /** Initial ADC parameters setup */
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);                    //config PGA gain
@@ -218,7 +220,7 @@ void adc_voltage_setup_RE(uint8_t sensor_channel){
 }
 
 void adc_voltage_setup_SE(uint8_t sensor_channel){
-  
+    
     /** Initial ADC parameters setup */
     AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
     AfeAdcPgaCfg(GNPGA_1,0);                    //config PGA gain
@@ -230,13 +232,37 @@ void adc_voltage_setup_SE(uint8_t sensor_channel){
     else{
       AfeAdcChan(MUXSELP_VSE0,MUXSELN_VSET1P1); //select ADC MUX to VSE0(P) and VREFCAP(N)
     }
-
+    
     /** Finalize ADC configuration */
     AfeAdcChopEn(1);
     AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
     NVIC_EnableIRQ(AFE_ADC_IRQn);               //enable ADC interrupt
     AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);         
     AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_NOBYP,ADCSAMPLERATE_800K);
+    pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
+    delay_10us(5);
+}
+
+void adc_voltage_setup_AIN(uint8_t analog_channel){
+    AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
+    AfeAdcPgaCfg(GNPGA_1,0);
+    
+    if(analog_channel == ANALOG_CHAN0){
+      AfeAdcChan(MUXSELP_AIN1,MUXSELN_AIN0);
+    }
+    if(analog_channel == ANALOG_CHAN1){
+      AfeAdcChan(MUXSELP_AIN3,MUXSELN_AIN2);
+    }
+    if(analog_channel == ANALOG_CHAN2){
+      AfeAdcChan(MUXSELP_AIN6,MUXSELN_AIN5);
+    }
+    
+    AfeAdcChopEn(1);
+    AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
+    NVIC_EnableIRQ(AFE_ADC_IRQn);
+    AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
+    
+    AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
     pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
     delay_10us(5);
 }
@@ -293,21 +319,29 @@ int oversample_adc(int mode, uint8_t sensor_channel, uint16_t oversample_rate){
   int sum = 0;
   
   /**ADC is sampling from the LPTIA to measure current */
-  if(mode == 0){        
+  if(mode == MODE_LPTIA){        
     adc_current_setup_lptia(sensor_channel);
   }
   
   /**ADC is sampling from VREO/VRE1 to reference capacitor*/
-  if(mode == 1){         
+  if(mode == MODE_VRE){         
     adc_voltage_setup_RE(sensor_channel);                 
   }
   
   /**ADC is sampling from VZERO to reference capacitor*/
-  if(mode == 2){        
+  if(mode == MODE_VZERO){        
     adc_voltage_setup_SE(sensor_channel);  
   }
+
+  /**ADC is sampling from analog input pins*/
+  if(mode == MODE_AIN){
+    adc_voltage_setup_AIN(sensor_channel);
+  }
+ 
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);          //begin adc conversion
+  delay_10us(50);
   
+  adcRdy = 0;
   /**Record and sum N=oversample_rate samples*/
   for(int i = 0 ; i<oversample_rate ; ++i){
     while(!adcRdy){};
@@ -335,7 +369,7 @@ float adc_to_current(float adcVal, int RTIA){
   return (((fVolt/RTIA*1000)-1));
 }
 
-float voltammetry_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_count, int RTIA){
+float swv_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_count, int RTIA){
   
   float sum = 0;
   float ctr = 0;
@@ -360,6 +394,38 @@ float voltammetry_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_cou
   if(pos > sample_count-3*width){
     for(int j=pos-3*width ; j<sample_count ; j+=3){
       sum += (adc_to_current(arr[j+1],RTIA) - adc_to_current(arr[j],RTIA));
+      ++ctr;
+    }
+  }
+  
+  return sum/ctr;               
+}
+
+float cv_mov_avg(int width, uint16_t *arr, int pos, uint16_t sample_count, int RTIA){
+  
+  float sum = 0;
+  float ctr = 0;
+  
+  /**Case where pos is close to beginning of szADCSamples*/
+  if(pos < 2*width){
+    for(int j=1 ; j<pos+2*width ; j+=2){
+      sum += adc_to_current(arr[j],RTIA);
+      ++ctr;
+    }
+  }
+  
+  /**Case where pos is in the middle of szADCSamples*/
+  if(pos>2*width && pos<sample_count-2*width){
+    for(int j=pos-2*width ; j<pos+2*width ; j+=2){
+      sum += adc_to_current(arr[j],RTIA);
+      ++ctr;
+    }
+  }
+  
+  /**Case where pos is close to end of szADCSamples*/
+  if(pos > sample_count-2*width){
+    for(int j=pos-2*width ; j<sample_count ; j+=2){
+      sum += adc_to_current(arr[j],RTIA);
       ++ctr;
     }
   }
@@ -838,7 +904,7 @@ void reset_timer_ctr(void){
   timer_ctr = 0;
 }
 
-uint16_t get_timer_ctr(void){
+uint32_t get_timer_ctr(void){
   return timer_ctr;
 }
              

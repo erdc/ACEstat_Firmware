@@ -25,10 +25,10 @@
 
 /**
   *@brief       runCV: performs setup and carries out electrochemical test/measurement on 3-electrode sensor
-  *@param       none
+  *@param       debug_mode: 0 to run in normal mode, 1 to run a quick test with pre-defined parameters
   *@retval      none
 */
-void runCV(void);
+void runCV(int debug_mode);
 
 /**
   *@brief       cvSetVoltages: converts +/- voltages(relative to zero) to voltages referenced to bias level (vZero)
@@ -256,5 +256,15 @@ void printCAResults(float cZero,
                     int sampleCount, 
                     float timeStep, 
                     float vZeroMeasured);
+
+
+/*****************Open-Circuit Potentiometry(OCP) Functions ********************/
+
+/**
+  *@brief       runOCP: performs setup and carries out electrochemical test/measurement on analog input pins
+  *@param       none
+  *@retval      none
+*/
+void runOCP(void);
 
 #endif

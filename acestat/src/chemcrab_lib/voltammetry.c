@@ -2,24 +2,37 @@
 #include "voltammetry.h"
 
 /***********************Cyclic Voltammetry(CV) Functions *************************/
-void runCV(void){
+void runCV(int debug_mode){
   set_adc_mode(0);
+
+  uint16_t cvSensChan = 0;                            //parser expects 0 or 1
+  int cvStartVolt = -100;                             //parser expects -9999 to +9999 [mV]
+  int cvVertexVolt = 100;                             //parser expects -9999 to +9999 [mV]
+  int cvEndVolt = -100;                               //parser expects -9999 to +9999 [mV]
+  uint16_t sweepRate = 200;                           //parser expects 000 to 999 [mV/s]
+  uint16_t tEquilibrium = 1;                          //parser expects 0000 to 9999 [s]
+  uint8_t RTIACHOICE = 1;                             //parser expects 00-25
+  uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE);         //PASS INT VAL RATHER THAN ASCII
   
-  /**Get user inputs from ACEstat app or command-line interface */
-  uint16_t cvSensChan = get_sensor_channel();     //parser expects 0 or 1
-  printf("[:SVI]");                             
-  int cvStartVolt = get_voltage_input();          //parser expects -9999 to +9999 [mV]
-  printf("[:VVI]");
-  int cvVertexVolt = get_voltage_input();         //parser expects -9999 to +9999 [mV]
-  printf("[:EVI]");
-  int cvEndVolt = get_voltage_input();            //parser expects -9999 to +9999 [mV]
-  printf("[:SRI]");
-  uint16_t sweepRate = get_parameter(3);         //parser expects 000 to 999 [mV/s]
-  printf("[:TEI]");
-  uint16_t tEquilibrium = get_parameter(4);      //parser expects 0000 to 9999 [s]
-  printf("[:RTIAI]");
-  uint8_t RTIACHOICE = get_parameter(2);         //parser expects 00-25
-  uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE);   //PASS INT VAL RATHER THAN ASCII
+  /**If using user inputs for test parameters*/
+  if(!debug_mode){
+    /**Get user inputs from ACEstat app or command-line interface */
+    cvSensChan = get_sensor_channel();                  //parser expects 0 or 1
+    printf("[:SVI]");                             
+    cvStartVolt = get_voltage_input();                  //parser expects -9999 to +9999 [mV]
+    printf("[:VVI]");
+    cvVertexVolt = get_voltage_input();                 //parser expects -9999 to +9999 [mV]
+    printf("[:EVI]");
+    cvEndVolt = get_voltage_input();                    //parser expects -9999 to +9999 [mV]
+    printf("[:SRI]");
+    sweepRate = get_parameter(3);                       //parser expects 000 to 999 [mV/s]
+    printf("[:TEI]");
+    tEquilibrium = get_parameter(4);                    //parser expects 0000 to 9999 [s]
+    printf("[:RTIAI]");
+    RTIACHOICE = get_parameter(2);                      //parser expects 00-25
+    RGAIN = LPRTIA_LOOKUP(RTIACHOICE);                  //PASS INT VAL RATHER THAN ASCII
+  }
+
   printf("[START:CV]");                         //Begin test setup
   
   /**Setup AFE for CV test */
@@ -41,7 +54,6 @@ void runCV(void){
   cvSignalMeasure(cvSensChan, relative_voltages, RGAIN, sweepRate);  //Apply CV signal and measure current response
   
   /**End test and shutdown AFE*/
-  turn_off_afe_power_things_down();
   printf("[END:CV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
@@ -193,6 +205,7 @@ void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uin
   
   /**Put the sensor in "open circuit" state */
   turn_off_afe_power_things_down();
+  
   /**Print test results from SzAdcSamples to terminal */
   printCVResults(cZero,cStart,cVertex,cEnd,sampleCount,RTIA,vZeroMeas);
 }
@@ -263,7 +276,6 @@ void runSWV(void){
   swvSignalMeasure(swvSensChan, relative_voltages, RGAIN, swvAmp, swvStep, swvFreq);
 
   /**End test and shutdown AFE*/
-  turn_off_afe_power_things_down();
   printf("[END:SWV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
@@ -432,7 +444,7 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
     /**Moving average filter for SWV data*/
     if(use_mov_avg){
       int filterWidth = 20;
-      tc = voltammetry_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
+      tc = swv_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
     }
     else{
       tc = (adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA));
@@ -491,7 +503,6 @@ void runCSWV(void){
   cswvSignalMeasure(cswvSensChan, relative_voltages, RGAIN, cswvAmp, cswvStep, cswvFreq);
 
   /**Turn off AFE after test completion*/
-  turn_off_afe_power_things_down();
   printf("[END:CSWV]");
   NVIC_SystemReset();                           //ARM DIGITAL SOFTWARE RESET
 }
@@ -749,7 +760,6 @@ void runCA(void){
   caSignalMeasure(caChan, relative_voltages, stepLength, stepDelay, RGAIN);
   
   /**Turn off AFE and reset board*/
-  turn_off_afe_power_things_down();
   printf("[END:CA]");
   NVIC_SystemReset();                           //ARM DIGITAL SOFTWARE RESET
 }
@@ -853,3 +863,9 @@ void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCo
 }
 
 /****************END CHRONOAMPEROMETRY***************************/
+
+/****************OPEN-CIRCUIT POTENTIOMETRY***************************/
+
+void runOCP(){
+  
+}

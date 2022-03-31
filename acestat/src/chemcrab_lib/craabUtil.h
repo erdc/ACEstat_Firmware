@@ -13,8 +13,6 @@
 #include "AfeTiaLib.h"
 #include "PwrLib.h"
 #include "AfeDacLib.h"
-//#include "M355_ECSns_EIS.h"
-//#include "M355_ECSns_DCTest.h"
 
 /*TEMP DEFINES TEST*/
 #define BITP_AFE_ADCINTIEN_VARIEN             8            /*  Variance Interrupt */
@@ -134,6 +132,13 @@ void adc_voltage_setup_RE(uint8_t sensor_channel);
 void adc_voltage_setup_SE(uint8_t sensor_channel);
 
 /**
+  *@brief       adc_voltage_setup_AIN: configure the ADC to measure voltage between analog input pins
+  *@param       sensor_channel: 0 for AIN1-AIN0 , 1 for AIN3-AIN2, 2 for AIN6-AIN5
+  *@retval      none
+*/
+void adc_voltage_setup_AIN(uint8_t analog_channel);
+
+/**
   *@brief       adc_current_setup_lptia: configure the ADC to measure current using the + and -terminal of the LPTIA
   *@param       sensor_channel: 0 or 1
   *@retval      none
@@ -189,7 +194,18 @@ void set_adc_mode(uint8_t mode);
 int oversample_adc(int mode, 
                    uint8_t sensor_channel, 
                    uint16_t oversample_rate);
-
+                   
+/**Macros for defining oversample mode and ADC mux positions*/
+#define MODE_LPTIA 0                    //Use as input to oversample_adc(mode)
+#define MODE_VRE 1                      //Use as input to oversample_adc(mode)
+#define MODE_VZERO 2                    //Use as input to oversample_adc(mode)
+#define MODE_AIN 3                      //Use as input to oversample_adc(mode)
+#define ELECTRODE_CHAN0 0               //Use as input to oversample_adc(sensor_channel)   
+#define ELECTRODE_CHAN1 1               //Use as input to oversample_adc(sensor_channel) 
+#define ANALOG_CHAN0 2                  //Use as input to oversample_adc(sensor_channel)
+#define ANALOG_CHAN1 3                  //Use as input to oversample_adc(sensor_channel)
+#define ANALOG_CHAN2 4                  //Use as input to oversample_adc(sensor_channel)
+            
 /**
   *@brief       adc_to_voltage: converts adc-scale measurements to voltage, in milli-volts
   *@param       adc_data: adc-scale measured voltage
@@ -215,11 +231,26 @@ float adc_to_current(float adc_data,
   *@param       RTIA: LPTIA feedback gain resistance
   *@retval      adjusted value for measurement at pos based on local average
 */
-float voltammetry_mov_avg(int width, 
-                          uint16_t *arr, 
-                          int pos,
-                          uint16_t sample_count,
-                          int RTIA);
+float swv_mov_avg(int width, 
+                   uint16_t *arr, 
+                   int pos,
+                   uint16_t sample_count,
+                   int RTIA);
+                                           
+/**
+  *@brief       cv_mov_avg: testing a basic moving average filter for cyclic voltametry data
+  *@param       width: moving average window width
+  *@param       arr: pointer to adc samples array
+  *@param       pos: current position in *arr
+  *@param       sample_count: length of *arr
+  *@param       RTIA: LPTIA feedback gain resistance
+  *@retval      adjusted value for measurement at pos based on local average
+*/
+float cv_mov_avg(int width, 
+                 uint16_t *arr, 
+                 int pos, 
+                 uint16_t sample_count, 
+                 int RTIA);
 
 /***************** DAC control and conversion ********************/
 
@@ -382,7 +413,7 @@ void reset_timer_ctr(void);
   *@param       none
   *@retval      timer_ctr, used to count GPT cycles for equilibrium timing
 */
-uint16_t get_timer_ctr(void);
+uint32_t get_timer_ctr(void);
 
 /**
   *@brief       gpt_wait_for_flag: holds voltammetry test for flag inducating GPT period has passed.  Ensures scanrate is maintained during voltammetry

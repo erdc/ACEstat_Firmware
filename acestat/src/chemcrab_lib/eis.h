@@ -35,11 +35,6 @@
 */
 #define EN_2_LEAD   1
 
-// On initialization, this function is called to temporarily close SW1 in the Low Power loop.
-// This results in the LPTIA output being shorted to its input.
-// For a short duration, the amplifier can handle this
-// This greatly speeds up the settling time of the gas sensor.
-
 void ChargeECSensor(void);
 
 /**
