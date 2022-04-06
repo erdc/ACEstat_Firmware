@@ -180,6 +180,18 @@ int uart_get_flag(void)
 	return uart_flag;
 }
 
+
+/***************** Output printing mode control********************/
+uint8_t printing_mode = PRINT_MODE_PROCESSED;         //default to raw printing mode
+
+void set_printing_mode(uint8_t mode){
+  printing_mode = mode;
+}
+
+uint8_t get_printing_mode(void){
+  return printing_mode;
+}
+
 /***************** ADC control and conversion ********************/
 
 #if defined ( __ICCARM__ )
@@ -691,6 +703,18 @@ void lptia_setup_parameters(uint32_t RTIA){
   LPDacCfg(CHAN0,LPDACSWDIAG,VBIAS12BIT_VZERO6BIT,LPDACREF2P5); //change ULP DAC setting from DC to Diagnostic mode
 
   AfeSwitchFullCfg(SWITCH_GROUP_T,SWID_T9|SWID_T5_SE0RLOAD);    //short T5,T9 for SE0
+}
+
+void AFE_SETUP_VOLTAMMETRY(uint8_t channel, uint32_t RTIA){
+  AfePwrCfg(AFE_ACTIVE);                        //set AFE power mode to active
+  LPDacPwrCtrl(channel,PWR_UP);                 //power up LPDAC on requested sensor_channel
+  LPDacCfg(channel,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);     //config DAC on requested sensor_channel
+  AfeLpTiaPwrDown(channel,0);                   //power up LPTIA on requested sensor_channel
+  AfeLpTiaAdvanced(channel,BANDWIDTH_NORMAL,CURRENT_NOR);
+  AfeLpTiaCon(channel,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
+  delay_10us(1000);
+  AFE_SETUP_LPTIA_LPDAC(channel);               //ensure LPTIA/LPDAC registers match required configuration
+  AfeLpTiaCon(channel, LPTIA_RLOAD_100, RTIA, LPTIA_RFILTER_DISCONNECT);    //Setup LPTIA gain to match user input
 }
 
 /***************** Command-line input parsing functions ********************/

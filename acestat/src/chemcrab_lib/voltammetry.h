@@ -21,6 +21,60 @@
 /**ERDC custom libraries */
 #include "craabUtil.h"
 
+/***************** ACEstat Test Type Struct ********************/
+
+/**Stores parameters and configuration for non-EIS test types*/
+typedef struct {
+  
+  /**Common variables across all test types*/
+  char* test_type;                      //"CV", "SWV", "CSWV", "CA", "LSV", "OCP", etc...
+  uint16_t equilibrium_time;            //time in seconds that starting voltage is held before test begins, no data collected during this time
+  uint8_t sensor_channel;               //0 or 1 corresponding to ACEstat electrode channels
+  uint16_t* adc_data_buffer;            //pointer to externally-defined adc buffer array
+  uint16_t rtia;                        //TIA gain resistance in ohms
+  uint16_t sample_count;                //number of datapoints collected so far for this test
+  
+  /**ADuCM355 uses a differential voltage to create negative potentials, with 'zero' applied to the working electrode*/
+  /**Ex: [vStart_diff, vEnd_diff, vZero] = [2200, 1200, 1700] creates a -500mV to +500mV sweep when measured from the working electrode to reference electrode*/
+  uint16_t vStart_diff;                 //starting voltage for sweep, applied to reference electrode.  _diff tag indicates that this is relative to vZero
+  uint16_t vEnd_diff;                   //ending voltage for sweep, applied to reference electrode.  _diff tag indicates that this is relative to vZero      
+  uint16_t vZero;                       //sets the relative zero voltage at the working electrode
+  int vStart;                           //starting voltage relative to zero.  Ex: vStart = vZero - vStart_diff
+  int vEnd;                             //ending voltage relative to zero
+  uint16_t cZero;                       //zero voltage on DAC scale (usually 6-bit)
+  uint16_t cStart;                      //starting voltage on DAC scale (usually 12-bit)
+  uint16_t cEnd;                        //ending voltage on DAC scale (usually 12-bit)
+  uint16_t vZeroMeasured;               //directly measured for more accurate readings
+  
+  /**Cyclic voltammetry variables*/
+  uint16_t vVertex_diff;                //CV and CSWV use additional vertex point to define 'triangle' shaped sweep
+  uint16_t cvSweepRate;                 //sweep rate in mV/s for CV sweep
+  int vVertex;                          //vertex voltage relative to zero
+  uint16_t cVertex;                     //vertex voltage on DAC scale (usually 12-bit)
+  
+  /**Square wave voltammetry variables*/
+  uint16_t swvFrequency;                //sqaure wave frequency in Hz
+  uint16_t swvAmplitude;                //square wave amplitude in mV
+  uint16_t swvStepSize;                 //step size between squarewave cycles in mV
+  uint16_t cAmplitude;                  //square wave amplitude on 12-bit DAC scale
+  
+  /**Cyclic square wave voltammetry combines CV and SWV, has no unique parameters*/
+  
+  /**Chronoamperometry parameters*/
+  uint8_t caStepMode;                   //0 to measure response to 0->vStart only, 1 to measure 0->vStart and vStart->0 responses
+  uint16_t caDuration;                  //duration to hold vStart after intial step, and 0 volts after secondary step if caStepMode==1
+  uint16_t caDelay;                     //delay prior to initial step to hold 0 volts
+  
+  /**Open circuit potentiometry*/
+  uint16_t ocpDuration;                 //time in ms to measure potential
+  uint16_t ocpSamplingFreqiency;        //sampling frequency in Hz
+  
+  /**Filtering parameters*/
+  uint8_t use_mov_avg;                  //0 or 1, use moving average filter
+  uint8_t window_width;                 //width of moving average filter window
+  
+}acestatTest_type;
+
 /*****************Cyclic Voltammetry(CV) Functions ********************/
 
 /**
@@ -32,51 +86,29 @@ void runCV(int debug_mode);
 
 /**
   *@brief       cvSetVoltages: converts +/- voltages(relative to zero) to voltages referenced to bias level (vZero)
-  *@param       input_voltages: +/- voltages, {vStart, vVertex, vEnd}
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vVertex, vEnd}
-  *@param       channel: sensor channel, 0 or 1
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void cvSetVoltages(int input_voltages[3], 
-                   uint16_t relative_voltages[4], 
-                   uint8_t sensor_channel);
+void cvSetVoltages(acestatTest_type *testParams);
 /**
   *@brief       cvEquilibriumDelay: holds the electrode potential at (vZero-vStart) for a set duration
   *             Ex: input_voltages = {-400, +400, -400} ---->   relative_voltages = {1800, 1400, 2200, 1400}
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vVertex, vEnd}
-  *@param       sensor_channel: 0 or 1
-  *@param       equilibrium_time: duration to hold voltage at (vZero-vStart), in seconds
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void cvEquilibriumDelay(uint16_t sensor_channel, 
-                        uint16_t relative_voltages[4], 
-                        uint16_t equilibrum_time);
+void cvEquilibriumDelay(acestatTest_type *testParams);
 /**
   *@brief       cvSignalMeasure: apply CV signal to electrode and measure current response.  Stores test data in SzADCsamples
-  *@param       sensor_channel: 0 or 1
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vVertex, vEnd}
-  *@param       RGAIN: TIA feedback gain resistor value
-  *@param       scanrate: rate of change of voltage for CV ramp, in mV/s
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void cvSignalMeasure(uint16_t sensor_channel, 
-                     uint16_t relative_voltages[4],
-                     uint32_t RGAIN, uint16_t scanrate);
+void cvSignalMeasure(acestatTest_type *testParams);
 /**
   *@brief       printCVResults: prints measured voltage and current from CV test using printf()
-  *@param       cZero,cStart,cVertex,cEnd: DAC-scale equivalents of relative_voltages
-  *@param       sampleCount: total number of collected datapoints
-  *@param       RTIA: TIA gain resistor value
-  *@param       vZeroMeasured: measured value of vZero output for more accurate voltage calculations
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void printCVResults(float cZero, 
-                    float cStart, 
-                    float cVertex, 
-                    float cEnd, 
-                    int sampleCount, 
-                    int RTIA, 
-                    float vZeroMeasured);
+void printCVResults(acestatTest_type *testParams);
 
 /*****************Square Wave Voltammetry(SWV) Functions ********************/
 
@@ -90,55 +122,28 @@ void runSWV(void);
 /**
   *@brief       swvSetVoltages: converts +/- voltages(relative to zero) to voltages referenced to bias level (vZero).
   *             also uses vAmp to avoid maxing-out DAC range
-  *@param       input_voltages: +/- voltages, {vStart, vEnd, vAmp}
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vEnd}
-  *@param       sensor_channel: 0 or 1
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void swvSetVoltages(int input_voltages[3], 
-                    uint16_t relative_voltages[3], 
-                    uint8_t sensor_channel);
+void swvSetVoltages(acestatTest_type *testParams);
 /**
   *@brief       swvEquilibriumDelay: holds the electrode potential at (vZero-vStart) for a set duration
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vEnd}
-  *@param       sensor_channel: 0 or 1
-  *@param       equilibrium_time: duration to hold voltage at (vZero-vStart), in seconds
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void swvEquilibriumDelay(uint16_t sensor_channel, 
-                         uint16_t relative_voltages[3], 
-                         uint16_t amplitude, 
-                         uint16_t equilibrium_time);
+void swvEquilibriumDelay(acestatTest_type *testParams);
 /**
   *@brief       swvSignalMeasure: apply SWV signal to electrode and measure current response
-  *@param       sensor_channel: 0 or 1
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vEnd}
-  *@param       RGAIN: TIA feedback gain resistor value
-  *@param       amplitude: midpoint-to-peak squarewave amplitude in mV
-  *@param       cycle_step_size: baseline step size between squarewave cycles, in mV
-  *@param       freq: squarewave frequency, in Hz
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void swvSignalMeasure(uint16_t channel, 
-                      uint16_t relative_voltages[3], 
-                      uint32_t RGAIN, 
-                      uint16_t amplitude, 
-                      uint16_t cycle_step_size, 
-                      uint16_t freq);
+void swvSignalMeasure(acestatTest_type *testParams);
 /**
   *@brief       printSWVResults: prints measured voltage and current from SWV test using printf()
-  *@param       cZero,cStart,cEnd: DAC-scale equivalents of relative_voltages
-  *@param       sampleCount: total number of collected datapoints
-  *@param       RTIA: TIA gain resistor value
-  *@param       vZeroMeasured: measured value of vZero output for more accurate voltage calculations
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void printSWVResults(float cZero, 
-                     float cStart, 
-                     float cEnd, 
-                     int sampleCount, 
-                     int RTIA, 
-                     float vZeroMeasured);
+void printSWVResults(acestatTest_type *testParams);
 
 /*****************Cyclic Square Wave Voltammetry(CSWV) Functions ********************/
 
@@ -153,57 +158,28 @@ void runCSWV(void);
 /**
   *@brief       cswvSetVoltages: converts +/- voltages(relative to zero) to voltages referenced to bias level (vZero).
   *             also uses vAmp to avoid maxing-out DAC range
-  *@param       input_voltages: +/- voltages, {vStart, vVertex, vEnd, vAmp}
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vVertex, vEnd}
-  *@param       sensor_channel: 0 or 1
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void cswvSetVoltages(int input_voltages[4], 
-                     uint16_t relative_voltages[4], 
-                     uint8_t sensor_channel);
+void cswvSetVoltages(acestatTest_type *testParams);
 /**
   *@brief       cswvEquilibriumDelay: holds the electrode potential at (vZero-vStart) for a set duration
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vVertex, vEnd}
-  *@param       sensor_channel: 0 or 1
-  *@param       amplitude: CSWV midpoint-to-peak amplitude
-  *@param       equilibrium_time: duration to hold voltage at (vZero-vStart), in seconds
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void cswvEquilibriumDelay(uint16_t sensor_channel, 
-                          uint16_t relative_voltages[4], 
-                          uint16_t amplitude, 
-                          uint16_t equilibrium_time);
+void cswvEquilibriumDelay(acestatTest_type *testParams);
 /**
   *@brief       cswvSignalMeasure: apply CSWV signal to electrode and measure current response
-  *@param       sensor_channel: sensor channel, 0 or 1
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStart, vVertex, vEnd}
-  *@param       RGAIN: TIA feedback gain resistor value
-  *@param       amplitude: midpoint-to-peak squarewave amplitude in mV
-  *@param       cycle_step_size: baseline step size between squarewave cycles, in mV
-  *@param       freq: squarewave frequency, in Hz
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void cswvSignalMeasure(uint16_t sensor_channel, 
-                       uint16_t relative_voltages[4], 
-                       uint32_t RGAIN, 
-                       uint16_t amplitude, 
-                       uint16_t cycle_step_size, 
-                       uint16_t freq);
+void cswvSignalMeasure(acestatTest_type *testParams);
 /**
   *@brief       printCSWVResults: prints measured voltage and current from CSWV test using printf()
-  *@param       cZero,cStart,cVertex,cEnd: DAC-scale equivalents of relative_voltages
-  *@param       sampleCount: total number of collected datapoints
-  *@param       RTIA: TIA gain resistor value
-  *@param       vZeroMeasured: measured value of vZero output for more accurate voltage calculations
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void printCSWVResults(float cZero, 
-                      float cStart, 
-                      float cVertex, 
-                      float cEnd, 
-                      int sampleCount, 
-                      int RTIA, 
-                      float vZeroMeasured);
+void printCSWVResults(acestatTest_type *testParamss);
 
 /*****************Chrono-Amperometry(CA) Functions ********************/
 
@@ -216,47 +192,17 @@ void runCA(void);
 
 /**
   *@brief       caSetVoltages: converts +/- voltages(relative to zero) to voltages referenced to bias level (vZero).
-  *@param       vStep: +/- amplitude of the CA voltage step in mV
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStep}
-  *@param       sensor_channel: 0 or 1
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void caSetVoltages(int vStep, 
-                   uint16_t relative_voltages[2], 
-                   uint8_t sensor_channel);
+void caSetVoltages(acestatTest_type *testParams);
 
 /**
   *@brief       caSignalMeasure: apply CA signal to electrode and measure current response
-  *@param       sensor_channel: 0 or 1
-  *@param       relative_voltages: voltages relative to vZero bias, {vZero, vStep}
-  *@param       step_duration: duration in ms of CA step
-  *@param       pre_step_delay: delay in ms before CA step is applied
-  *@param       RGAIN: TIA feedback gain resistor value
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */
-void caSignalMeasure(uint16_t sensor_channel, 
-                     uint16_t relative_voltages[2], 
-                     uint16_t step_duration, 
-                     uint16_t pre_step_delay, 
-                     uint32_t RGAIN);
-/**
-  *@brief       printCAResults: prints measured voltage and current from CA test using printf()
-  *@param       cZero,cStep: DAC-scale equivalents of relative_voltages
-  *@param       length: duration in ms of CA step signal
-  *@param       RTIA: TIA gain resistor value
-  *@param       sampleCount: total number of collected datapoints
-  *@param       timeStep: incremental time between measurements
-  *@param       vZeroMeasured: measured value of vZero output for more accurate voltage calculations
-  *@retval      none
-*/
-void printCAResults(float cZero, 
-                    float cStep, 
-                    int length, 
-                    int RTIA, 
-                    int sampleCount, 
-                    float timeStep, 
-                    float vZeroMeasured);
-
+void caSignalMeasure(acestatTest_type *testParams);
 
 /*****************Open-Circuit Potentiometry(OCP) Functions ********************/
 

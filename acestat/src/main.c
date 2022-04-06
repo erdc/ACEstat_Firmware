@@ -20,33 +20,32 @@
 void runTest(char mode);
 char getTestMode(void);
 
-//char* version = "2021.06.29";
-char* version = "2022.02.18";
+char* version = "2022.04.04";
 
 int main(void){
-  /*setup functions. only run when board powers on*/
+  /**Setup functions. only run when board powers on*/
   AfeWdtGo(false);
   ClockInit();
   UartInit();
-  delay_10us(10);                             //settling delay
+  delay_10us(10);
+
   /*End powerup setup*/
   
   char testMode = 0;
-  
+
   while(1){
     /*****************************
-     *1 Cyclic Voltammetry       *
-     *2 Square Wave Voltammetry  *
-     *3 Cyclic Square Wave       *
-     *4 Chronoamperometry        *
-     *5 EIS                      *
+    *1 Cyclic Voltammetry       *
+    *2 Square Wave Voltammetry  *
+    *3 Cyclic Square Wave       *
+    *4 Chronoamperometry        *
+    *5 EIS                      *
     ******************************/
-    while(1){
-      printf("%s%s%s", "[:MAIN:", version, "]");
-      
-      testMode = getTestMode();         //test mode input, reads only the first character in szInString
-      runTest(testMode);
-    }
+    printf("%s%s%s", "[:MAIN:", version, "]\n");
+    
+    /**User selects a test mode via UART*/
+    testMode = getTestMode();         //test mode input, reads only the first character in szInString
+    runTest(testMode);
   }
   return 0;
 }

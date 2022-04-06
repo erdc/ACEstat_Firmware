@@ -108,6 +108,27 @@ int uart_flag_reset(void);
 */
 int uart_get_flag(void);
 
+/***************** Output printing mode control********************/
+
+#define PRINT_MODE_RAW 0                        //print raw ADC values over UART
+#define PRINT_MODE_PROCESSED 1                  //print processed values over UART
+
+/**
+  *@brief       set_printing_mode: changes global printing_mode variable to mode
+  *@param       mode: PRINT_MODE_RAW or PRINT_MODE_PROCESSED
+  *@retval      none
+*/
+void set_printing_mode(uint8_t mode);
+
+/**
+  *@brief       get_printing_mode: returns the value of printing_mode
+  *@param       none
+  *@retval      current value of printing_mode
+*/
+uint8_t get_printing_mode(void);
+
+
+
 /***************** ADC control and conversion ********************/
 
 #define MAX_BUFFER_LENGTH 16000
@@ -351,6 +372,14 @@ void hptia_setup_parameters(uint32_t RTIA);
   *@retval      none
 */
 void lptia_setup_parameters(uint32_t RTIA);
+
+/**
+  *@brief       AFE_SETUP_VOLTAMMETRY: sets up the to run voltammetry
+  *@param       channel: electrode channel to use
+  *@param       RTIA: TIA feedback gain resistance
+  *@retval      none
+*/
+void AFE_SETUP_VOLTAMMETRY(uint8_t channel, uint32_t RTIA);
 
 
 
