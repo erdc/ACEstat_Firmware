@@ -29,9 +29,9 @@ typedef struct {
   /**Common variables across all test types*/
   char* test_type;                      //"CV", "SWV", "CSWV", "CA", "LSV", "OCP", etc...
   uint16_t equilibrium_time;            //time in seconds that starting voltage is held before test begins, no data collected during this time
-  uint8_t sensor_channel;               //0 or 1 corresponding to ACEstat electrode channels
+  uint16_t sensor_channel;               //0 or 1 corresponding to ACEstat electrode channels
   uint16_t* adc_data_buffer;            //pointer to externally-defined adc buffer array
-  uint16_t rtia;                        //TIA gain resistance in ohms
+  uint16_t rtia;                        //rtia lookup table selection value
   uint16_t sample_count;                //number of datapoints collected so far for this test
   
   /**ADuCM355 uses a differential voltage to create negative potentials, with 'zero' applied to the working electrode*/
@@ -92,7 +92,6 @@ void runCV(int debug_mode);
 void cvSetVoltages(acestatTest_type *testParams);
 /**
   *@brief       cvEquilibriumDelay: holds the electrode potential at (vZero-vStart) for a set duration
-  *             Ex: input_voltages = {-400, +400, -400} ---->   relative_voltages = {1800, 1400, 2200, 1400}
   *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
   *@retval      none
 */

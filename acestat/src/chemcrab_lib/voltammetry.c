@@ -9,12 +9,12 @@ void runCV(int debug_mode){
   
   /**Pre-defined parameters to run quick diagrnostic tests*/
   cvTest.sensor_channel = 0;                      //parser expects 0 or 1
-  cvTest.vStart = -100;                           //parser expects -9999 to +9999 [mV]
-  cvTest.vVertex = 100;                           //parser expects -9999 to +9999 [mV]
-  cvTest.vEnd = -100;                             //parser expects -9999 to +9999 [mV]
-  cvTest.cvSweepRate = 200;                       //parser expects 000 to 999 [mV/s]
+  cvTest.vStart = -400;                           //parser expects -9999 to +9999 [mV]
+  cvTest.vVertex = 400;                           //parser expects -9999 to +9999 [mV]
+  cvTest.vEnd = -400;                             //parser expects -9999 to +9999 [mV]
+  cvTest.cvSweepRate = 400;                       //parser expects 000 to 999 [mV/s]
   cvTest.equilibrium_time = 1;                    //parser expects 0000 to 9999 [s]
-  cvTest.rtia = LPRTIA_LOOKUP(1);      //PASS INT VAL RATHER THAN ASCII
+  cvTest.rtia = LPRTIA_LOOKUP(1);               //PASS INT VAL RATHER THAN ASCII
   
   /**If getting user inputs for test parameters*/
   if(!debug_mode){
@@ -31,8 +31,10 @@ void runCV(int debug_mode){
     printf("[:TEI]");
     cvTest.equilibrium_time = get_parameter(4);                   //parser expects 0000 to 9999 [s]
     printf("[:RTIAI]");                    
-    cvTest.rtia = LPRTIA_LOOKUP(get_parameter(2));     //parser expects 00-25
+    cvTest.rtia = LPRTIA_LOOKUP(get_parameter(2)-48);             //parser expects 00-25
   }
+  
+  cvTest.adc_data_buffer = return_adc_buffer();
 
   printf("[START:CV]");                                         //Begin test setup
   
@@ -49,92 +51,93 @@ void runCV(int debug_mode){
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
-void cvSetVoltages(acestatTest_type *testParams){
+void cvSetVoltages(acestatTest_type *tPar){
   uint16_t vMax = 2300;                         //maximum DAC output voltage
   
   /**Identify minimum value of of the three test voltages(start, vertex, end */
-  int minVal = testParams->vStart;
-  if(testParams->vVertex < minVal){minVal=testParams->vVertex;}
-  if(testParams->vEnd < minVal){minVal=testParams->vEnd;}
+  int minVal = tPar->vStart;
+  if(tPar->vVertex < minVal){minVal=tPar->vVertex;}
+  if(tPar->vEnd < minVal){minVal=tPar->vEnd;}
 
-  testParams->vZero = vMax - abs(minVal);       //set vZero based on minVal
+  tPar->vZero = vMax - abs(minVal);       //set vZero based on minVal
 
   /**Assign absolute voltages to each remaining test parameter based on the calculated vZero level */
-  testParams->vStart_diff = testParams->vZero - testParams->vStart;
-  testParams->vVertex_diff = testParams->vZero - testParams->vVertex;
-  testParams->vEnd_diff = testParams->vZero - testParams->vEnd;
+  tPar->vStart_diff = tPar->vZero - tPar->vStart;
+  tPar->vVertex_diff = tPar->vZero - tPar->vVertex;
+  tPar->vEnd_diff = tPar->vZero - tPar->vEnd;
   
   /**Briefly measure the starting potential to determine an offset to adjust DAC outputs */
-  int vbiasShift = adjust_DAC(testParams->vZero, testParams->vStart_diff, testParams->vStart, testParams->sensor_channel);
-  testParams->vStart_diff += vbiasShift;
-  testParams->vVertex_diff += vbiasShift;
-  testParams->vEnd_diff += vbiasShift;
+  int vbiasShift = adjust_DAC(tPar->vZero, tPar->vStart_diff, tPar->vStart, tPar->sensor_channel);
+  tPar->vStart_diff += vbiasShift;
+  tPar->vVertex_diff += vbiasShift;
+  tPar->vEnd_diff += vbiasShift;
 }
 
-void cvEquilibriumDelay(acestatTest_type *testParams){
+void cvEquilibriumDelay(acestatTest_type *tPar){
+  
   /** Use vZero and vStart from relative_voltages */
-  uint16_t vZero = testParams->vZero;
-  uint16_t vStart = testParams->vStart_diff;
-  LPDacWr(testParams->sensor_channel, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));
+  uint16_t vZero = tPar->vZero;
+  uint16_t vStart = tPar->vStart_diff;
+  LPDacWr(tPar->sensor_channel, mV_to_DAC(vZero,6), mV_to_DAC(vStart,12));
   
   /**Use GPT0 to measure time and hold the sensor voltage for the equilibrium time*/
   gpt_config_simple();                                  //setup GPT0 with 39.4us period, increments timer_ctr by 1 every 39.4us
   reset_timer_ctr();                                    //reset the timer counter just in case
   float current_time = 0;   
   /**Hold the starting voltage while the current time is less than equilibrium time */
-  while(current_time < testParams->equilibrium_time){
+  while(current_time < tPar->equilibrium_time){
     current_time = (float)get_timer_ctr()*2.52/1000;    //current time in seconds, 2.52/1000 conversion ratio from reference manual
   }
   reset_timer_ctr();                                    //reset the timer counter after equilibrium time has expired
 }
 
-void cvSignalMeasure(acestatTest_type *testParams){ 
+void cvSignalMeasure(acestatTest_type *tPar){
   
   /**Setup CV timing parameters */
   uint16_t SETTLING_DELAY = 5;
-  gpt_config_scanrate(testParams->cvSweepRate);         //configure general-purpose digital timer to use chosen scanrate
+  gpt_config_scanrate(tPar->cvSweepRate);         //configure general-purpose digital timer to use chosen scanrate
   
   /**Convert voltages to 6 or 12 bit DAC-scale depending on sensor_channel */
-  testParams->cStart = mV_to_DAC(testParams->vStart_diff,12);           //cStart on 12-bit DAC cahnnel
-  testParams->cVertex = mV_to_DAC(testParams->vVertex_diff,12);         //cVertex on 12-bit DAC channel
-  testParams->cEnd = mV_to_DAC(testParams->vEnd_diff,12);               //cEnd on 12-bit DAC channel
-  testParams->cZero = mV_to_DAC(testParams->vZero,6);                   //cZero on 6-bit DAC channel
-  uint16_t cBias = testParams->cStart;                                              //cBias to increment voltage on 12-bit DAC channel  
-  uint16_t inc = 1;                                                     //DAC step increment.  Step size is inc*0.537mV
+  tPar->cStart = mV_to_DAC(tPar->vStart_diff,12);           //cStart on 12-bit DAC cahnnel
+  tPar->cVertex = mV_to_DAC(tPar->vVertex_diff,12);         //cVertex on 12-bit DAC channel
+  tPar->cEnd = mV_to_DAC(tPar->vEnd_diff,12);               //cEnd on 12-bit DAC channel
+  tPar->cZero = mV_to_DAC(tPar->vZero,6);                   //cZero on 6-bit DAC channel
+  uint16_t cBias = tPar->cStart;                            //cBias to increment voltage on 12-bit DAC channel  
+  uint16_t inc = 1;                                         //DAC step increment.  Step size is inc*0.537mV
   
   /**Initialize ADC parameters */
-  testParams->sample_count = 0;
-  testParams->adc_data_buffer = return_adc_buffer();                    //szAdcSamples array stores measured data
-  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);                                  //begin ADC conversion
-  testParams->vZeroMeasured = 0;                                        //Will measure this later to get accurate diff voltages
+  tPar->sample_count = 0;
+  tPar->adc_data_buffer = return_adc_buffer();                    //szAdcSamples array stores measured data
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);                            //begin ADC conversion
+  tPar->vZeroMeasured = 0;                                        //Will measure this later to get accurate diff voltages
   
   /**Condition if CV ramp is moving "downwards" relative to vZero*/
-  if(testParams->vStart_diff < testParams->vVertex_diff){
+  if(tPar->vStart_diff < tPar->vVertex_diff){
     /** Increase cBias until cBias=cVertex */
-    for (cBias = testParams->cStart; cBias < testParams->cVertex; cBias = cBias + inc){
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);    //Set 6-bit and 12-bit DAC channels
+    for (cBias = tPar->cStart; cBias < tPar->cVertex; cBias = cBias + inc){
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);    //Set 6-bit and 12-bit DAC channels
       delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
       gpt_wait_for_flag();                                              //GPT delay to maintain voltage sweeprate
       
-      if(cBias%2 == 0){                                                 //Only store ADC data for every other DAC increment to save space
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-        testParams->sample_count++;
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-        testParams->sample_count++;
+      if(!(cBias%SKIP_RATE)){                                                 //Only store data every SKIP_RATE increments of the DAC to save time/memory to save space
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+        tPar->sample_count++;
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+        tPar->sample_count++;
       }
     }
     
     /** Decrease cBias until cBias=cEnd */
-    for (cBias = testParams->cVertex; cBias > testParams->cEnd; cBias = cBias - inc){
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);                            //Set 6-bit and 12-bit DAC channels
+    for (cBias = tPar->cVertex; cBias > tPar->cEnd; cBias = cBias - inc){
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);                            //Set 6-bit and 12-bit DAC channels
       delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
       gpt_wait_for_flag();                                              //GPT delay to maintain voltage sweeprate
       
-      if(cBias%2 == 0){                                                 //Only store ADC data for every other DAC increment
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-        testParams->sample_count++;
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-        testParams->sample_count++;
+      if(!(cBias%SKIP_RATE)){                                                 //Only store data every SKIP_RATE increments of the DAC to save time/memory
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+        tPar->sample_count++;
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+        tPar->sample_count++;
       }
     }
   }
@@ -142,64 +145,64 @@ void cvSignalMeasure(acestatTest_type *testParams){
   /**Condition if CV ramp is moving "upwards" relative to vZero*/
   else{
     /** Decrease cBias until cBias=cVertex */
-    for (cBias = testParams->cStart; cBias > testParams->cVertex; cBias = cBias - inc){
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);    //Set 6-bit and 12-bit DAC channels
+    for (cBias = tPar->cStart; cBias > tPar->cVertex; cBias = cBias - inc){
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);    //Set 6-bit and 12-bit DAC channels
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       gpt_wait_for_flag();                         //GPT delay to maintain voltage sweeprate
       
-      if(cBias%2 == 0){                         //Only store ADC data for every other DAC increment
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-        testParams->sample_count++;
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-        testParams->sample_count++;
+      if(!(cBias%SKIP_RATE)){                         //Only store data every SKIP_RATE increments of the DAC to save time/memory
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+        tPar->sample_count++;
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+        tPar->sample_count++;
       }
     }
     /** Increase cBias until cBias=cEnd */
-    for (cBias = testParams->cVertex; cBias < testParams->cEnd; cBias = cBias + inc){
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);    //Set 6-bit and 12-bit DAC channels
+    for (cBias = tPar->cVertex; cBias < tPar->cEnd; cBias = cBias + inc){
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);    //Set 6-bit and 12-bit DAC channels
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       gpt_wait_for_flag();                         //GPT delay to maintain voltage sweeprate
       
-      if(cBias%2 == 0){                         //Only store ADC data for every other DAC increment
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-        testParams->sample_count++;
-        testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-        testParams->sample_count++;
+      if(!(cBias%SKIP_RATE)){                   //Only store data every SKIP_RATE increments of the DAC to save time/memory
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+        tPar->sample_count++;
+        tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+        tPar->sample_count++;
       }
     }
   }
   
   /**Manually measure 6-bit DAC channel (in mV) to more accurately calculate dfferential sensor potential */
-  LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+  LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  testParams->vZeroMeasured = oversample_adc(MODE_VZERO,testParams->sensor_channel,16);
+  tPar->vZeroMeasured = oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
   
   /**Put the sensor in "open circuit" state */
   turn_off_afe_power_things_down();
   
   /**Print test results from SzAdcSamples to terminal */
-  printCVResults(testParams);
+  printCVResults(tPar);
 }
 
-void printCVResults(acestatTest_type *testParams){
+void printCVResults(acestatTest_type *tPar){
   
-  printf("[RANGE:%.4f,%.4f,%.4f]", testParams->vStart, testParams->vVertex, testParams->vEnd);
-  printf("[RGAIN:%i][RESULTS:", testParams->rtia);
+  printf("[RANGE:%.4f,%.4f,%.4f]", tPar->vStart, tPar->vVertex, tPar->vEnd);
+  printf("[RGAIN:%i][RESULTS:", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
   
   /**Print test data line-by-line to terminal*/
   float tc, vDiff;
-  for(uint32_t i = 0; i < testParams->sample_count; i+=2){
+  for(uint32_t i = 0; i < tPar->sample_count; i+=2){
     
     /**Printing in processed mode*/
     if(get_printing_mode() == PRINT_MODE_PROCESSED){
-      vDiff = adc_to_voltage(testParams->vZeroMeasured) - adc_to_voltage(testParams->adc_data_buffer[i]);
-      tc = adc_to_current(testParams->adc_data_buffer[i+1], testParams->rtia);
+      vDiff = adc_to_voltage(tPar->vZeroMeasured) - adc_to_voltage(tPar->adc_data_buffer[i]);
+      tc = adc_to_current(tPar->adc_data_buffer[i+1], LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
       printf("%.4f,%.4f"EOL, vDiff,tc);
     }
     
     /**Printing in raw ADC mode*/
     else{
-      printf("%i,%i"EOL, testParams->vZeroMeasured-testParams->adc_data_buffer[i], testParams->adc_data_buffer[i+1]);
+      printf("%i,%i"EOL, tPar->vZeroMeasured-tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+1]);
     }
   }
   printf("]");
@@ -245,155 +248,154 @@ void runSWV(void){
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
-void swvSetVoltages(acestatTest_type *testParams){
+void swvSetVoltages(acestatTest_type *tPar){
   uint16_t vMax = 2300;                                                 //maximum DAC output voltage
 
   /**Identify the minimum value between vStart and vEnd*/
-  int minVal = testParams->vStart;
-  if(testParams->vEnd < minVal){minVal = testParams->vEnd;}
+  int minVal = tPar->vStart;
+  if(tPar->vEnd < minVal){minVal = tPar->vEnd;}
   
   /**Assign vZero based on the minVal and square wave amplitude*/
-  testParams->vZero = vMax - (abs(minVal) + (2*testParams->swvAmplitude));
-  if(testParams->vStart < 0 && testParams->vEnd < 0){
-    testParams->vZero = 1000;                                           //shift vZero further down if vStart and vEnd < 0
+  tPar->vZero = vMax - (abs(minVal) + (2*tPar->swvAmplitude));
+  if(tPar->vStart < 0 && tPar->vEnd < 0){
+    tPar->vZero = 1000;                                           //shift vZero further down if vStart and vEnd < 0
   }
-
+  
   /**Assign relative voltages to each remaining test parameter based on the calculated vZero level*/
-  testParams->vStart_diff = testParams->vZero - testParams->vStart;     //set vStart_diff
-  testParams->vEnd_diff = testParams->vZero - testParams->vEnd;         //set vEnd_diff
+  tPar->vStart_diff = tPar->vZero - tPar->vStart;     //set vStart_diff
+  tPar->vEnd_diff = tPar->vZero - tPar->vEnd;         //set vEnd_diff
   
   /**Briefly measure the starting potential to determine an offset to adjust DAC outputs*/
-  int vbiasShift = adjust_DAC(testParams->vZero, testParams->vStart_diff, testParams->vStart, testParams->sensor_channel);
-  testParams->vStart_diff += vbiasShift;
-  testParams->vEnd_diff += vbiasShift;
+  int vbiasShift = adjust_DAC(tPar->vZero, tPar->vStart_diff, tPar->vStart, tPar->sensor_channel);
+  tPar->vStart_diff += vbiasShift;
+  tPar->vEnd_diff += vbiasShift;
 }
 
-void swvEquilibriumDelay(acestatTest_type *testParams){
+void swvEquilibriumDelay(acestatTest_type *tPar){
 
-  LPDacWr(testParams->sensor_channel, mV_to_DAC(testParams->vZero,6), mV_to_DAC(testParams->vStart,12));    
+  LPDacWr(tPar->sensor_channel, mV_to_DAC(tPar->vZero,6), mV_to_DAC(tPar->vStart_diff,12));    
   
   /**Use GPT0 to measure time and hold the sensor voltage for the equilibrium time*/
   gpt_config_simple();                                          //setup GPT0 with 39.4us period, increments timer_ctr by 1 every 39.4us
   reset_timer_ctr();                                            //reset the timer counter just in case
   float current_time = 0;   
   /**Hold the starting voltage while the current time is less than equilibrium time */
-  while(current_time < testParams->equilibrium_time){
+  while(current_time < tPar->equilibrium_time){
     current_time = (float)get_timer_ctr()*2.52/1000;            //current time in seconds, 2.52/1000 conversion ratio from reference manual
   }
   reset_timer_ctr();                                            //reset the timer counter after equilibrium time has expired
 }
 
-void swvSignalMeasure(acestatTest_type *testParams){
+void swvSignalMeasure(acestatTest_type *tPar){
   
   /**Convert relative voltages to DAC inputs*/
-  testParams->cStart = mV_to_DAC(testParams->vStart_diff,12);           //vStart on 12-bit DAC channel
-  testParams->cEnd = mV_to_DAC(testParams->vEnd_diff,12);               //vEnd on 12-bit DAC channel        
-  testParams->cZero = mV_to_DAC(testParams->vZero,6);                   //vZero on 6-bit DAC channel
-  testParams->cAmplitude = (int)((testParams->swvAmplitude)/0.537);     //convert amplitude to 12-bit DAC scale
-  uint16_t cBias = testParams->cStart;                                  //cBias on 12-bit DAC channel
-  uint16_t inc = 2*testParams->swvStepSize;                             //DAC bit is 0.537mV/bit, x2 to make inc ~1mV
+  tPar->cStart = mV_to_DAC(tPar->vStart_diff,12);           //vStart on 12-bit DAC channel
+  tPar->cEnd = mV_to_DAC(tPar->vEnd_diff,12);               //vEnd on 12-bit DAC channel        
+  tPar->cZero = mV_to_DAC(tPar->vZero,6);                   //vZero on 6-bit DAC channel
+  tPar->cAmplitude = (int)((tPar->swvAmplitude)/0.537);     //convert amplitude to 12-bit DAC scale
+  uint16_t cBias = tPar->cStart;                                  //cBias on 12-bit DAC channel
+  uint16_t inc = 2*tPar->swvStepSize;                             //DAC bit is 0.537mV/bit, x2 to make inc ~1mV
   
   /**Square wave timing parameters*/
   uint16_t SETTLING_DELAY = 5;
-  uint16_t delayVal = (50000/testParams->swvFrequency/3);       //delay required to maintain specified squarewave frequency
+  uint16_t delayVal = (50000/tPar->swvFrequency/3);       //delay required to maintain specified squarewave frequency
   
   /**Initialize ADC parameters*/
-  testParams->sample_count = 0;
-  testParams->adc_data_buffer = return_adc_buffer();
+  tPar->sample_count = 0;
+  tPar->adc_data_buffer = return_adc_buffer();
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   
   /**Condition if SWV baseline ramp is moving "downwards" relative to vZero*/
-  if(testParams->vStart < testParams->vEnd){
+  if(tPar->vStart_diff < tPar->vEnd_diff){
     
     /** Increase cBias until cBias=cEnd */
-    for (cBias = testParams->cStart; cBias < testParams->cEnd; cBias = cBias + inc){
-      
+    for (cBias = tPar->cStart; cBias < tPar->cEnd; cBias = cBias + inc){
       /**Squarewave Low*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
       delay_10us(SETTLING_DELAY);                                       // allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-      testParams->sample_count++;
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
       
       /**Squarewave high*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias+2*testParams->cAmplitude);       //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias+2*tPar->cAmplitude);       //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++; 
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++; 
     }
   }
   /**Condition if SWV baseline ramp is moving "upwards" relative to vZero*/
   else{
     
     /** Decrease cBias until cBias=cEnd */
-    for (cBias = testParams->cStart; cBias > testParams->cEnd; cBias = cBias - inc){
+    for (cBias = tPar->cStart; cBias > tPar->cEnd; cBias = cBias - inc){
       
       /**Squarewave high*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
       delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-      testParams->sample_count++;
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
       
       /**Squarewave Low*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias-2*testParams->cAmplitude);       //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias-2*tPar->cAmplitude);       //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;     
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;     
     }
   }
   
   /**Manually measure the vZero voltage (in mV) to more accurately calculate differential sensor potential*/
-  LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+  LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  testParams->vZeroMeasured = oversample_adc(MODE_VZERO,testParams->sensor_channel,16);
+  tPar->vZeroMeasured = oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
   
   /**Put the sensor in "open circuit" state*/
   turn_off_afe_power_things_down();
   /**Print SWV test results to terminal*/
-  printSWVResults(testParams);
+  printSWVResults(tPar);
 }
 
-void printSWVResults(acestatTest_type *testParams){  
+void printSWVResults(acestatTest_type *tPar){  
   
   /**Print test parameters/metadata*/
-  printf("[RANGE:%.4f,%.4f,%.4f]", testParams->vStart, testParams->vEnd);
-  printf("[RGAIN:%i][RESULTS:", testParams->rtia);
+  printf("[RANGE:%.4f,%.4f,%.4f]", tPar->vStart, tPar->vEnd);
+  printf("[RGAIN:%i][RESULTS:", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
   
   float vDiff, tc;
   
   uint8_t use_mov_avg = 1;
-  for(uint16_t i = 0; i < testParams->sample_count; i+=3){
+  for(uint16_t i = 0; i < tPar->sample_count; i+=3){
     
     if(get_printing_mode() == PRINT_MODE_PROCESSED){
-      vDiff = adc_to_voltage(testParams->vZeroMeasured) - adc_to_voltage(testParams->adc_data_buffer[i]);
+      vDiff = adc_to_voltage(tPar->vZeroMeasured) - adc_to_voltage(tPar->adc_data_buffer[i]);
       
       /**Moving average filter for SWV data*/
       if(use_mov_avg){
         int filterWidth = 20;
-        tc = swv_mov_avg(filterWidth, testParams->adc_data_buffer, i+1, testParams->sample_count, testParams->rtia);
+        tc = swv_mov_avg(filterWidth, tPar->adc_data_buffer, i+1, tPar->sample_count, LPRTIA_VAL_LOOKUP(tPar->rtia));
       }
       else{
-        tc = (adc_to_current(testParams->adc_data_buffer[i+2], testParams->rtia) - adc_to_current(testParams->adc_data_buffer[i+1], testParams->rtia));
+        tc = (adc_to_current(tPar->adc_data_buffer[i+2], LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia))) - adc_to_current(tPar->adc_data_buffer[i+1], LPRTIA_VAL_LOOKUP(tPar->rtia)));
       }
       printf("%.4f,%.4f"EOL, vDiff, 0.92*tc);
     }
     else{
-      printf("%i,%i"EOL, testParams->vZeroMeasured-testParams->adc_data_buffer[i], testParams->adc_data_buffer[i+2] - testParams->adc_data_buffer[i+1]);
+      printf("%i,%i"EOL, tPar->vZeroMeasured-tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+2] - tPar->adc_data_buffer[i+1]);
     }  
   }
   printf("]");
@@ -440,201 +442,201 @@ void runCSWV(void){
   NVIC_SystemReset();                           //ARM DIGITAL SOFTWARE RESET
 }
 
-void cswvSetVoltages(acestatTest_type *testParams){
+void cswvSetVoltages(acestatTest_type *tPar){
   uint16_t vMax = 2300;                         //maximum DAC output voltage
   
   /**Identify the minimum value in input_voltages*/
   /**Identify minimum value of of the three test voltages(start, vertex, end */
-  int minVal = testParams->vStart;
-  if(testParams->vVertex < minVal){minVal=testParams->vVertex;}
-  if(testParams->vEnd < minVal){minVal=testParams->vEnd;}
+  int minVal = tPar->vStart;
+  if(tPar->vVertex < minVal){minVal=tPar->vVertex;}
+  if(tPar->vEnd < minVal){minVal=tPar->vEnd;}
   
   /**Assign vZero based on the minVal and square wave amplitude*/
-  testParams->vZero = vMax - (abs(minVal) + (2*testParams->swvAmplitude));
+  tPar->vZero = vMax - (abs(minVal) + (2*tPar->swvAmplitude));
 
   /**Assign absolute voltages to each remaining test parameter based on the calculated vZero level*/
-  testParams->vStart_diff = testParams->vZero - testParams->vStart;
-  testParams->vVertex_diff = testParams->vZero - testParams->vVertex;
-  testParams->vEnd_diff = testParams->vZero - testParams->vEnd;
+  tPar->vStart_diff = tPar->vZero - tPar->vStart;
+  tPar->vVertex_diff = tPar->vZero - tPar->vVertex;
+  tPar->vEnd_diff = tPar->vZero - tPar->vEnd;
   
   /**Briefly measure the starting potential to determine an offset to adjust DAC outputs*/
-  int vbiasShift = adjust_DAC(testParams->vZero, testParams->vStart_diff, testParams->vStart, testParams->sensor_channel);
-  testParams->vStart_diff += vbiasShift;
-  testParams->vVertex_diff += vbiasShift;
-  testParams->vEnd_diff += vbiasShift;
+  int vbiasShift = adjust_DAC(tPar->vZero, tPar->vStart_diff, tPar->vStart, tPar->sensor_channel);
+  tPar->vStart_diff += vbiasShift;
+  tPar->vVertex_diff += vbiasShift;
+  tPar->vEnd_diff += vbiasShift;
 }
 
-void cswvEquilibriumDelay(acestatTest_type *testParams){
+void cswvEquilibriumDelay(acestatTest_type *tPar){
   /** Use vZero and vStart from relative_voltages */
-  LPDacWr(testParams->sensor_channel, mV_to_DAC(testParams->vZero,6), mV_to_DAC(testParams->vStart_diff,12));    //Write the DAC to its starting voltage during the equilibrium period
+  LPDacWr(tPar->sensor_channel, mV_to_DAC(tPar->vZero,6), mV_to_DAC(tPar->vStart_diff,12));    //Write the DAC to its starting voltage during the equilibrium period
   
   /**Use GPT0 to measure time and hold the sensor voltage for the equilibrium time*/
   gpt_config_simple();                                  //setup GPT0 with 39.4us period, increments timer_ctr by 1 every 39.4us
   reset_timer_ctr();                                    //reset the timer counter just in case
   float current_time = 0;   
   /**Hold the starting voltage while the current time is less than equilibrium time */
-  while(current_time < testParams->equilibrium_time){
+  while(current_time < tPar->equilibrium_time){
     current_time = (float)get_timer_ctr()*2.52/1000;    //current time in seconds, 2.52/1000 conversion ratio from reference manual
   }
   reset_timer_ctr();                                    //reset the timer counter after equilibrium time has expired
 }
 
-void cswvSignalMeasure(acestatTest_type *testParams){
+void cswvSignalMeasure(acestatTest_type *tPar){
   
   /**Convert test voltages to DAC inputs*/
-  testParams->cStart = mV_to_DAC(testParams->vStart_diff,12);   //vStart on 12-bit channel
-  testParams->cVertex = mV_to_DAC(testParams->vVertex_diff,12); //vVertex on 12-bit channel
-  testParams->cEnd = mV_to_DAC(testParams->vEnd_diff,12);       //vEnd on 12-bit channel
-  testParams->cZero = mV_to_DAC(testParams->vZero,6);           //vZero on 6-bit channel
-  uint16_t cBias = testParams->cStart;                       //cBias on 12-bit channel
-  testParams->cAmplitude = (int)((testParams->swvAmplitude)/0.537);   //amplitude converted to 12-bit scale
-  uint16_t inc = 2*testParams->swvStepSize;                     //1 DAC bit is 0.537mV, x2 to make increment (~1mV)x step_size
+  tPar->cStart = mV_to_DAC(tPar->vStart_diff,12);   //vStart on 12-bit channel
+  tPar->cVertex = mV_to_DAC(tPar->vVertex_diff,12); //vVertex on 12-bit channel
+  tPar->cEnd = mV_to_DAC(tPar->vEnd_diff,12);       //vEnd on 12-bit channel
+  tPar->cZero = mV_to_DAC(tPar->vZero,6);           //vZero on 6-bit channel
+  uint16_t cBias = tPar->cStart;                       //cBias on 12-bit channel
+  tPar->cAmplitude = (int)((tPar->swvAmplitude)/0.537);   //amplitude converted to 12-bit scale
+  uint16_t inc = 2*tPar->swvStepSize;                     //1 DAC bit is 0.537mV, x2 to make increment (~1mV)x step_size
   
   /**Square wave timing parameters*/
   uint16_t SETTLING_DELAY = 5;
-  uint16_t delayVal = (50000/testParams->swvFrequency/3);       //delay required to maintain specified squarewave frequency
+  uint16_t delayVal = (50000/tPar->swvFrequency/3);       //delay required to maintain specified squarewave frequency
   
   /**Initialize ADC parameters*/
-  testParams->sample_count = 0;
-  testParams->adc_data_buffer = return_adc_buffer();
+  tPar->sample_count = 0;
+  tPar->adc_data_buffer = return_adc_buffer();
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
   
   /**Condition if CSWV ramp is moving "downwards" relative to vZero*/
-  if(testParams->vStart_diff < testParams->vVertex_diff){
+  if(tPar->vStart_diff < tPar->vVertex_diff){
     /**Increase cBias until cBias = cVertex*/
-    for (cBias = testParams->cStart; cBias < testParams->cVertex; cBias = cBias + inc){
+    for (cBias = tPar->cStart; cBias < tPar->cVertex; cBias = cBias + inc){
       /**Squarewave low*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-      testParams->sample_count++;
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
       
       /**Squarewave high*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias+2*testParams->swvAmplitude);     //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias+2*tPar->cAmplitude);     //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;    
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;    
     }
     /**Decrease cBias until cBias = cEnd*/
-    for (cBias = testParams->cVertex; cBias > testParams->cEnd; cBias = cBias - inc){
+    for (cBias = tPar->cVertex; cBias > tPar->cEnd; cBias = cBias - inc){
       /**Squarewave high*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-      testParams->sample_count++;
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
       
       /**Squarewave low*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias-2*testParams->swvAmplitude);     //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias-2*tPar->cAmplitude);     //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++; 
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++; 
     }
   }
   
   /**Condition if CSWV ramp is moving "upwards" relative to vZero*/
   else{
     /**Decrease cBias until cBias = cVertex*/
-    for (cBias = testParams->cStart; cBias > testParams->cVertex; cBias = cBias - inc){
+    for (cBias = tPar->cStart; cBias > tPar->cVertex; cBias = cBias - inc){
  
       /**Squarewave high*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-      testParams->sample_count++;
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
       
       /**Squarewave low*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias-2*testParams->swvAmplitude);     //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias-2*tPar->cAmplitude);     //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;  
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;  
     }
     /**Increase cBias until cBias = cEnd*/
-    for (cBias = testParams->cVertex; cBias < testParams->cEnd; cBias = cBias + inc){
+    for (cBias = tPar->cVertex; cBias < tPar->cEnd; cBias = cBias + inc){
       /**Squarewave low*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the baseline voltage and first current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_VRE,testParams->sensor_channel,16);  //measure VRE with 16x oversampling
-      testParams->sample_count++;
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
       
       /**Squarewave high*/
-      LPDacWr(testParams->sensor_channel, testParams->cZero, cBias+2*testParams->swvAmplitude);     //Squarewave peak, voltage = cBias+2*amp
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias+2*tPar->cAmplitude);     //Squarewave peak, voltage = cBias+2*amp
       delay_10us(SETTLING_DELAY);               //allow LPDAC to settle
       delay_10us(delayVal-SETTLING_DELAY);      //holding delay to maintain squarewave frequency
       
       /**Measure the second current for this cycle*/
-      testParams->adc_data_buffer[testParams->sample_count]=oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);  //measure current from LPTIA with 16x oversampling
-      testParams->sample_count++;   
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;   
     }
   }
   
   /**Manually measure the vZero voltage (in mV) to more accurately calculate dfferential sensor potential*/
-  LPDacWr(testParams->sensor_channel, testParams->cZero, cBias);
+  LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  testParams->vZeroMeasured = oversample_adc(MODE_VZERO,testParams->sensor_channel,16);
+  tPar->vZeroMeasured = oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
   
   /**Put the sensor in "open circuit" state and print test results*/
   turn_off_afe_power_things_down();
-  printCSWVResults(testParams);
+  printCSWVResults(tPar);
 }
 
-void printCSWVResults(acestatTest_type *testParams){
+void printCSWVResults(acestatTest_type *tPar){
   
   /**Print test parameters/metadata*/
-  printf("[RANGE:%.4f,%.4f,%.4f]", testParams->vZero-testParams->vStart_diff, testParams->vZero-testParams->vVertex_diff, testParams->vZero-testParams->vEnd_diff);
-  printf("[RGAIN:%i][RESULTS:", testParams->rtia);
+  printf("[RANGE:%.4f,%.4f,%.4f]", tPar->vZero-tPar->vStart_diff, tPar->vZero-tPar->vVertex_diff, tPar->vZero-tPar->vEnd_diff);
+  printf("[RGAIN:%i][RESULTS:", LPRTIA_VAL_LOOKUP(tPar->rtia));
 
   float vDiff, tc;
   
-  uint8_t use_mov_avg = 1;
-  for(uint16_t i = 0; i < testParams->sample_count; i+=3){
+  uint8_t use_mov_avg = 0;
+  for(uint16_t i = 0; i < tPar->sample_count; i+=3){
     
     if(get_printing_mode() == PRINT_MODE_PROCESSED){
-      vDiff = (testParams->vZero/1000) - adc_to_voltage(testParams->adc_data_buffer[i]);
+      vDiff = adc_to_voltage(tPar->vZeroMeasured) - adc_to_voltage(tPar->adc_data_buffer[i]);
       
       /**Moving average filter for SWV data*/
       if(use_mov_avg){
         int filterWidth = 20;
-        tc = swv_mov_avg(filterWidth, testParams->adc_data_buffer, i+1, testParams->sample_count, testParams->rtia);
+        tc = swv_mov_avg(filterWidth, tPar->adc_data_buffer, i+1, tPar->sample_count, LPRTIA_VAL_LOOKUP(tPar->rtia));
       }
       
       else{
-        tc = (adc_to_current(testParams->adc_data_buffer[i+2],testParams->rtia) - adc_to_current(testParams->adc_data_buffer[i+1],testParams->rtia));
+        tc = (adc_to_current(tPar->adc_data_buffer[i+2],LPRTIA_VAL_LOOKUP(tPar->rtia)) - adc_to_current(tPar->adc_data_buffer[i+1],LPRTIA_VAL_LOOKUP(tPar->rtia)));
       }
       
       printf("%.4f,%.4f"EOL, vDiff, 0.92*tc);
       
     }
     else{
-      printf("%i,%i"EOL, testParams->vZeroMeasured-testParams->adc_data_buffer[i], testParams->adc_data_buffer[i+2] - testParams->adc_data_buffer[i+1]);
+      printf("%i,%i"EOL, tPar->vZeroMeasured-tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+2] - tPar->adc_data_buffer[i+1]);
     }  
   }
   printf("]");
@@ -675,43 +677,43 @@ void runCA(void){
   NVIC_SystemReset();                                                   //ARM DIGITAL SOFTWARE RESET
 }
 
-void caSetVoltages(acestatTest_type *testParams){
+void caSetVoltages(acestatTest_type *tPar){
   uint16_t vMax = 2300;                                                 //maximum DAC output voltage
   
   /**Set vZero*/
-  if(testParams->vStart > 0){
-    testParams->vZero = vMax;
+  if(tPar->vStart > 0){
+    tPar->vZero = vMax;
   }
   else{
-    testParams->vZero = vMax - abs(testParams->vStart) - 500;           //-500 to keep the potentiostat amp voltage further from 3.3v rail
+    tPar->vZero = vMax - abs(tPar->vStart) - 500;           //-500 to keep the potentiostat amp voltage further from 3.3v rail
   }
   
-  testParams->vStart_diff = testParams->vZero - testParams->vStart;     //set step voltage based on vZero
+  tPar->vStart_diff = tPar->vZero - tPar->vStart;     //set step voltage based on vZero
   
   /**Briefly measure the starting potential to determine an offset to adjust DAC outputs*/
-  int vbiasShift = adjust_DAC(testParams->vZero, testParams->vStart_diff, testParams->vStart, testParams->sensor_channel);
-  testParams->vStart_diff += vbiasShift;
+  int vbiasShift = adjust_DAC(tPar->vZero, tPar->vStart_diff, tPar->vStart, tPar->sensor_channel);
+  tPar->vStart_diff += vbiasShift;
 }
 
-void caSignalMeasure(acestatTest_type *testParams){
+void caSignalMeasure(acestatTest_type *tPar){
   
   /**Convert CA voltages to DAC scale*/
-  testParams->cZero = mV_to_DAC(testParams->vZero,6);           //cZero on 6-bit channel                       
-  testParams->cStart = mV_to_DAC(testParams->vStart_diff, 12);   //cStep on 12-bit channel            
+  tPar->cZero = mV_to_DAC(tPar->vZero,6);           //cZero on 6-bit channel                       
+  tPar->cStart = mV_to_DAC(tPar->vStart_diff, 12);   //cStep on 12-bit channel            
   
   /**CA timing parameters*/
   uint16_t SETTLING_DELAY = 5;
-  float signal_length = (float)testParams->caDuration;          //signal length as float
+  float signal_length = (float)tPar->caDuration;          //signal length as float
   signal_length = signal_length/1000;                           //in seconds
-  float delay_length = (float)testParams->caDelay;              //delay length as float
+  float delay_length = (float)tPar->caDelay;              //delay length as float
   delay_length = delay_length/1000;                             //in seconds
   
   /**Initialize ADC parameters*/
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
-  testParams->sample_count = 0;
+  tPar->sample_count = 0;
   
   /**Set sensor voltage to zero and maintain for the delay time*/
-  LPDacWr(testParams->sensor_channel, mV_to_DAC(testParams->vZero,6), mV_to_DAC(testParams->vZero,12));
+  LPDacWr(tPar->sensor_channel, mV_to_DAC(tPar->vZero,6), mV_to_DAC(tPar->vZero,12));
   gpt_config_simple();                          //setup GPT0 with 39.4us period, increments timer_ctr by 1 every 39.4us
   reset_timer_ctr();                            //reset the timer counter just in case
   float current_time = 0;   
@@ -721,7 +723,7 @@ void caSignalMeasure(acestatTest_type *testParams){
   reset_timer_ctr();                            //reset the timer counter after equilibrium time has expired
   
   /**Set the sensor to the step voltage*/
-  LPDacWr(testParams->sensor_channel, testParams->cZero, testParams->cStart);
+  LPDacWr(tPar->sensor_channel, tPar->cZero, tPar->cStart);
   delay_10us(SETTLING_DELAY);
   reset_timer_ctr();                            //reset the GPT0 counter to time the main signal
   current_time = 0;                             //reset current time
@@ -731,20 +733,20 @@ void caSignalMeasure(acestatTest_type *testParams){
     
     current_time = ((float)get_timer_ctr())*2.52/1000;
     
-    uint16_t current = oversample_adc(MODE_LPTIA,testParams->sensor_channel,16);
+    uint16_t current = oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
 
-    printf("%.3f,%.3f\n" , current_time, adc_to_current(current, testParams->rtia));
+    printf("%.3f,%.3f\n" , current_time, adc_to_current(current, LPRTIA_VAL_LOOKUP(tPar->rtia)));
     
     delay_10us(5000);                           //delay to avoid collecting too much data
   }
   
   /**Manually measure the vZero voltage (in mV) to more accurately calculate dfferential sensor potential*/
-  LPDacWr(testParams->sensor_channel, testParams->cZero, testParams->cStart);
+  LPDacWr(tPar->sensor_channel, tPar->cZero, tPar->cStart);
   delay_10us(SETTLING_DELAY);
-  testParams->vZeroMeasured = 1000*adc_to_voltage(oversample_adc(MODE_VZERO,testParams->sensor_channel,16));
+  tPar->vZeroMeasured = 1000*adc_to_voltage(oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE));
   
   /**Turn of the AFE and print test data*/
-  LPDacWr(testParams->sensor_channel, testParams->cZero, mV_to_DAC(testParams->vZero, 12));
+  LPDacWr(tPar->sensor_channel, tPar->cZero, mV_to_DAC(tPar->vZero, 12));
 
 }
 /****************END CHRONOAMPEROMETRY***************************/

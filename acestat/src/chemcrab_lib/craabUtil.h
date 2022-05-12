@@ -226,7 +226,9 @@ int oversample_adc(int mode,
 #define ANALOG_CHAN0 2                  //Use as input to oversample_adc(sensor_channel)
 #define ANALOG_CHAN1 3                  //Use as input to oversample_adc(sensor_channel)
 #define ANALOG_CHAN2 4                  //Use as input to oversample_adc(sensor_channel)
-            
+#define ADC_OVERSAMPLE_RATE 16          //Oversampling rate for software-defined ADC oversampling
+#define SKIP_RATE 2                     //Store data in output buffer every SKIP_RATE DAC increments
+    
 /**
   *@brief       adc_to_voltage: converts adc-scale measurements to voltage, in milli-volts
   *@param       adc_data: adc-scale measured voltage
@@ -240,7 +242,7 @@ float adc_to_voltage(float adc_data);
   *@param       RTIA: LPTIA feedback gain resistance
   *@retval      current in micro-amps
 */
-float adc_to_current(float adc_data, 
+float adc_to_current(float adcVal, 
                      int RTIA);
 
 /**

@@ -582,23 +582,23 @@ void runEIS(void){
          //printf("Will take over a minute if 0.1 and 0.5Hz options enabled "EOL);
          //while(1)
          //{
-               ucButtonPress = 0;
-
-               SnsACInit(CHAN0);
-               SnsACTest(CHAN0);
-               SnsMagPhaseCal();   //calculate impedance
-
-               /*power off high power exitation loop if required*/
-               AfeAdcIntCfg(NOINT); //disable all ADC interrupts
-               NVIC_DisableIRQ(AFE_ADC_IRQn);
-               AfeWaveGenGo(false);
-               AfeHPDacPwrUp(false);
-               AfeHpTiaPwrUp(false);
-               delay_10us(300000);
+         ucButtonPress = 0;
+         
+         SnsACInit(CHAN0);
+         SnsACTest(CHAN0);
+         SnsMagPhaseCal();   //calculate impedance
+         
+         /*power off high power exitation loop if required*/
+         AfeAdcIntCfg(NOINT); //disable all ADC interrupts
+         NVIC_DisableIRQ(AFE_ADC_IRQn);
+         AfeWaveGenGo(false);
+         AfeHPDacPwrUp(false);
+         AfeHpTiaPwrUp(false);
+         delay_10us(300000);
          //}
-               printEISResults();
-               printf("[END:EIS]");
-               NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
+         printEISResults();
+         printf("[END:EIS]");
+         NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
 //Modifies the Impresult array to use N=numFreqs logarithmically spaced frequencies between the values defined by user over UART

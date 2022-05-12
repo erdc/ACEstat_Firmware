@@ -142,7 +142,7 @@ void UartInit(void)
   DioCfgPin(pADI_GPIO0,PIN10,1);                //Setup P0.10 as UART pin
   DioCfgPin(pADI_GPIO0,PIN11,1);                //Setup P0.11 as UART pin
   pADI_UART0->COMLCR2 = 0x3;                    //Set PCLk oversampling rate 32. (PCLK to UART baudrate generator is /32)
-  UrtCfg(pADI_UART0,B9600,
+  UrtCfg(pADI_UART0,B115200,
          (BITM_UART_COMLCR_WLS|3),0);           //Configure UART for 9600 baud rate
   UrtFifoCfg(pADI_UART0, RX_FIFO_8BYTE,         //Configure the UART FIFOs for 8 bytes deep
              BITM_UART_COMFCR_FIFOEN);
@@ -162,7 +162,8 @@ uint8_t* return_uart_buffer(void){
 
 /***************** UART flag control for user input parsing********************/
 
-uint8_t uart_flag = 0;
+volatile uint8_t uart_flag = 0;
+
 int uart_flag_set(void)
 {
 	uart_flag=1;
@@ -351,7 +352,6 @@ int oversample_adc(int mode, uint8_t sensor_channel, uint16_t oversample_rate){
   }
  
   AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);          //begin adc conversion
-  delay_10us(50);
   
   adcRdy = 0;
   /**Record and sum N=oversample_rate samples*/

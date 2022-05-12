@@ -1,4 +1,4 @@
-//Analog Devices Files
+/**Analog Devices Files*/
 #include "ADuCM355.h"
 #include "ClkLib.h"
 #include "UrtLib.h"
@@ -8,11 +8,13 @@
 #include "RstLib.h"
 #include "AfeTiaLib.h"
 #include "PwrLib.h"
-#include <stdlib.h>
-#include <string.h>
 #include "ad5940.h"
 
-//ERDC File(s)
+/**Standard Libraries*/
+#include <stdlib.h>
+#include <string.h>
+
+/**ERDC Libraries*/
 #include "craabUtil.h" 
 #include "voltammetry.h"
 #include "eis.h"
@@ -20,7 +22,7 @@
 void runTest(char mode);
 char getTestMode(void);
 
-char* version = "2022.04.04";
+char* version = "1.7.1";
 
 int main(void){
   /**Setup functions. only run when board powers on*/
@@ -32,6 +34,8 @@ int main(void){
   /*End powerup setup*/
   
   char testMode = 0;
+  
+  set_printing_mode(PRINT_MODE_PROCESSED);
 
   while(1){
     /*****************************
@@ -55,7 +59,7 @@ void runTest(char mode){
   bool testComplete = false;
   
   if(mode=='0'){
-    runCV(1);                    //quick test with preset parameters for debugging
+    runCV(1);                //quick test with preset parameters for debugging
     printf("[END:CV]");
   }
   if(mode=='1'){
@@ -75,6 +79,7 @@ void runTest(char mode){
     printf("[END:CA]");
   }
   if(mode=='5'){
+    getEISFrequencies();
     runEIS();
     printf("[END:EIS]");
   }
