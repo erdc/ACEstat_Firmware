@@ -19,9 +19,13 @@
 #include "eis.h"
 
 void runTest(char mode);
-char getTestMode(void);
+int getTestMode(void);
 
-char* version = "1.7.1";
+/**     
+        First two digits of version number match ACEstat PCB version, 
+        3rd digit represents firmware iteration for that board version
+*/
+char* version = "1.7.3";
 
 int main(void){
   /**Setup functions. only run when board powers on*/
@@ -32,9 +36,9 @@ int main(void){
 
   /*End powerup setup*/
   
-  char testMode = 0;
+  int testMode = 0;
   
-  set_printing_mode(PRINT_MODE_PROCESSED);
+  set_printing_mode(PRINT_MODE_RAW);
 
   while(1){
     /*****************************
@@ -57,37 +61,37 @@ void runTest(char mode){
   
   bool testComplete = false;
   
-  if(mode=='0'){
-    runCV(1);                //quick test with preset parameters for debugging
+  if(mode==MODE_CV_DEBUG){
+    runCV(1);                //CV test with preset parameters for quicker debugging
     printf("[END:CV]");
   }
-  if(mode=='1'){
+  if(mode==MODE_CV){
     runCV(0);
     printf("[END:CV]");
   }
-  if(mode=='2'){
+  if(mode==MODE_SWV){
     runSWV();
     printf("[END:SWV]");
   }
-  if(mode=='3'){
+  if(mode==MODE_CSWV){
     runCSWV();
     printf("[END:CSWV]");
   }
-  if(mode=='4'){
+  if(mode==MODE_CA){
     runCA();
     printf("[END:CA]");
   }
-  if(mode=='5'){
+  if(mode==MODE_EIS){
     runEIS();
     printf("[END:EIS]");
   }
-  if(mode=='6'){
+  if(mode==MODE_OCP){
     runOCP();
     printf("[END:OCP]");
   }
 }  
 
-char getTestMode(void){
+int getTestMode(void){
     char testMode = 0;
 	uint8_t *uBuffer;
 	uBuffer=return_uart_buffer();
@@ -97,5 +101,5 @@ char getTestMode(void){
         uart_flag_reset();
       }
     }
-    return testMode;
+    return (int)testMode-48;
 }

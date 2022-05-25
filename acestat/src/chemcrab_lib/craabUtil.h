@@ -60,6 +60,15 @@
 #include <stdio.h>
 #include <math.h>
 
+/***************** ACEstat test mode definitions for top-level API control ********************/
+#define MODE_CV_DEBUG   0
+#define MODE_CV         1
+#define MODE_SWV        2
+#define MODE_CSWV       3
+#define MODE_CA         4
+#define MODE_EIS        5
+#define MODE_OCP        6
+
 /***************** UART and Clock setup ********************/
 
 /**
