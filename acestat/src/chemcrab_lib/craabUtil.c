@@ -197,14 +197,15 @@ uint8_t get_printing_mode(void){
 
 #if defined ( __ICCARM__ )
    #pragma location="never_retained_ram"
-   uint16_t szADCSamples[16000];   //32KB SRAM can be used to gather ADC samples,
+   uint16_t szADCSamples[MAX_BUFFER_LENGTH];   //32KB SRAM can be used to gather ADC samples,
 #elif defined (__CC_ARM)
-  uint16_t szADCSamples[16000] __attribute__((section(".ARM.__at_0x20040000"))); //32KB SRAM can be used to gather ADC samples,
+  uint16_t szADCSamples[MAX_BUFFER_LENGTH] __attribute__((section(".ARM.__at_0x20040000"))); //32KB SRAM can be used to gather ADC samples,
 #else
    #pragma message("WARNING: Need to place this variable in a large RAM section using your selected toolchain.")
 #endif
 
 volatile uint8_t adcRdy = 0;
+volatile uint8_t dftRdy = 0;
 volatile uint16_t ADCRAW = 0;
 uint8_t adcModeSel = 0;
 
@@ -624,7 +625,8 @@ void AFE_SETUP_LPTIA_LPDAC(uint8_t sensor_channel){
     pADI_AFE->LPREFBUFCON=0x0;
     pADI_AFE->LPTIASW1=0x0;
     pADI_AFE->LPTIASW0=0x34;
-    pADI_AFE->LPTIACON0=0x4038;
+    pADI_AFE->LPTIACON0=0x58;
+    pADI_AFE->HSTIACON=0x1;
     pADI_AFE->LPDACSW0=0x34;
     pADI_AFE->LPDACCON0=0x1;
     pADI_AFE->LPDACCON1=0x2;
@@ -653,6 +655,7 @@ void AFE_SETUP_LPTIA_LPDAC(uint8_t sensor_channel){
     pADI_AFE->LPTIASW0=0x0;
     pADI_AFE->LPTIACON0=0x0;
     pADI_AFE->LPTIACON1=0x4038;
+    pADI_AFE->HSTIACON=0x1;
     pADI_AFE->LPDACSW0=0x0;
     pADI_AFE->LPDACSW1=0x34;
     pADI_AFE->LPDACCON0=0x2;

@@ -128,7 +128,6 @@ void set_printing_mode(uint8_t mode);
 uint8_t get_printing_mode(void);
 
 
-
 /***************** ADC control and conversion ********************/
 
 #define MAX_BUFFER_LENGTH 16000
@@ -359,6 +358,10 @@ int LPRTIA_VAL_LOOKUP(uint32_t RGAIN);
   *@param       sensor_channel: 0 or 1
   *@retval      none
 */
+
+/**Quick fix to reset RLOAD to 0Ohm during configuration*/
+#define SHORT_RLOAD (111 << 10)
+
 void AFE_SETUP_LPTIA_LPDAC(uint8_t sensor_channel);
 
 /**
