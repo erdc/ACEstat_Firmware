@@ -105,9 +105,9 @@ void cvSignalMeasure(acestatTest_type *tPar){
   uint16_t cBias = tPar->cStart;                            //cBias to increment voltage on 12-bit DAC channel  
   uint16_t inc = 1;                                         //DAC step increment.  Step size is inc*0.537mV
   
-  /**Double check that RLOAD=0ohms for voltammetry*/
-  pADI_AFE->LPTIACON0 &= ~(SHORT_RLOAD);
-  pADI_AFE->LPTIACON1 &= ~(SHORT_RLOAD);
+//  /**Double check that RLOAD=0ohms for voltammetry*/
+//  pADI_AFE->LPTIACON0 &= ~(SHORT_RLOAD);
+//  pADI_AFE->LPTIACON1 &= ~(SHORT_RLOAD);
   
   /**Initialize ADC parameters */
   tPar->sample_count = 0;

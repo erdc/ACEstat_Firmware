@@ -717,7 +717,7 @@ void AFE_SETUP_VOLTAMMETRY(uint8_t channel, uint32_t RTIA){
   AfeLpTiaCon(channel,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
   delay_10us(1000);
   AFE_SETUP_LPTIA_LPDAC(channel);               //ensure LPTIA/LPDAC registers match required configuration
-  AfeLpTiaCon(channel, LPTIA_RLOAD_100, RTIA, LPTIA_RFILTER_DISCONNECT);    //Setup LPTIA gain to match user input
+  AfeLpTiaCon(channel, LPTIA_RLOAD_0, RTIA, LPTIA_RFILTER_DISCONNECT);    //Setup LPTIA gain to match user input
 }
 
 /***************** Command-line input parsing functions ********************/

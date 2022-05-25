@@ -12,7 +12,6 @@
 
 /**Standard Libraries*/
 #include <stdlib.h>
-#include <string.h>
 
 /**ERDC Libraries*/
 #include "craabUtil.h" 
@@ -79,7 +78,6 @@ void runTest(char mode){
     printf("[END:CA]");
   }
   if(mode=='5'){
-    getEISFrequencies();
     runEIS();
     printf("[END:EIS]");
   }

@@ -2873,9 +2873,6 @@
             <file>
                 <name>$PROJ_DIR$\..\src\AfeTiaLib.c</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\M355_ECSns_DCTest.c</name>
-            </file>
         </group>
         <file>
             <name>$PROJ_DIR$\..\src\main.c</name>
@@ -2885,6 +2882,9 @@
         <name>common</name>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ADuCM355Port.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.c</name>
@@ -2909,6 +2909,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</name>
