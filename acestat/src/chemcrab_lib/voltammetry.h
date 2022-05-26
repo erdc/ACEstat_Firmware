@@ -206,7 +206,7 @@ void caSignalMeasure(acestatTest_type *testParams);
 /*****************Open-Circuit Potentiometry(OCP) Functions ********************/
 
 /**
-  *@brief       runOCP: performs setup and carries out electrochemical test/measurement on analog input pins
+  *@brief       runOCP: performs setup and measure voltage between RE and WE on channel 0
   *@param       none
   *@retval      none
 */

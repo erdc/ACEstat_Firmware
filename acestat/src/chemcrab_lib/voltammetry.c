@@ -190,14 +190,15 @@ void cvSignalMeasure(acestatTest_type *tPar){
 
 void printCVResults(acestatTest_type *tPar){
   
-  printf("[RANGE:%.4f,%.4f,%.4f]", tPar->vStart, tPar->vVertex, tPar->vEnd);
-  printf("[RGAIN:%i][RESULTS:", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
+  printf("[RANGE:%i,%i,%i]", tPar->vStart, tPar->vVertex, tPar->vEnd);
+  printf("[RGAIN:%i][RESULTS:\n", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
+  printf("VZERO,VBIAS,I\n");
   
   /**Print test data line-by-line to terminal*/
   float tc, vDiff;
   for(uint32_t i = 0; i < tPar->sample_count; i+=2){
     
-    /**Printing in processed mode*/
+    /**Printing in processed mode, conversions may be out of date with app conversions*/
     if(get_printing_mode() == PRINT_MODE_PROCESSED){
       vDiff = adc_to_voltage(tPar->vZeroMeasured) - adc_to_voltage(tPar->adc_data_buffer[i]);
       tc = adc_to_current(tPar->adc_data_buffer[i+1], LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
@@ -206,7 +207,7 @@ void printCVResults(acestatTest_type *tPar){
     
     /**Printing in raw ADC mode*/
     else{
-      printf("%i,%i"EOL, tPar->vZeroMeasured-tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+1]);
+      printf("%i,%i,%i"EOL, tPar->vZeroMeasured, tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+1]);
     }
   }
   printf("]");
@@ -374,11 +375,12 @@ void swvSignalMeasure(acestatTest_type *tPar){
   printSWVResults(tPar);
 }
 
-void printSWVResults(acestatTest_type *tPar){  
+void printSWVResults(acestatTest_type *tPar){
   
   /**Print test parameters/metadata*/
-  printf("[RANGE:%.4f,%.4f,%.4f]", tPar->vStart, tPar->vEnd);
-  printf("[RGAIN:%i][RESULTS:", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
+  printf("[RANGE:%i,%i]", tPar->vStart, tPar->vEnd);
+  printf("[RGAIN:%i][RESULTS:\n", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
+  printf("VZERO,VBIAS,I1,I2\n");
   
   float vDiff, tc;
   
@@ -399,7 +401,7 @@ void printSWVResults(acestatTest_type *tPar){
       printf("%.4f,%.4f"EOL, vDiff, 0.92*tc);
     }
     else{
-      printf("%i,%i"EOL, tPar->vZeroMeasured-tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+2] - tPar->adc_data_buffer[i+1]);
+      printf("%i,%i,%i,%i"EOL, tPar->vZeroMeasured, tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+1], tPar->adc_data_buffer[i+2]);
     }  
   }
   printf("]");
@@ -615,12 +617,13 @@ void cswvSignalMeasure(acestatTest_type *tPar){
 void printCSWVResults(acestatTest_type *tPar){
   
   /**Print test parameters/metadata*/
-  printf("[RANGE:%.4f,%.4f,%.4f]", tPar->vZero-tPar->vStart_diff, tPar->vZero-tPar->vVertex_diff, tPar->vZero-tPar->vEnd_diff);
-  printf("[RGAIN:%i][RESULTS:", LPRTIA_VAL_LOOKUP(tPar->rtia));
-
+  printf("[RANGE:%i,%i,%i]", tPar->vZero-tPar->vStart_diff, tPar->vZero-tPar->vVertex_diff, tPar->vZero-tPar->vEnd_diff);
+  printf("[RGAIN:%i][RESULTS:\n", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
+  printf("VZERO,VBIAS,I1,I2\n");
+  
   float vDiff, tc;
   
-  uint8_t use_mov_avg = 0;
+  uint8_t use_mov_avg = 1;
   for(uint16_t i = 0; i < tPar->sample_count; i+=3){
     
     if(get_printing_mode() == PRINT_MODE_PROCESSED){
@@ -631,21 +634,17 @@ void printCSWVResults(acestatTest_type *tPar){
         int filterWidth = 20;
         tc = swv_mov_avg(filterWidth, tPar->adc_data_buffer, i+1, tPar->sample_count, LPRTIA_VAL_LOOKUP(tPar->rtia));
       }
-      
       else{
-        tc = (adc_to_current(tPar->adc_data_buffer[i+2],LPRTIA_VAL_LOOKUP(tPar->rtia)) - adc_to_current(tPar->adc_data_buffer[i+1],LPRTIA_VAL_LOOKUP(tPar->rtia)));
+        tc = (adc_to_current(tPar->adc_data_buffer[i+2], LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia))) - adc_to_current(tPar->adc_data_buffer[i+1], LPRTIA_VAL_LOOKUP(tPar->rtia)));
       }
-      
       printf("%.4f,%.4f"EOL, vDiff, 0.92*tc);
-      
     }
     else{
-      printf("%i,%i"EOL, tPar->vZeroMeasured-tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+2] - tPar->adc_data_buffer[i+1]);
+      printf("%i,%i,%i,%i"EOL, tPar->vZeroMeasured, tPar->adc_data_buffer[i], tPar->adc_data_buffer[i+1], tPar->adc_data_buffer[i+2]);
     }  
   }
   printf("]");
 }
-
 
 /****************END CYCLIC SQUARE WAVE VOLTAMMETRY***************************/
 
@@ -738,8 +737,13 @@ void caSignalMeasure(acestatTest_type *tPar){
     current_time = ((float)get_timer_ctr())*2.52/1000;
     
     uint16_t current = oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
-
-    printf("%.3f,%.3f\n" , current_time, adc_to_current(current, LPRTIA_VAL_LOOKUP(tPar->rtia)));
+    
+    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+      printf("%.3f,%.3f\n" , current_time, adc_to_current(current, LPRTIA_VAL_LOOKUP(tPar->rtia)));
+    }
+    else{
+      printf("%i,%i", current_time, current);
+    }
     
     delay_10us(5000);                           //delay to avoid collecting too much data
   }
@@ -758,5 +762,39 @@ void caSignalMeasure(acestatTest_type *tPar){
 /****************OPEN-CIRCUIT POTENTIOMETRY***************************/
 
 void runOCP(){
+  
+  /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
+  printf("[:PMI]");
+  set_printing_mode(get_parameter(1));
+  
+  /**Get measurement duration parameter (in seconds) from UART*/
+  printf("[:MDI]");                    
+  float duration = (float)get_parameter(6);
+  
+  /**Setup simple timer for measuring test duration*/
+  gpt_config_simple();
+  
+  /**More simple setup*/
+  printf("Time[s],OCP1[mV],OCP2[mV]\n");
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);          //begin adc conversion
+  delay_10us(50);
+  float current_time, OCP0 = 0; 
+  reset_timer_ctr();
+  
+  /**Measure potential across electrodes for the duration of the test*/
+  while(current_time < duration){ 
+    current_time = ((float)get_timer_ctr())*2.52/1000;          //current time in seconds, 2.52/1000 conversion ratio from reference manual
+    OCP0 = -202.5 + 1000*adc_to_voltage(oversample_adc(MODE_VRE,CHAN0,16));
+    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+      printf("%0.3f,%.4f\n", current_time, OCP0);
+    }
+    else{
+      printf("%0.3f,%i\n", current_time, OCP0);
+    }
+    
+    delay_10us(5000);
+  } 
+  reset_timer_ctr();                                            //reset the timer counter after measurement ends
+  
   
 }

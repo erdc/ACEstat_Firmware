@@ -18,51 +18,53 @@
 #include "voltammetry.h"
 #include "eis.h"
 
-void runTest(char mode);
+void runTest(int mode);
 int getTestMode(void);
 
 /**     
-        First two digits of version number match ACEstat PCB version, 
-        3rd digit represents firmware iteration for that board version
+First two digits of version number match ACEstat PCB version, 
+3rd digit represents firmware iteration for that board version
 */
-char* version = "1.7.3";
+char* version = "1.7.4";
 
 int main(void){
+  
   /**Setup functions. only run when board powers on*/
   AfeWdtGo(false);
   ClockInit();
   UartInit();
   delay_10us(10);
-
-  /*End powerup setup*/
   
-  int testMode = 0;
-  
+  /**PRINT_MODE_RAW:            print ADC data directly to UART/USB, convert to voltage/current on application*/
+  /**PRINT_MODE_PROCESSED:      convert ADC data on ADuCM355 and print to UART/USB*/
   set_printing_mode(PRINT_MODE_RAW);
 
   while(1){
-    /*****************************
-    *1 Cyclic Voltammetry       *
-    *2 Square Wave Voltammetry  *
-    *3 Cyclic Square Wave       *
-    *4 Chronoamperometry        *
-    *5 EIS                      *
-    ******************************/
+    /************************************
+    *0 Cyclic Voltammetry Debug         *
+    *1 Cyclic Voltammetry               *
+    *2 Square Wave Voltammetry          *
+    *3 Cyclic Square Wave Voltammetry   *
+    *4 Chrono Amperometry               *
+    *5 Impedance SPectroscopy           *
+    *6 Open-circuit Potentiometry       *
+    *************************************/
+    
     printf("%s%s%s", "[:MAIN:", version, "]\n");
     
     /**User selects a test mode via UART*/
-    testMode = getTestMode();         //test mode input, reads only the first character in szInString
-    runTest(testMode);
+    runTest(getTestMode());
+    
   }
   return 0;
 }
 
-void runTest(char mode){
+void runTest(int mode){
   
   bool testComplete = false;
   
   if(mode==MODE_CV_DEBUG){
-    runCV(1);                //CV test with preset parameters for quicker debugging
+    runCV(1);                   //CV test with preset parameters for quicker debugging
     printf("[END:CV]");
   }
   if(mode==MODE_CV){
@@ -85,7 +87,7 @@ void runTest(char mode){
     runEIS();
     printf("[END:EIS]");
   }
-  if(mode==MODE_OCP){
+  if(mode==MODE_OCP){           //Voltage measured between RE and WE of channel 0     
     runOCP();
     printf("[END:OCP]");
   }
