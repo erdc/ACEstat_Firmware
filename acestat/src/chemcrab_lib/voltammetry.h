@@ -33,6 +33,7 @@ typedef struct {
   uint16_t* adc_data_buffer;            //pointer to externally-defined adc buffer array
   uint16_t rtia;                        //rtia lookup table selection value
   uint16_t sample_count;                //number of datapoints collected so far for this test
+  uint16_t printing_mode;                //0 for raw-ADC, 1 for converted currents/voltages
   
   /**ADuCM355 uses a differential voltage to create negative potentials, with 'zero' applied to the working electrode*/
   /**Ex: [vStart_diff, vEnd_diff, vZero] = [2200, 1200, 1700] creates a -500mV to +500mV sweep when measured from the working electrode to reference electrode*/
@@ -66,8 +67,8 @@ typedef struct {
   uint16_t caDelay;                     //delay prior to initial step to hold 0 volts
   
   /**Open circuit potentiometry*/
-  uint16_t ocpDuration;                 //time in ms to measure potential
-  uint16_t ocpSamplingFreqiency;        //sampling frequency in Hz
+  float ocpDuration;                    //time in seconds to measure potential
+  float ocpSamplingFreqiency;           //sampling frequency in Hz
   
   /**Filtering parameters*/
   uint8_t use_mov_avg;                  //0 or 1, use moving average filter

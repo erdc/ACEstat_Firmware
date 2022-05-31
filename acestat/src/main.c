@@ -25,7 +25,7 @@ int getTestMode(void);
 First two digits of version number match ACEstat PCB version, 
 3rd digit represents firmware iteration for that board version
 */
-char* version = "1.7.4";
+char* version = "1.7.5";
 
 int main(void){
   

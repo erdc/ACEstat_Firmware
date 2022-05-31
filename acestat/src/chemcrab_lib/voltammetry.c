@@ -8,6 +8,7 @@ void runCV(int debug_mode){
   acestatTest_type cvTest;
   
   /**Pre-defined parameters to run quick diagrnostic tests*/
+  set_printing_mode(PRINT_MODE_RAW);
   cvTest.sensor_channel = 0;                      //parser expects 0 or 1
   cvTest.vStart = -400;                           //parser expects -9999 to +9999 [mV]
   cvTest.vVertex = 400;                           //parser expects -9999 to +9999 [mV]
@@ -32,6 +33,10 @@ void runCV(int debug_mode){
     cvTest.equilibrium_time = get_parameter(4);                   //parser expects 0000 to 9999 [s]
     printf("[:RTIAI]");                    
     cvTest.rtia = LPRTIA_LOOKUP(get_parameter(2)-48);             //parser expects 00-25
+    
+    /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
+    printf("[:PMI]");
+    cvTest.printing_mode = get_parameter(1);
   }
   
   cvTest.adc_data_buffer = return_adc_buffer();
@@ -120,8 +125,8 @@ void cvSignalMeasure(acestatTest_type *tPar){
     /** Increase cBias until cBias=cVertex */
     for (cBias = tPar->cStart; cBias < tPar->cVertex; cBias = cBias + inc){
       LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);    //Set 6-bit and 12-bit DAC channels
-      delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
-      gpt_wait_for_flag();                                              //GPT delay to maintain voltage sweeprate
+      delay_10us(SETTLING_DELAY);                                 //allow LPDAC to settle
+      gpt_wait_for_flag();                                        //GPT delay to maintain voltage sweeprate
       
       if(!(cBias%SKIP_RATE)){                                                 //Only store data every SKIP_RATE increments of the DAC to save time/memory to save space
         tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
@@ -192,14 +197,13 @@ void printCVResults(acestatTest_type *tPar){
   
   printf("[RANGE:%i,%i,%i]", tPar->vStart, tPar->vVertex, tPar->vEnd);
   printf("[RGAIN:%i][RESULTS:\n", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
-  printf("VZERO,VBIAS,I\n");
   
   /**Print test data line-by-line to terminal*/
   float tc, vDiff;
   for(uint32_t i = 0; i < tPar->sample_count; i+=2){
     
     /**Printing in processed mode, conversions may be out of date with app conversions*/
-    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+    if(tPar->printing_mode == PRINT_MODE_PROCESSED){
       vDiff = adc_to_voltage(tPar->vZeroMeasured) - adc_to_voltage(tPar->adc_data_buffer[i]);
       tc = adc_to_current(tPar->adc_data_buffer[i+1], LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
       printf("%.4f,%.4f"EOL, vDiff,tc);
@@ -238,10 +242,15 @@ void runSWV(void){
   swvTest.equilibrium_time = get_parameter(4);                          //parser expects 0000 to 9999 seconds
   printf("[:RTIAI]");      
   swvTest.rtia = LPRTIA_LOOKUP(get_parameter(2)-48);        //parser expects 00-25 
-  printf("[START:SWV]");                                                //begin SWV test
+  
+  /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
+  printf("[:PMI]");
+  swvTest.printing_mode = get_parameter(1);
   
   /**Setup AFE for SWV test*/
   AFE_SETUP_VOLTAMMETRY(swvTest.sensor_channel, swvTest.rtia);
+  
+  printf("[START:SWV]");                                                //begin SWV test
 
   /**Convert user inputs into DAC-scale voltages and perform SWV test */
   swvSetVoltages(&swvTest);
@@ -380,14 +389,13 @@ void printSWVResults(acestatTest_type *tPar){
   /**Print test parameters/metadata*/
   printf("[RANGE:%i,%i]", tPar->vStart, tPar->vEnd);
   printf("[RGAIN:%i][RESULTS:\n", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
-  printf("VZERO,VBIAS,I1,I2\n");
   
   float vDiff, tc;
   
   uint8_t use_mov_avg = 1;
   for(uint16_t i = 0; i < tPar->sample_count; i+=3){
     
-    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+    if(tPar->printing_mode == PRINT_MODE_PROCESSED){
       vDiff = adc_to_voltage(tPar->vZeroMeasured) - adc_to_voltage(tPar->adc_data_buffer[i]);
       
       /**Moving average filter for SWV data*/
@@ -433,10 +441,15 @@ void runCSWV(void){
   cswvTest.equilibrium_time = get_parameter(4);         //parser expects 0000 to 9999 s
   printf("[:RTIAI]");
   cswvTest.rtia = LPRTIA_LOOKUP(get_parameter(2)-48); 
-  printf("[START:CSWV]");                               //begin CSWV
+  
+  /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
+  printf("[:PMI]");
+  cswvTest.printing_mode = get_parameter(1);
   
   /**Setup AFE for CSWV test */
   AFE_SETUP_VOLTAMMETRY(cswvTest.sensor_channel, cswvTest.rtia);
+  
+  printf("[START:CSWV]");                               //begin CSWV
   
   /**Apply equilibrium delay and excitation signals*/
   cswvSetVoltages(&cswvTest);
@@ -619,14 +632,13 @@ void printCSWVResults(acestatTest_type *tPar){
   /**Print test parameters/metadata*/
   printf("[RANGE:%i,%i,%i]", tPar->vZero-tPar->vStart_diff, tPar->vZero-tPar->vVertex_diff, tPar->vZero-tPar->vEnd_diff);
   printf("[RGAIN:%i][RESULTS:\n", LPRTIA_VAL_LOOKUP(LPRTIA_VAL_LOOKUP(tPar->rtia)));
-  printf("VZERO,VBIAS,I1,I2\n");
   
   float vDiff, tc;
-  
   uint8_t use_mov_avg = 1;
+  
   for(uint16_t i = 0; i < tPar->sample_count; i+=3){
     
-    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+    if(tPar->printing_mode == PRINT_MODE_PROCESSED){
       vDiff = adc_to_voltage(tPar->vZeroMeasured) - adc_to_voltage(tPar->adc_data_buffer[i]);
       
       /**Moving average filter for SWV data*/
@@ -664,10 +676,16 @@ void runCA(void){
   caTest.caDelay = get_parameter(5);                             //parser expects 00000 to 99999 ms
   printf("[:RTIAI]");
   caTest.rtia = LPRTIA_LOOKUP(get_parameter(2));                //PASS INT VAL RATHER THAN ASCII
-  printf("[START:CA]");
+
+  
+  /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
+  printf("[:PMI]");
+  caTest.printing_mode = get_parameter(1);
   
   /**Configure AFE for chronoamperometry*/
   AFE_SETUP_VOLTAMMETRY(caTest.sensor_channel, caTest.rtia);
+  
+  printf("[START:CA]");
   
   /**Convert signed voltages from user input to unsigned voltages for DAC channels*/
   caSetVoltages(&caTest);
@@ -738,11 +756,11 @@ void caSignalMeasure(acestatTest_type *tPar){
     
     uint16_t current = oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
     
-    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+    if(tPar->printing_mode == PRINT_MODE_PROCESSED){
       printf("%.3f,%.3f\n" , current_time, adc_to_current(current, LPRTIA_VAL_LOOKUP(tPar->rtia)));
     }
     else{
-      printf("%i,%i", current_time, current);
+      printf("%i,%\n", current_time, current);
     }
     
     delay_10us(5000);                           //delay to avoid collecting too much data
@@ -763,38 +781,78 @@ void caSignalMeasure(acestatTest_type *tPar){
 
 void runOCP(){
   
-  /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
-  printf("[:PMI]");
-  set_printing_mode(get_parameter(1));
+  set_adc_mode(0);
+  
+  acestatTest_type ocpTest;
   
   /**Get measurement duration parameter (in seconds) from UART*/
   printf("[:MDI]");                    
-  float duration = (float)get_parameter(6);
+  ocpTest.ocpDuration = (float)get_parameter(6);
+  
+  /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
+  printf("[:PMI]");
+  ocpTest.printing_mode = get_parameter(1);
+  
+  /**Configure AFE for potential measurement*/
+  AFE_SETUP_VOLTAMMETRY(CHAN0, LPRTIA_LOOKUP(1));
   
   /**Setup simple timer for measuring test duration*/
   gpt_config_simple();
   
   /**More simple setup*/
-  printf("Time[s],OCP1[mV],OCP2[mV]\n");
-  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);          //begin adc conversion
+  //printf("Time[s],OCP[mV]");
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);                          //begin adc conversion
   delay_10us(50);
-  float current_time, OCP0 = 0; 
+  float current_time=0;
   reset_timer_ctr();
   
+  /**Manually configure ADC/MUX settings*/
+  adc_voltage_setup_AIN(ANALOG_CHAN0);
+  
+  float diff_voltage = 0;
+  
+  /**Manual Config*/
+  AfeSysCfg(ENUM_AFE_PMBW_LP,ENUM_AFE_PMBW_BW50);
+  AfeAdcPgaCfg(GNPGA_1,0);
+  
+  /**Manual ADC mux setup for testing signal quality*/
+  AfeAdcChan(MUXSELP_VSE0,MUXSELN_AIN0);
+  
+  AfeAdcChopEn(1);
+  AfeAdcIntCfg(BITM_AFE_ADCINTIEN_ADCRDYIEN);
+  NVIC_EnableIRQ(AFE_ADC_IRQn);
+  AfeAdcPwrUp(BITM_AFE_AFECON_ADCEN);
+  AfeAdcFiltCfg(SINC3OSR_5,SINC2OSR_178,LFPBYPEN_BYP,ADCSAMPLERATE_800K);
+  pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;
+  delay_10us(5);
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);                          //begin adc conversion
+  delay_10us(50);
+  reset_adc_flag();
+  
+  printf("\n[START:OCP]");
+  
   /**Measure potential across electrodes for the duration of the test*/
-  while(current_time < duration){ 
+  while(current_time < ocpTest.ocpDuration){
     current_time = ((float)get_timer_ctr())*2.52/1000;          //current time in seconds, 2.52/1000 conversion ratio from reference manual
-    OCP0 = -202.5 + 1000*adc_to_voltage(oversample_adc(MODE_VRE,CHAN0,16));
-    if(get_printing_mode() == PRINT_MODE_PROCESSED){
-      printf("%0.3f,%.4f\n", current_time, OCP0);
-    }
-    else{
-      printf("%0.3f,%i\n", current_time, OCP0);
+
+    //diff_voltage = oversample_adc(MODE_AIN, ANALOG_CHAN0, ADC_OVERSAMPLE_RATE);
+    while(!adcRdy){}
+    diff_voltage = get_adc_val();
+    reset_adc_flag();
+    
+    if(ocpTest.printing_mode==PRINT_MODE_RAW){
+      printf("%.3f,%i\n", current_time, (int)diff_voltage);          //print the ADCDAT register value(16-bit int)
     }
     
-    delay_10us(5000);
-  } 
+    if(ocpTest.printing_mode==PRINT_MODE_PROCESSED){
+      diff_voltage = (diff_voltage-32237)/17.8;                 //convert ADCDAT value to float voltage equivalent
+      printf("%.3f,%.3f\n", current_time, diff_voltage);        //print voltage
+    }
+    
+    /**Delay to prevent collection of too much data*/
+    delay_10us(1000);
+  }
+  
+  printf("[END:OCP]");
   reset_timer_ctr();                                            //reset the timer counter after measurement ends
-  
-  
 }

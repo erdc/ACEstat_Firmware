@@ -206,6 +206,22 @@ uint16_t* return_adc_buffer(void);
 */
 uint16_t get_adc_val(void);
 
+
+/**
+  *@brief       reset_adc_flag: sets the global adcRdy flag to 0
+  *@param       none
+  *@retval      none
+*/
+void reset_adc_flag(void);
+
+
+/**
+  *@brief       set_adc_flag: sets the flobal adcRdy flag to 1
+  *@param       none
+  *@retval      none
+*/
+void set_adc_flag(void);
+
 /**
   *@brief       set_adc_mode: sets the adc to use regular or DFT mode
   *@param       mode: 0 for regular mode, 1 for DFT mode

@@ -183,7 +183,7 @@ int uart_get_flag(void)
 
 
 /***************** Output printing mode control********************/
-uint8_t printing_mode = PRINT_MODE_PROCESSED;         //default to raw printing mode
+uint8_t printing_mode = PRINT_MODE_RAW;         //default to raw printing mode
 
 void set_printing_mode(uint8_t mode){
   printing_mode = mode;
@@ -323,6 +323,14 @@ uint16_t* return_adc_buffer(void){
 
 uint16_t get_adc_val(void){
   return ADCRAW;
+}
+
+void reset_adc_flag(void){
+  adcRdy = 0;
+}
+
+void set_adc_flag(void){
+  adcRdy = 1;
 }
 
 void set_adc_mode(uint8_t mode){
@@ -890,7 +898,7 @@ int get_parameter(int dec){
           uBuffer=return_uart_buffer();
           parameter = uBuffer[0];
           uart_flag_reset();                      //reset the UART flag
-          return parameter;
+          return parameter-48;
       }
     }
   }
@@ -984,7 +992,7 @@ void AfeAdc_Int_Handler(void){
     if(sta&BITM_AFE_ADCINTSTA_ADCRDY){
       pADI_AFE->ADCINTSTA = BITM_AFE_ADCINTSTA_ADCRDY;  //clear ADCRDY interrupt bit
       ADCRAW = pADI_AFE->ADCDAT;
-      adcRdy = 1;
+      set_adc_flag();
     }
   }
 }
