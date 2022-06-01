@@ -74,13 +74,13 @@ void AD5940ImpedanceStructInit(void)
   /* Note the RCAL0 resistor is 200Ohm. */
   pImpedanceCfg->DswitchSel = SWD_CE0;
   pImpedanceCfg->PswitchSel = SWP_CE0;
-  pImpedanceCfg->NswitchSel = SWN_AIN1;
-  pImpedanceCfg->TswitchSel = SWT_AIN1;
+  pImpedanceCfg->NswitchSel = SWN_SE0LOAD;
+  pImpedanceCfg->TswitchSel = SWT_SE0LOAD;
 
   pImpedanceCfg->HstiaRtiaSel = HSTIARTIA_200;	
   
   /* Configure the sweep function. */
-  pImpedanceCfg->SweepCfg.SweepEn = bTRUE;
+  pImpedanceCfg->SweepCfg.SweepEn = bFALSE;
   pImpedanceCfg->SweepCfg.SweepStart = 0.10f;	/* Set start frequency, unit is Hertz */
   pImpedanceCfg->SweepCfg.SweepStop = 250e3f;		/* Set stop frequency, unit is Hertz  */
   pImpedanceCfg->SweepCfg.SweepPoints = 100;		/* Number of points in the sweep*/
