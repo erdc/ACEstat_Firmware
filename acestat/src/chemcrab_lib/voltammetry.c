@@ -853,6 +853,5 @@ void runOCP(){
     delay_10us(1000);
   }
   
-  printf("[END:OCP]");
   reset_timer_ctr();                                            //reset the timer counter after measurement ends
 }

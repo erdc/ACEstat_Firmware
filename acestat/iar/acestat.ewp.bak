@@ -338,8 +338,7 @@
                     <state>$PROJ_DIR$\..\..\aducm355-examples\inc</state>
                     <state>$PROJ_DIR$\..\..\aducm355-examples\common</state>
                     <state>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib</state>
-					<state>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS</state>
-					C:\Users\RDITLEWB\Documents\ACEstat Development gitRepo\aducm355_firmware\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS
+                    <state>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355ECSns_EIS</state>
                     <state>$PROJ_DIR$\..\src</state>
                     <state>$PROJ_DIR$\..\src\chemcrab_lib</state>
                 </option>
@@ -2161,6 +2160,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</name>

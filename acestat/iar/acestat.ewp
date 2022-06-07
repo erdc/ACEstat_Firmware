@@ -338,7 +338,7 @@
                     <state>$PROJ_DIR$\..\..\aducm355-examples\inc</state>
                     <state>$PROJ_DIR$\..\..\aducm355-examples\common</state>
                     <state>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib</state>
-                    <state>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance</state>
+                    <state>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS</state>
                     <state>$PROJ_DIR$\..\src</state>
                     <state>$PROJ_DIR$\..\src\chemcrab_lib</state>
                 </option>
@@ -2162,7 +2162,7 @@
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance\Impedance.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</name>
