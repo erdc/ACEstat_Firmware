@@ -1,5 +1,5 @@
-#ifndef eis_H
-#define eis_H
+#ifndef ACESTAT_EIS_H
+#define ACESTAT_EIS_H
 
 /**Analog devices Libraries*/
 #include "ADuCM355.h"
@@ -15,9 +15,7 @@
 #include "AfeDacLib.h"
 #include <stdio.h>
 #include "Impedance.h"
-
-/**ERDC Libraries*/
-#include "craabUtil.h"
+#include "ad5940.h"
 
 /**Global variables relevant to high-level EIS functions*/
 

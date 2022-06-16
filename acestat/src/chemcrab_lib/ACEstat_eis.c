@@ -1,5 +1,6 @@
 
-#include "eis.h"
+#include "ACEstat_eis.h"
+#include "ACEstat_misc.h"
 
 /**EIS Helper functions/variables, provided by Analog devices*/
 #define APPBUFF_SIZE 512
@@ -136,11 +137,3 @@ void runEIS(void){
   printf("[END:EIS]");
   NVIC_SystemReset();                   //ARM DIGITAL SOFTWARE RESET
 }
-
-
-
-
-
-
-
-

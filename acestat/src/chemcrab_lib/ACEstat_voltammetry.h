@@ -1,5 +1,5 @@
-#ifndef voltammetry_H
-#define voltammetry_H
+#ifndef ACEstat_voltammetry_H
+#define ACEstat_voltammetry_H
 
 /**Analog Devices ADuCM355 Reference Libraries */
 #include "ADuCM355.h"

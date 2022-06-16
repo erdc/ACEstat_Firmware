@@ -142,7 +142,6 @@ uint8_t get_printing_mode(void);
 #define MAX_BUFFER_LENGTH 16000
 #define ADCSTART pADI_AFE->AFECON |= BITM_AFE_AFECON_ADCCONVEN
 #define ADCSTOP  pADI_AFE->AFECON &= (~BITM_AFE_AFECON_ADCCONVEN)
-extern uint8_t adcModeSel;
 extern volatile uint8_t dftRdy; //better to convert these to flag functions similar to uart_flag
 extern volatile uint8_t adcRdy; //better to convert these to flag functions similar to uart_flag
 

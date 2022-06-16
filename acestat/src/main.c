@@ -1,4 +1,4 @@
-/**Analog Devices Files*/
+/**Analog Devices Libraries*/
 #include "ADuCM355.h"
 #include "ClkLib.h"
 #include "UrtLib.h"
@@ -14,9 +14,16 @@
 #include <stdlib.h>
 
 /**ERDC Libraries*/
-#include "craabUtil.h" 
-#include "voltammetry.h"
-#include "eis.h"
+#include "ACEstat_interface.h"
+#include "ACEstat_setup.h"
+#include "ACEstat_tia.h"
+#include "ACEstat_voltammetry.h"
+#include "ACEstat_eis.h"
+#include "ACEstat_adc.h"
+#include "ACEstat_gpt.h"
+#include "ACEstat_inthandlers.h"
+#include "ACEstat_mux.h"
+#include "ACEstat_misc.h"
 
 void runTest(int mode);
 int getTestMode(void);

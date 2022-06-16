@@ -1,5 +1,5 @@
-/**ERDC custom libraries */
-#include "voltammetry.h"
+#include "ACEstat_voltammetry.h"
+#include "ACEstat_misc.h"
 
 /***********************Cyclic Voltammetry(CV) Functions *************************/
 void runCV(int debug_mode){

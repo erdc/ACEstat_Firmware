@@ -2842,24 +2842,66 @@
     <group>
         <name>application</name>
         <group>
-            <name>crab_lib</name>
+            <name>ACEstat_lib</name>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.h</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\eis.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\eis.h</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.h</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.h</name>
             </file>
         </group>
         <group>
