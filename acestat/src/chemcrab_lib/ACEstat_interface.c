@@ -1,5 +1,6 @@
 #include "ACEstat_interface.h"
 #include "ACEstat_misc.h"
+#include <stdlib.h>
 
 /***************** Output printing mode control********************/
 uint8_t printing_mode = PRINT_MODE_RAW;         //default to raw printing mode
@@ -36,6 +37,7 @@ int get_voltage_input(void){
       uBuffer=return_uart_buffer();
       for(int i=0 ; i<5 ; ++i){
         v[i] = uBuffer[i];
+        printf("%i, %i, %c\n", i, v[i], v[i]);
       }
       
       voltage+=(v[4]-48)*1;
@@ -54,37 +56,23 @@ int get_voltage_input(void){
   }
 }
 
-float get_low_frequency(void){
+float get_frequency(void){
   
   float freq = 0;
   
   /**Wait for uart_get_flag == 1*/
   while(1){
     if(uart_get_flag()){
-      char v[6];
+      char v[9];
       uint8_t *uBuffer;
       uBuffer=return_uart_buffer();
-      for(int i=0 ; i<6 ; ++i){
+      for(int i=0 ; i<9 ; ++i){
         v[i] = uBuffer[i];
       }
       
-      /**Special case if input is <1Hz*/
-      if(v[0]=='.'){
-        freq+=(v[5]-48)*0.00001;
-        freq+=(v[4]-48)*0.0001;
-        freq+=(v[3]-48)*0.001;
-        freq+=(v[2]-48)*0.01;
-        freq+=(v[1]-48)*0.1;
-      }
+      freq = (float)atof(v);
+      printf("%f\n", freq);
 
-      else{
-        freq+=(v[5]-48)*1;
-        freq+=(v[4]-48)*10;
-        freq+=(v[3]-48)*100;
-        freq+=(v[2]-48)*1000;
-        freq+=(v[1]-48)*10000;
-        freq+=(v[0]-48)*100000;
-      }
       uart_flag_reset();                          //reset the UART flag
       return freq;
     }
@@ -200,7 +188,8 @@ int get_parameter(int dec){
 
 uint16_t get_sensor_channel(void){
   printf("[:SCI]");
-  uint16_t sensChanIn = get_parameter(1)-48;
+  char sensChanIn = get_parameter(1);
+  printf("\n%i\n", sensChanIn);
   if(sensChanIn > 0){
     return CHAN1;
   }

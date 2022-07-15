@@ -19,7 +19,12 @@
 #include <math.h>
 
 /**ERDC custom libraries */
-#include "craabUtil.h"
+#include "ACEstat_interface.h"
+#include "ACEstat_gpt.h"
+#include "ACEstat_adc.h"
+#include "ACEstat_misc.h"
+#include "ACEstat_setup.h"
+#include "ACEstat_tia.h"
 
 /***************** ACEstat Test Type Struct ********************/
 

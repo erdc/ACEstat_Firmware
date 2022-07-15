@@ -104,9 +104,9 @@ void runEIS(void){
 
   /**Get the EIS frequency ranges as floats over UART*/
   printf("[:FSTARTI]");
-  float start_freq = get_low_frequency();            
+  float start_freq = get_frequency();            
   printf("[:FSTOPI]");                    
-  float stop_freq = get_low_frequency(); 
+  float stop_freq = get_frequency(); 
   printf("[:NUMPOINTSI]");
   int num_points = get_parameter(3);
   printf("[START:EIS]");

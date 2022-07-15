@@ -34,6 +34,15 @@ First two digits of version number match ACEstat PCB version,
 */
 char* version = "1.7.5";
 
+/***************** ACEstat test mode definitions for top-level API control ********************/
+#define MODE_CV_DEBUG   0
+#define MODE_CV         1
+#define MODE_SWV        2
+#define MODE_CSWV       3
+#define MODE_CA         4
+#define MODE_EIS        5
+#define MODE_OCP        6
+
 int main(void){
   
   /**Setup functions. only run when board powers on*/
@@ -53,7 +62,7 @@ int main(void){
     *2 Square Wave Voltammetry          *
     *3 Cyclic Square Wave Voltammetry   *
     *4 Chrono Amperometry               *
-    *5 Impedance SPectroscopy           *
+    *5 Impedance Spectroscopy           *
     *6 Open-circuit Potentiometry       *
     *************************************/
     
@@ -94,7 +103,7 @@ void runTest(int mode){
     runEIS();
     printf("[END:EIS]");
   }
-  if(mode==MODE_OCP){           //Voltage measured between RE and WE of channel 0     
+  if(mode==MODE_OCP){             
     runOCP();
     printf("[END:OCP]");
   }

@@ -56,7 +56,7 @@ int get_voltage_input(void);
   *@param       none
   *@retval      lower-bound of frequency range for impedance spectroscopy
 */
-float get_low_frequency(void);
+float get_frequency(void);
 
 /**
   *@brief       get_parameter: gets generic test parameters from user over command-line interface

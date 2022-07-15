@@ -16,6 +16,7 @@ void runCV(int debug_mode){
   cvTest.cvSweepRate = 400;                       //parser expects 000 to 999 [mV/s]
   cvTest.equilibrium_time = 1;                    //parser expects 0000 to 9999 [s]
   cvTest.rtia = LPRTIA_LOOKUP(1);               //PASS INT VAL RATHER THAN ASCII
+  cvTest.printing_mode = PRINT_MODE_PROCESSED;
   
   /**If getting user inputs for test parameters*/
   if(!debug_mode){
