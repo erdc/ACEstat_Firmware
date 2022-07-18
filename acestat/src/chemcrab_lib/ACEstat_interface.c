@@ -71,7 +71,6 @@ float get_frequency(void){
       }
       
       freq = (float)atof(v);
-      printf("%f\n", freq);
 
       uart_flag_reset();                          //reset the UART flag
       return freq;
