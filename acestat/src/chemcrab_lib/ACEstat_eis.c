@@ -13,11 +13,11 @@ int32_t ImpedanceShowResult(uint32_t *pData, uint32_t DataCount)
   fImpPol_Type *pImp = (fImpPol_Type*)pData;
   AppIMPCtrl(IMPCTRL_GETFREQ, &freq);
   
-  printf("Freq:%.2f ", freq);
+  printf("%.2f,", freq);
   /*Process data*/
   for(int i=0;i<DataCount;i++)
   {
-    printf("RzMag: %f Ohm , RzPhase: %f \n",pImp[i].Magnitude,pImp[i].Phase*180/MATH_PI);
+    printf("%f,%f\n",pImp[i].Magnitude,pImp[i].Phase*180/MATH_PI);
   }
   return 0;
 }
@@ -39,7 +39,6 @@ static int32_t AD5940PlatformCfg(void)
   clk_cfg.LFOSCEn = bTRUE;
   AD5940_CLKCfg(&clk_cfg);
   
-  
   /* Step3. Interrupt controller */
   AD5940_INTCCfg(AFEINTC_1, AFEINTSRC_ALLINT, bTRUE);           /* Enable all interrupt in Interrupt Controller 1, so we can check INTC flags */
   AD5940_INTCCfg(AFEINTC_0, AFEINTSRC_DATAFIFOTHRESH, bTRUE);   /* Interrupt Controller 0 will control GP0 to generate interrupt to MCU */
@@ -49,8 +48,8 @@ static int32_t AD5940PlatformCfg(void)
   return 0;
 }
 
-/**Modified from AD original to allow passing of some user defined test parameters*/
-void AD5940ImpedanceStructInit(float f1, float f2, int pts)
+/**Modified from AD SDK version to allow passing of some user defined test parameters*/
+AppIMPCfg_Type* AD5940ImpedanceStructInit()
 {
   AppIMPCfg_Type *pImpedanceCfg;
   
@@ -85,10 +84,9 @@ void AD5940ImpedanceStructInit(float f1, float f2, int pts)
   /* Configure the sweep function. */
   pImpedanceCfg->SweepCfg.SweepEn = bTRUE;
   
-  /**User defined frequencies added here*/
-  pImpedanceCfg->SweepCfg.SweepStart = f1;	/* Set start frequency*/
-  pImpedanceCfg->SweepCfg.SweepStop = f2;	/* Set final frequency */
-  pImpedanceCfg->SweepCfg.SweepPoints = pts;		/* Set number of points for sweep*/
+  pImpedanceCfg->SweepCfg.SweepStart = 100;	/* Set start frequency*/
+  pImpedanceCfg->SweepCfg.SweepStop = 1000;	/* Set final frequency */
+  pImpedanceCfg->SweepCfg.SweepPoints = 10;		/* Set number of points for sweep*/
   
   pImpedanceCfg->SweepCfg.SweepLog = bTRUE;
   /* Configure Power Mode. Use HP mode if frequency is higher than 80kHz. */
@@ -97,6 +95,8 @@ void AD5940ImpedanceStructInit(float f1, float f2, int pts)
   pImpedanceCfg->ADCSinc3Osr = ADCSINC3OSR_4;		
   pImpedanceCfg->DftNum = DFTNUM_16384;
   pImpedanceCfg->DftSrc = DFTSRC_SINC3;
+  
+  return pImpedanceCfg;
 }
 /**End Analog Devices' EIS Helper functions/variables*/
 
@@ -116,7 +116,14 @@ void runEIS(void){
   
   /**Setup ADuCM355 impedance spectroscopy test, based on Analog Devices' application example*/
   AD5940PlatformCfg();                  //Configure AFE and system variables for EIS
-  AD5940ImpedanceStructInit(start_freq, stop_freq, num_points);          //Initialize struct to store EIS test parameters
+  
+  /**Create configuration object for EIS test with generic parameters*/
+  AppIMPCfg_Type* testCfg = AD5940ImpedanceStructInit();          //Initialize struct to store EIS test parameters
+  
+  /**Modify test object with user parameters*/
+  testCfg->SweepCfg.SweepStart = 1;
+  testCfg->SweepCfg.SweepStop = 50000;
+  testCfg->SweepCfg.SweepPoints = 10;
   
   AppIMPInit(AppBuff, APPBUFF_SIZE);    /* Initialize IMP application. Provide a buffer, which is used to store sequencer commands */
   AppIMPCtrl(IMPCTRL_START, 0);          /* Control IMP measurment to start. Second parameter has no meaning with this command. */

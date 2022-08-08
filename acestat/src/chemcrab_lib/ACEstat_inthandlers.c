@@ -6,7 +6,7 @@
 int uart_flag_set(void)
 {
 	uart_flag=1;
-	return 1;
+	return uart_flag;
 }
 
 int uart_flag_reset(void)
@@ -65,14 +65,19 @@ void UART_Int_Handler(void)
    ucCOMIID0 = UrtIntSta(pADI_UART0);
    if ((ucCOMIID0 & 0xE) == 0xc || (ucCOMIID0 & 0xE) == 0x4)    //receive byte
    {
+     
+     /**Fill the primary UART software buffer array*/
      iNumBytesInFifo = pADI_UART0->COMRFC;      //read the Num of bytes in FIFO
      for(uint8_t i = 0; i <iNumBytesInFifo;++i){
        ucComRx = UrtRx(pADI_UART0);
-       szInSring[i]=ucComRx;
+       UART_buffer[i]=ucComRx;
      }
-     if (szInSring[0] == 27) {
+     
+     /**Check for an excape character to reset the board*/
+     if (UART_buffer[0] == 27) {
        NVIC_SystemReset();
      }
+     
      UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR//Clear the Rx/TX FIFOs
              |BITM_UART_COMFCR_TFCLR);
      uart_flag_set();

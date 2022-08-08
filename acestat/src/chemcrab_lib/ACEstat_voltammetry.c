@@ -15,7 +15,7 @@ void runCV(int debug_mode){
   cvTest.vEnd = -400;                             //parser expects -9999 to +9999 [mV]
   cvTest.cvSweepRate = 400;                       //parser expects 000 to 999 [mV/s]
   cvTest.equilibrium_time = 1;                    //parser expects 0000 to 9999 [s]
-  cvTest.rtia = LPRTIA_LOOKUP(1);               //PASS INT VAL RATHER THAN ASCII
+  cvTest.rtia = LPRTIA_LOOKUP(1);                       //PASS INT VAL RATHER THAN ASCII
   cvTest.printing_mode = PRINT_MODE_PROCESSED;
   
   /**If getting user inputs for test parameters*/
@@ -23,21 +23,21 @@ void runCV(int debug_mode){
     /**Get user inputs from ACEstat app or command-line interface */
     cvTest.sensor_channel = get_sensor_channel();                 //parser expects 0 or 1
     printf("[:SVI]");                             
-    cvTest.vStart = get_voltage_input();                          //parser expects -9999 to +9999 [mV]
+    cvTest.vStart = get_parameter();                          //parser expects -9999 to +9999 [mV]
     printf("[:VVI]");
-    cvTest.vVertex = get_voltage_input();                         //parser expects -9999 to +9999 [mV]
+    cvTest.vVertex = get_parameter();                         //parser expects -9999 to +9999 [mV]
     printf("[:EVI]");
-    cvTest.vEnd = get_voltage_input();                            //parser expects -9999 to +9999 [mV]
+    cvTest.vEnd = get_parameter();                            //parser expects -9999 to +9999 [mV]
     printf("[:SRI]");
-    cvTest.cvSweepRate = get_parameter(3);                        //parser expects 000 to 999 [mV/s]
+    cvTest.cvSweepRate = get_parameter();                        //parser expects 000 to 999 [mV/s]
     printf("[:TEI]");
-    cvTest.equilibrium_time = get_parameter(4);                   //parser expects 0000 to 9999 [s]
+    cvTest.equilibrium_time = get_parameter();                   //parser expects 0000 to 9999 [s]
     printf("[:RTIAI]");                    
-    cvTest.rtia = LPRTIA_LOOKUP(get_parameter(2)-48);             //parser expects 00-25
+    cvTest.rtia = LPRTIA_LOOKUP(get_parameter()-48);             //parser expects 00-25
     
     /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
     printf("[:PMI]");
-    cvTest.printing_mode = get_parameter(1);
+    cvTest.printing_mode = get_parameter();
   }
   
   cvTest.adc_data_buffer = return_adc_buffer();
@@ -230,19 +230,19 @@ void runSWV(void){
   /**Get SWV user inputs from ACEstat app or command-line interface */
   swvTest.sensor_channel = get_sensor_channel();                        //parser expects 0 or 1
   printf("[:SVI]");
-  swvTest.vStart = get_voltage_input();                                 //parser expects -9999 to +9999 mV
+  swvTest.vStart = get_parameter();                                 //parser expects -9999 to +9999 mV
   printf("[:EVI]");
-  swvTest.vEnd = get_voltage_input();                                   //parser expects -9999 to +9999 mV
+  swvTest.vEnd = get_parameter();                                   //parser expects -9999 to +9999 mV
   printf("[:AMPI]");
-  swvTest.swvAmplitude = get_parameter(3);                              //parser expects 000 to 999 mV
+  swvTest.swvAmplitude = get_parameter();                              //parser expects 000 to 999 mV
   printf("[:STEPI]");
-  swvTest.swvStepSize = get_parameter(3);                               //parser expects 000 to 999 mV
+  swvTest.swvStepSize = get_parameter();                               //parser expects 000 to 999 mV
   printf("[:FREQI]");
-  swvTest.swvFrequency = get_parameter(5);                              //parser expects 00000 to 99999 Hz
+  swvTest.swvFrequency = get_parameter();                              //parser expects 00000 to 99999 Hz
   printf("[:TEI]");
-  swvTest.equilibrium_time = get_parameter(4);                          //parser expects 0000 to 9999 seconds
+  swvTest.equilibrium_time = get_parameter();                          //parser expects 0000 to 9999 seconds
   printf("[:RTIAI]");      
-  swvTest.rtia = LPRTIA_LOOKUP(get_parameter(2)-48);        //parser expects 00-25 
+  swvTest.rtia = LPRTIA_LOOKUP(get_parameter()-48);        //parser expects 00-25 
   
   /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
   printf("[:PMI]");
@@ -427,21 +427,21 @@ void runCSWV(void){
   /**Get CSWV user inputs from ACEstat app or command-line interface */
   cswvTest.sensor_channel = get_sensor_channel();    //parser expects 0 or 1
   printf("[:SVI]");
-  cswvTest.vStart = get_voltage_input();                //parser expects -9999 to +9999 mV
+  cswvTest.vStart = get_parameter();                //parser expects -9999 to +9999 mV
   printf("[:VVI]");
-  cswvTest.vVertex = get_voltage_input();               //parser expects -9999 to +9999 mV
+  cswvTest.vVertex = get_parameter();               //parser expects -9999 to +9999 mV
   printf("[:EVI]");
-  cswvTest.vEnd = get_voltage_input();                  //parser expects -9999 to +9999 mV
+  cswvTest.vEnd = get_parameter();                  //parser expects -9999 to +9999 mV
   printf("[:AMPI]");
-  cswvTest.swvAmplitude = get_parameter(3);             //parser expects 000 to 999 mV
+  cswvTest.swvAmplitude = get_parameter();             //parser expects 000 to 999 mV
   printf("[:STEPI]");
-  cswvTest.swvStepSize = get_parameter(3);              //parser expects 000 to 999 mV
+  cswvTest.swvStepSize = get_parameter();              //parser expects 000 to 999 mV
   printf("[:FREQI]");
-  cswvTest.swvFrequency = get_parameter(5);             //parser expects 00000 to 99999 Hz
+  cswvTest.swvFrequency = get_parameter();             //parser expects 00000 to 99999 Hz
   printf("[:TEI]");
-  cswvTest.equilibrium_time = get_parameter(4);         //parser expects 0000 to 9999 s
+  cswvTest.equilibrium_time = get_parameter();         //parser expects 0000 to 9999 s
   printf("[:RTIAI]");
-  cswvTest.rtia = LPRTIA_LOOKUP(get_parameter(2)-48); 
+  cswvTest.rtia = LPRTIA_LOOKUP(get_parameter()-48); 
   
   /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
   printf("[:PMI]");
@@ -670,13 +670,13 @@ void runCA(void){
   
   caTest.sensor_channel = get_sensor_channel();                 //parser expects 0 or 1
   printf("[:STEPVI]");
-  caTest.vStart = get_voltage_input();                          //parser expects -9999 to +9999 mV
+  caTest.vStart = get_parameter();                          //parser expects -9999 to +9999 mV
   printf("[:STEPLI]");
-  caTest.caDuration = get_parameter(5);                         //parser expects 00000 to 99999 ms
+  caTest.caDuration = get_parameter();                         //parser expects 00000 to 99999 ms
   printf("[:STEPDI]");
-  caTest.caDelay = get_parameter(5);                             //parser expects 00000 to 99999 ms
+  caTest.caDelay = get_parameter();                             //parser expects 00000 to 99999 ms
   printf("[:RTIAI]");
-  caTest.rtia = LPRTIA_LOOKUP(get_parameter(2));                //PASS INT VAL RATHER THAN ASCII
+  caTest.rtia = LPRTIA_LOOKUP(get_parameter());                //PASS INT VAL RATHER THAN ASCII
 
   
   /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
@@ -751,6 +751,7 @@ void caSignalMeasure(acestatTest_type *tPar){
   current_time = 0;                             //reset current time
   
   /**Set the sensor to the test voltage for step_duration*/
+  printf("[RESULTS:\n");
   while(current_time < signal_length){
     
     current_time = ((float)get_timer_ctr())*2.52/1000;
@@ -788,11 +789,11 @@ void runOCP(){
   
   /**Get measurement duration parameter (in seconds) from UART*/
   printf("[:MDI]");                    
-  ocpTest.ocpDuration = (float)get_parameter(6);
+  ocpTest.ocpDuration = (float)get_parameter();
   
   /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
   printf("[:PMI]");
-  ocpTest.printing_mode = get_parameter(1);
+  ocpTest.printing_mode = get_parameter();
   
   /**Configure AFE for potential measurement*/
   AFE_SETUP_VOLTAMMETRY(CHAN0, LPRTIA_LOOKUP(1));
@@ -841,6 +842,7 @@ void runOCP(){
     diff_voltage = get_adc_val();
     reset_adc_flag();
     
+    printf("[RESULTS:\n");
     if(ocpTest.printing_mode==PRINT_MODE_RAW){
       printf("%.3f,%i\n", current_time, (int)diff_voltage);          //print the ADCDAT register value(16-bit int)
     }

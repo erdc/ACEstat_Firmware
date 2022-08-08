@@ -73,7 +73,7 @@ typedef struct {
   
   /**Open circuit potentiometry*/
   float ocpDuration;                    //time in seconds to measure potential
-  float ocpSamplingFreqiency;           //sampling frequency in Hz
+  float ocpSamplingFrequency;           //sampling frequency in Hz
   
   /**Filtering parameters*/
   uint8_t use_mov_avg;                  //0 or 1, use moving average filter

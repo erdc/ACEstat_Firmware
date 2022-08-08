@@ -44,26 +44,18 @@ uint8_t get_printing_mode(void);
 uint8_t* return_uart_buffer(void);
 
 /**
-  *@brief       get_voltage_input: get signed voltage from user through command-line interface
+  *@brief       get_frequency: get a float parameter for IES frequency input
   *@param       none
-  *@retval      -9999 to +9999 mV, voltage input for voltammetry test ranges
-*/
-int get_voltage_input(void);
-
-/**
-  *@brief       get_low_frequency: get lower-bound frequency from user through command line for EIS test range.  Special consideration for frequencies <1 but >0
-  *             first character must be '.' if using decimal value(ex: 0.1Hz) for lower frequency bound             
-  *@param       none
-  *@retval      lower-bound of frequency range for impedance spectroscopy
+  *@retval      float representing the frequency to be used for EIS test
 */
 float get_frequency(void);
 
 /**
   *@brief       get_parameter: gets generic test parameters from user over command-line interface
-  *@param       dec: number of characters expected in parameter input.
-  *@retval      user parameter input
+  *@param       none
+  *@retval      user parameter input as integer
 */
-int get_parameter(int dec);
+int get_parameter();
 
 /**
   *@brief       get_sensor_channel: get sensor channel for test from user

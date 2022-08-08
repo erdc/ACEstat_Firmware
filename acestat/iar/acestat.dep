@@ -5,229 +5,184 @@
     <configuration>
         <name>Debug</name>
         <outputs>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\system_ADuCM355.c</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\crab_lib\eis.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\IntLib.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\CrcLib.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\RtcLib.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_bitm.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.h</file>
-            <file>$TOOLKIT_DIR$\lib\dl7M_tln.a</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\SpiLib.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_misc.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.c</file>
             <file>$TOOLKIT_DIR$\inc\c\DLib_Product_string.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\separate\AfeAdcLib.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\startup\system_ADuCM355.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_device.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\separate\M355_ECSns_DCTest.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_gpt.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_interface.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\main.o</file>
-            <file>$TOOLKIT_DIR$\inc\c\math.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_setup.o</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\FeeLib.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_bitm.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_gpt.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\separate\M355_ECSns_DCTest.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\separate\AfeAdcLib.o</file>
             <file>$PROJ_DIR$\Debug\Obj\common\DmaLib.o</file>
-            <file>$PROJ_DIR$\ADuCM355_SRAM_Mode2.icf</file>
-            <file>$TOOLKIT_DIR$\inc\c\stdlib.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\adi_types.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\RtcLib.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance\Impedance.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\CrcLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_tia.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\RstLib.o</file>
-            <file>$PROJ_DIR$\Debug\Exe\acestat.out</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\crab_lib\voltammetry.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_eis.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.c</file>
-            <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\Impedance.o</file>
-            <file>$TOOLKIT_DIR$\inc\c\stdio.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\UrtLib.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\startup\startup_ADuCM355.o</file>
-            <file>$TOOLKIT_DIR$\inc\c\stddef.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_voltammetry.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\adi_config.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\ClkLib.o</file>
-            <file>$TOOLKIT_DIR$\inc\c\DLib_Product_stdlib.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.h</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\startup\system_ADuCM355.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\RtcLib.o</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\eis.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\ADuCM355Port.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_mux.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_adc.o</file>
-            <file>$TOOLKIT_DIR$\lib\m7M_tl.a</file>
-            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\core_cm3.h</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.h</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\eis.c</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\separate\AfeDacLib.o</file>
-            <file>$PROJ_DIR$\..\src\AfeAdcLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\startup\retarget.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_typedefs.h</file>
-            <file>$PROJ_DIR$\..\src\M355_ECSns_DCTest.c</file>
-            <file>$PROJ_DIR$\Debug\List\acestat.map</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
-            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_compiler.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\AfeWdtLib.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\FeeLib.o</file>
-            <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
-            <file>$TOOLKIT_DIR$\lib\rt7M_tl.a</file>
-            <file>$PROJ_DIR$\..\src\M355_ECSns_DCTest.h</file>
-            <file>$PROJ_DIR$\..\src\AfeTiaLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\separate\AfeTiaLib.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\system_ADuCM355.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\I2cLib.o</file>
-            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_version.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\DLib_float_setup.h</file>
             <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\PwrLib.o</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\UrtLib.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdio.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\RstLib.o</file>
+            <file>$TOOLKIT_DIR$\inc\c\aarch32\iccarm_builtin.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_cdef.h</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Lib\IAR\iar_cortexM3l_math.a</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\SpiLib.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Product_stdlib.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\UrtLib.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stddef.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\crab_lib\craabUtil.o</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\eis.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\AfeWdtLib.o</file>
+            <file>$PROJ_DIR$\..\src\AfeDacLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\ad5940.o</file>
+            <file>$TOOLKIT_DIR$\lib\m7M_tl.a</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\system_ADuCM355.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\CrcLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\UrtLib.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\PwrLib.o</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_float_setup.h</file>
             <file>$PROJ_DIR$\Debug\Obj\common\GptLib.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_inthandlers.o</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\FeeLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\RtcLib.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\startup\retarget.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\DioLib.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\Impedance.o</file>
+            <file>$PROJ_DIR$\..\src\M355_ECSns_DCTest.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\adi_config.h</file>
+            <file>$PROJ_DIR$\..\src\AfeAdcLib.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
+            <file>$PROJ_DIR$\..\src\M355_ECSns_DCTest.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_iccarm.h</file>
+            <file>$PROJ_DIR$\Debug\Exe\acestat.out</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\core_cm3.h</file>
+            <file>$PROJ_DIR$\Debug\List\acestat.map</file>
+            <file>$TOOLKIT_DIR$\lib\rt7M_tl.a</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\startup_ADuCM355.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_mux.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\crab_lib\eis.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_interface.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\IntLib.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\adi_types.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_voltammetry.o</file>
+            <file>$TOOLKIT_DIR$\lib\dl7M_tln.a</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\SpiLib.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_eis.o</file>
+            <file>$PROJ_DIR$\ADuCM355_SRAM_Mode2.icf</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\ADuCM355Port.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.c</file>
+            <file>$TOOLKIT_DIR$\inc\c\math.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_device.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_misc.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_tia.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance\Impedance.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_typedefs.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\CrcLib.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\main.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\ClkLib.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_setup.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\crab_lib\voltammetry.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\startup\startup_ADuCM355.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_adc.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\separate\AfeDacLib.o</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.h</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\retarget.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\startup_ADuCM355.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.c</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\RtcLib.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.c</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\SpiLib.c</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\UrtLib.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.h</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.h</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_version.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\startup_ADuCM355.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\system_ADuCM355.c</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_compiler.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_inthandlers.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\FeeLib.c</file>
+            <file>$TOOLKIT_DIR$\inc\c\string.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdlib.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\FeeLib.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\common\I2cLib.o</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance\Impedance.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\separate\AfeTiaLib.o</file>
+            <file>$PROJ_DIR$\..\src\AfeTiaLib.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdbool.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.c</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.c</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.c</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.h</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.h</file>
+            <file>$PROJ_DIR$\..\src\AfeAdcLib.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.h</file>
             <file>$PROJ_DIR$\..\src\AfeDacLib.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.c</file>
             <file>$PROJ_DIR$\..\src\AfeTiaLib.c</file>
             <file>$PROJ_DIR$\..\src\main.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.h</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.c</file>
-            <file>$PROJ_DIR$\..\src\AfeAdcLib.c</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ADuCM355Port.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\CrcLib.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.h</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.h</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.c</file>
-            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.h</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance\Impedance.c</file>
-            <file>$TOOLKIT_DIR$\inc\c\string.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\inc\startup_ADuCM355.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\aarch32\iccarm_builtin.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\stdbool.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
-            <file>$PROJ_DIR$\..\src\AfeDacLib.h</file>
-            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_iccarm.h</file>
-            <file>$PROJ_DIR$\..\..\aducm355-examples\common\SpiLib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\application\crab_lib\craabUtil.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\ad5940.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\common\DioLib.o</file>
-            <file>$TOOLKIT_DIR$\CMSIS\Lib\IAR\iar_cortexM3l_math.a</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.c</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\ADuCM355Port.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.h</file>
+            <file>$PROJ_DIR$\..\..\aducm355-examples\common\CrcLib.c</file>
         </outputs>
         <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\system_ADuCM355.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 14</file>
+                    <file> 27</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 140 44 142 67 73 138 66 5 87 15 63 46 27 78</file>
+                    <file> 106 49 101 51 88 12 17 16 120 46 121 48 14 62 4 18 72 78 61</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\Debug\Exe\acestat.out</name>
-            <outputs>
-                <tool>
-                    <name>ILINK</name>
-                    <file> 65</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ILINK</name>
-                    <file> 149 7 55 74 25 54 35 18 19 90 11 53 22 31 45 20 13 60 77 52 71 47 3 148 24 72 88 80 39 2 84 32 4 9 41 147 62 43 14</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 39</file>
+                    <file> 81</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 38 83 69 12 82 21 142 40 135 67 73 138 136 8</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 146</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 57 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 34</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 57 85 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 57 62 4 18 72 78</file>
                 </tool>
             </inputs>
         </file>
@@ -236,78 +191,18 @@
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 1</file>
+                    <file> 58</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 57 51 42 16 89 68 79 141 86 8 10 66 5 87 15 63 27</file>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 25 11 14 57 100 108 114 93 22 82 73 62 4 18 72 78 61</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\src\M355_ECSns_DCTest.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 17</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 75 42 16 30 89 36 23 68 6 49 79 141 28 145 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\FeeLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 72</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 140 142 67 138 23 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 84</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 79 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 148</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 89 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.c</name>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
@@ -317,156 +212,57 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 142 40 135 67 73 138 36 8 66 5 87 15 63</file>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 25 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.c</name>
+            <name>$PROJ_DIR$\..\src\M355_ECSns_DCTest.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 88</file>
+                    <file> 6</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 68 66 5 87 15 63</file>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 47 14 57 32 100 63 3 108 74 55 114 93 37 20 22 82 62 4 18 72 78 61</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</name>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 2</file>
+                    <file> 84</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 49 66 5 87 15 63</file>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 25 89 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 80</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 6 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 39</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 38 83 69 12 82 21 142 40 135 67 73 138 8 10</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>[ROOT_NODE]</name>
+            <name>$PROJ_DIR$\Debug\Exe\acestat.out</name>
             <outputs>
                 <tool>
                     <name>ILINK</name>
-                    <file> 33 65</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\retarget.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 62</file>
+                    <file> 52</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 86 66 5 87 15 63</file>
+                    <name>ILINK</name>
+                    <file> 19 65 30 53 68 86 67 5 59 109 75 56 83 76 64 80 7 87 118 69 27 81 79 40 8 113 36 116 41 60 34 15 10 66 33 29 39 85 9</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\startup_ADuCM355.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 43</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 140 44 142 67 73 138 89 49 86 66 5 87 15 63 46 27 137 78</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 32</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 89 141 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\RtcLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 4</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 28 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\SpiLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 9</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 145 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\UrtLib.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
@@ -476,297 +272,12 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 86 66 5 87 15 63</file>
+                    <file> 88 12 17 2 35 71 46 13 111 121 90 48 91 82</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 11</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 124 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 31</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 124 109 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\AfeDacLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 60</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 143 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\AfeTiaLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 77</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 76 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\main.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 20</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 48 12 82 139 21 140 142 40 26 135 67 73 138 61 143 76 128 132 133 105 130 124 119 107 109 110 42 16 89 68 79 141 86 8 10 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 147</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 38 83 69 12 82 21 142 40 135 67 73 138 8</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 71</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 140 142 67 138 42 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 47</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 16 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 90</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 130 124 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 54</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 128 124 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 22</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 124 107 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 45</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 128 133 105 124 107 109 110 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\AfeAdcLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 13</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ADuCM355Port.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 52</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 142 40 135 67 73 138 89 49 8 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\CrcLib.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 3</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 139 142 67 138 30 66 5 87 15 63</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 35</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 132 124 42 16 89 68 79 141 86 8 10 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 18</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 133 124 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 19</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 48 12 82 139 21 140 142 40 26 135 67 73 138 61 143 76 105 124 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 53</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 70 144 81 56 38 83 69 12 82 139 21 140 142 40 135 67 73 138 61 143 76 124 119 42 16 89 68 79 141 86 8 66 5 87 15 63 27</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance\Impedance.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\retarget.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
@@ -776,7 +287,496 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 38 83 69 12 82 21 142 40 135 67 73 138 8 29</file>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 22 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 60</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 55 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 36</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 108 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\RtcLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 10</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 37 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 15</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 100 93 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\SpiLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 66</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 20 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\UrtLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 33</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 22 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 34</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 114 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\startup_ADuCM355.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 85</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 120 23 46 121 90 48 100 55 22 62 4 18 72 78 44 61 54 31</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 40</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 100 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\system_ADuCM355.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 9</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 120 23 46 121 90 48 62 4 18 72 78 44 61 31</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 116</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 74 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\FeeLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 113</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 120 46 121 48 3 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS\Impedance.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 41</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 88 12 17 2 35 71 46 13 111 121 90 48 82 73</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_Impedance\Impedance.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 41</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 88 12 17 2 35 71 46 13 111 121 90 48 82 77</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 8</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 46 13 111 121 90 48 63 82 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 109</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 144 140 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 56</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 140 133 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 76</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 140 128 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\AfeAdcLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 83</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 140 123 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 75</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 140 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\AfeDacLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 87</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 28 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 5</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 141 140 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 64</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 146 141 124 140 123 128 129 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\AfeTiaLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 118</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 119 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\main.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 80</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 21 2 35 16 71 120 46 13 112 111 121 90 48 45 28 119 146 148 141 124 144 140 133 123 128 129 14 57 100 108 114 93 22 82 73 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 59</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 21 2 35 16 71 120 46 13 112 111 121 90 48 45 28 119 124 140 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 29</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 88 12 17 2 35 71 46 13 111 121 90 48 82</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ADuCM355Port.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 69</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 46 13 111 121 90 48 100 55 82 62 4 18 72 78</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>[ROOT_NODE]</name>
+            <outputs>
+                <tool>
+                    <name>ILINK</name>
+                    <file> 50 52</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 86</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 146 140 14 57 100 108 114 93 22 82 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 67</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 2 35 16 71 120 46 13 111 121 90 48 45 28 119 148 140 14 57 100 108 114 93 22 82 73 62 4 18 72 78 61</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\CrcLib.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 79</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 106 49 101 51 88 12 17 16 46 121 48 32 62 4 18 72 78</file>
                 </tool>
             </inputs>
         </file>
@@ -785,19 +785,11 @@
             <tool>ILINK</tool>
         </forcedrebuild>
         <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\system_ADuCM355.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
@@ -805,35 +797,19 @@
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
             <name>$PROJ_DIR$\..\src\M355_ECSns_DCTest.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\FeeLib.c</name>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\Impedance.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
@@ -841,15 +817,19 @@
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\startup_ADuCM355.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.c</name>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\GptLib.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\RtcLib.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\RstLib.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
@@ -861,6 +841,38 @@
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\PwrLib.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\startup_ADuCM355.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DioLib.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\system_ADuCM355.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\FeeLib.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\..\aducm355-examples\common\DmaLib.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\src\AfeAdcLib.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
             <name>$PROJ_DIR$\..\src\AfeDacLib.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
@@ -874,18 +886,6 @@
         </forcedrebuild>
         <forcedrebuild>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib\ad5940.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\AfeWdtLib.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\ClkLib.c</name>
-            <tool>ICCARM</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\..\src\AfeAdcLib.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>

@@ -5,8 +5,6 @@ static uint32_t clkHclkSpeed  = 6500000u;       //6.5MHz
 static uint32_t AfeRootClkSpeed = 16000000u;    //16MHz
 static uint32_t AfeSysClkSpeed = 16000000u;     //16MHz
 
-#define  UART_INBUFFER_LEN 16
-
 volatile uint32_t timer_ctr = 0;
 
 #define USE_SINC2_FOR_TEST 0
@@ -14,7 +12,9 @@ volatile uint8_t  ucInCnt;
 volatile uint32_t ucCOMIID0;
 volatile uint32_t iNumBytesInFifo;
 uint8_t  ucComRx;
-uint8_t szInSring[UART_INBUFFER_LEN];
+
+uint8_t UART_buffer[UART_INBUFFER_LEN];
+uint8_t UART_overflow_buffer[UART_INBUFFER_LEN];
 
 volatile uint8_t adcRdy = 0;
 volatile uint8_t dftRdy = 0;

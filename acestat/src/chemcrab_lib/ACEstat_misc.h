@@ -28,7 +28,9 @@ extern volatile uint8_t  ucInCnt;
 extern volatile uint32_t ucCOMIID0;
 extern volatile uint32_t iNumBytesInFifo;
 extern uint8_t  ucComRx;
-extern uint8_t szInSring[UART_INBUFFER_LEN];
+
+extern uint8_t UART_buffer[UART_INBUFFER_LEN];
+extern uint8_t UART_overflow_buffer[UART_INBUFFER_LEN];
 
 extern volatile uint8_t adcRdy;
 extern volatile uint8_t dftRdy;
