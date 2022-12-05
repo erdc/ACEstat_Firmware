@@ -120,10 +120,10 @@ void runEIS(void){
   /**Create configuration object for EIS test with generic parameters*/
   AppIMPCfg_Type* testCfg = AD5940ImpedanceStructInit();          //Initialize struct to store EIS test parameters
   
-  /**Modify test object with user parameters*/
+  /**Modify test object with user parameters (hardcoded for now while debugging)*/
   testCfg->SweepCfg.SweepStart = 1;
-  testCfg->SweepCfg.SweepStop = 50000;
-  testCfg->SweepCfg.SweepPoints = 10;
+  testCfg->SweepCfg.SweepStop = 75000;
+  testCfg->SweepCfg.SweepPoints = 30;
   
   AppIMPInit(AppBuff, APPBUFF_SIZE);    /* Initialize IMP application. Provide a buffer, which is used to store sequencer commands */
   AppIMPCtrl(IMPCTRL_START, 0);          /* Control IMP measurment to start. Second parameter has no meaning with this command. */

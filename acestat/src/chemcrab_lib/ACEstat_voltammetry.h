@@ -152,7 +152,6 @@ void printSWVResults(acestatTest_type *testParams);
 
 /*****************Cyclic Square Wave Voltammetry(CSWV) Functions ********************/
 
-
 /**
   *@brief       runCSWV: performs setup and carries out electrochemical test/measurement on 3-electrode sensor
   *@param       none

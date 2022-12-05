@@ -39,7 +39,10 @@ void gpt_wait_for_flag(void){
 }
 
 uint16_t scanrate_lookup(uint16_t mvRate){
+  //Use LOADVAL = (0.00054*HFOSC)/(PRESCALE*mvRate) to calculate 
   switch(mvRate){
+    case 1: return 0x358EF;
+    case 5: return 0xAB63;
     case 10: return 0x55B1;                     //GPT load value for 10 mV/s
     case 20: return 0x2AD8;                     //GPT load value for 20 mV/s
     case 30: return 0x1C90;                     //GPT load value for 30 mV/s
@@ -58,6 +61,24 @@ uint16_t scanrate_lookup(uint16_t mvRate){
     case 400: return 0x0224;                    //GPT load value for 400 mV/s
     case 450: return 0x01E7;                    //GPT load value for 450 mV/s
     case 500: return 0x01B6;                    //GPT load value for 500 mV/s
+    case 550: return 0x018E;
+    case 600: return 0x016D;
+    case 650: return 0x0151;
+    case 700: return 0x0139;
+    case 750: return 0x0124;
+    case 800: return 0x0112;
+    case 850: return 0x0102;
+    case 900: return 0x00F3;
+    case 950: return 0x00E6;
+    case 1000: return 0x00DB;
+    case 1500: return 0x0092;
+    case 2000: return 0x006D;
+    case 2500: return 0x0057;
+    case 3000: return 0x0049;
+    case 3500: return 0x003E;
+    case 4000: return 0x0036;
+    case 4500: return 0x0030;
+    case 5000: return 0x002B;
     default: return 0x1123;                     //return 50mV/s by default
   }
   return 0;

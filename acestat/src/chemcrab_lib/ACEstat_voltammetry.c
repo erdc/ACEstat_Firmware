@@ -7,7 +7,7 @@ void runCV(int debug_mode){
   
   acestatTest_type cvTest;
   
-  /**Pre-defined parameters to run quick diagrnostic tests*/
+  /**Pre-defined parameters to run quick diagnostic tests*/
   set_printing_mode(PRINT_MODE_RAW);
   cvTest.sensor_channel = 0;                      //parser expects 0 or 1
   cvTest.vStart = -400;                           //parser expects -9999 to +9999 [mV]
@@ -677,7 +677,6 @@ void runCA(void){
   caTest.caDelay = get_parameter();                             //parser expects 00000 to 99999 ms
   printf("[:RTIAI]");
   caTest.rtia = LPRTIA_LOOKUP(get_parameter());                //PASS INT VAL RATHER THAN ASCII
-
   
   /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
   printf("[:PMI]");
@@ -833,6 +832,8 @@ void runOCP(){
   
   printf("\n[START:OCP]");
   
+  printf("[RESULTS:\n");
+  
   /**Measure potential across electrodes for the duration of the test*/
   while(current_time < ocpTest.ocpDuration){
     current_time = ((float)get_timer_ctr())*2.52/1000;          //current time in seconds, 2.52/1000 conversion ratio from reference manual
@@ -842,9 +843,8 @@ void runOCP(){
     diff_voltage = get_adc_val();
     reset_adc_flag();
     
-    printf("[RESULTS:\n");
     if(ocpTest.printing_mode==PRINT_MODE_RAW){
-      printf("%.3f,%i\n", current_time, (int)diff_voltage);          //print the ADCDAT register value(16-bit int)
+      printf("%.3f,%i\n", current_time, (int)diff_voltage);     //print the ADCDAT register value(16-bit int)
     }
     
     if(ocpTest.printing_mode==PRINT_MODE_PROCESSED){
@@ -853,8 +853,7 @@ void runOCP(){
     }
     
     /**Delay to prevent collection of too much data*/
-    delay_10us(1000);
+    delay_10us(1000);                                           //TODO: REPLACE WITH SAMPLING RATE PARAMETER
   }
-  
   reset_timer_ctr();                                            //reset the timer counter after measurement ends
 }
