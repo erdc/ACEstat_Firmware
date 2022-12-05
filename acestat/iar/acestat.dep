@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
     <fileVersion>5</fileVersion>
-    <fileChecksum>3498811478</fileChecksum>
+    <fileChecksum>2194977805</fileChecksum>
     <configuration>
         <name>Debug</name>
         <outputs>
@@ -102,6 +102,7 @@
             <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355.h</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\eis.c</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\inc\ADuCM355_bitm.h</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_cleaning.h</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\RtcLib.c</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\ADuCM355Port.c</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\UrtLib.c</file>
@@ -142,6 +143,7 @@
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\IntLib.c</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.h</file>
             <file>$PROJ_DIR$\..\..\aducm355-examples\common\I2cLib.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\application\ACEstat_lib\ACEstat_cleaning.o</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.h</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.c</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.h</file>
@@ -155,6 +157,7 @@
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.c</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</file>
             <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.c</file>
+            <file>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_cleaning.c</file>
         </outputs>
         <file>
             <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.c</name>
@@ -167,7 +170,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 145 4 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 147 4 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -182,7 +185,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 145 3 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 147 3 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -206,7 +209,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 18 126</file>
+                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 18 127</file>
                 </tool>
             </inputs>
         </file>
@@ -221,7 +224,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 126 46</file>
+                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 127 46</file>
                 </tool>
             </inputs>
         </file>
@@ -236,7 +239,7 @@
             <inputs>
                 <tool>
                     <name>ILINK</name>
-                    <file> 85 101 58 19 111 100 112 64 56 20 59 84 93 54 9 67 91 24 31 61 38 55 69 63 87 5 41 8 73 60 39 68 57 32 119 45 124 88 81</file>
+                    <file> 85 102 58 19 112 101 138 113 64 56 20 59 84 93 54 9 67 91 24 31 61 38 55 69 63 87 5 41 8 73 60 39 68 57 32 120 45 125 88 81</file>
                 </tool>
             </inputs>
         </file>
@@ -251,7 +254,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 120 74 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 121 74 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -266,7 +269,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 43 44 79 37 27 16 82 11 80 127 15 29 52 78 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 43 44 79 37 27 16 82 11 80 128 15 29 52 78 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -281,7 +284,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 120 76 44 79 27 11 15 29 53 126 17 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 121 76 44 79 27 11 15 29 53 127 17 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -296,7 +299,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 52 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 52 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -311,7 +314,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 36 49 6 25 33 42 27 127 126 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 36 49 6 25 33 42 27 128 127 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -320,13 +323,13 @@
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 119</file>
+                    <file> 120</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 53 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 53 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -341,7 +344,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 126 17</file>
+                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 127 17</file>
                 </tool>
             </inputs>
         </file>
@@ -356,7 +359,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 140 137 142 145 4 1 135 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 142 139 144 147 4 1 136 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -371,7 +374,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 30 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 30 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -386,7 +389,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 79 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 79 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -401,7 +404,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 26 36 25 42 82 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 126 26 36 25 42 82 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -416,7 +419,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 126</file>
+                    <file> 35 90 77 14 48 72 36 49 6 25 33 42 127</file>
                 </tool>
             </inputs>
         </file>
@@ -431,7 +434,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -446,7 +449,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 26 71 36 25 33 42 94 96 23 10 83 92 117 62</file>
+                    <file> 12 47 28 124 35 90 77 126 26 71 36 25 33 42 94 96 23 10 83 92 118 62</file>
                 </tool>
             </inputs>
         </file>
@@ -461,7 +464,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 120 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 121 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -470,13 +473,13 @@
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 124</file>
+                    <file> 125</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 53 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 53 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -491,7 +494,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 78 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 78 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -506,7 +509,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 15 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 15 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -521,7 +524,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 27 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 27 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -536,7 +539,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 11 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 11 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -551,7 +554,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 70 14 48 125 72 26 36 49 21 6 25 33 42 129 40 30 140 141 137 142 139 145 3 4 1 135 44 79 27 11 15 29 53 126 17 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 70 14 48 126 72 26 36 49 21 6 25 33 42 130 40 30 142 143 139 144 141 147 3 4 1 136 44 79 27 11 15 29 53 127 17 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -566,7 +569,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 37 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 37 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -581,7 +584,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 27 29 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 27 29 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -596,7 +599,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 26 71 36 25 33 42 27 127 53 94 96 23 10 83 92 117 66 62</file>
+                    <file> 12 47 28 124 35 90 77 126 26 71 36 25 33 42 27 128 53 94 96 23 10 83 92 118 66 62</file>
                 </tool>
             </inputs>
         </file>
@@ -611,7 +614,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 26 36 25 42 44 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 126 26 36 25 42 44 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -626,7 +629,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 40 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 40 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -641,7 +644,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 36 49 6 25 33 42 16 126 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 36 49 6 25 33 42 16 127 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -656,7 +659,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 127 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 128 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -671,7 +674,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 125 36 25 42 80 94 96 23 10 83</file>
+                    <file> 12 47 28 124 35 90 77 126 36 25 42 80 94 96 23 10 83</file>
                 </tool>
             </inputs>
         </file>
@@ -686,7 +689,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 70 14 48 125 72 26 36 49 21 6 25 33 42 129 40 30 142 145 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 70 14 48 126 72 26 36 49 21 6 25 33 42 130 40 30 144 147 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -701,7 +704,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 139 145 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 141 147 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -716,7 +719,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 145 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 147 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -731,7 +734,7 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 145 1 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 147 1 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -740,13 +743,13 @@
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 100</file>
+                    <file> 101</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 140 145 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 142 147 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -755,13 +758,13 @@
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 112</file>
+                    <file> 113</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 141 145 44 79 27 11 15 29 53 126 17 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 143 147 44 79 27 11 15 29 53 127 17 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>
@@ -776,7 +779,22 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 12 47 28 123 35 90 77 14 48 125 72 26 36 49 6 25 33 42 129 40 30 137 145 44 79 27 11 15 29 53 126 94 96 23 10 83 117</file>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 139 147 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_cleaning.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 138</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 12 47 28 124 35 90 77 14 48 126 72 26 36 49 6 25 33 42 130 40 30 97 142 139 144 147 4 1 136 44 79 27 11 15 29 53 127 94 96 23 10 83 118</file>
                 </tool>
             </inputs>
         </file>

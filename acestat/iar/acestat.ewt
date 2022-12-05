@@ -2850,6 +2850,12 @@
                 <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_cleaning.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_cleaning.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</name>
             </file>
             <file>

@@ -22,6 +22,7 @@ int uart_get_flag(void)
 /***************** Command-line input parsing functions ********************/
 
 uint8_t* return_uart_buffer(void){
+        UART_buffer[iNumBytesInFifo] = NULL;    //append a null character to terminate the string
 	return UART_buffer;
 }
 
@@ -44,8 +45,6 @@ float get_frequency(void){
 }
 
 int get_parameter(){
-  
-  int parameter = 0;
   
   /**Wait for uart_get_flag == 1*/
   while(1){
