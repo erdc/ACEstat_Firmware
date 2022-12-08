@@ -101,6 +101,13 @@ void cvSignalMeasure(acestatTest_type *tPar){
   
   /**Setup CV timing parameters */
   uint16_t SETTLING_DELAY = 5;
+  uint16_t inc = 1;                               //DAC step increment.  Step size is inc*0.537mV, needs to be increaded to run at higher scanrates
+  
+  /**Increase the DAC step size to ~1mV/increment to enable faster scanrates*/
+  if(tPar->cvSweepRate >= 1000){
+    inc = 2;
+  }
+  
   gpt_config_scanrate(tPar->cvSweepRate);         //configure general-purpose digital timer to use chosen scanrate
   
   /**Convert voltages to 6 or 12 bit DAC-scale depending on sensor_channel */
@@ -109,7 +116,7 @@ void cvSignalMeasure(acestatTest_type *tPar){
   tPar->cEnd = mV_to_DAC(tPar->vEnd_diff,12);               //cEnd on 12-bit DAC channel
   tPar->cZero = mV_to_DAC(tPar->vZero,6);                   //cZero on 6-bit DAC channel
   uint16_t cBias = tPar->cStart;                            //cBias to increment voltage on 12-bit DAC channel  
-  uint16_t inc = 1;                                         //DAC step increment.  Step size is inc*0.537mV
+  
   
 //  /**Double check that RLOAD=0ohms for voltammetry*/
 //  pADI_AFE->LPTIACON0 &= ~(SHORT_RLOAD);
