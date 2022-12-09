@@ -68,8 +68,9 @@ typedef struct {
   
   /**Chronoamperometry parameters*/
   uint8_t caStepMode;                   //0 to measure response to 0->vStart only, 1 to measure 0->vStart and vStart->0 responses
-  uint16_t caDuration;                  //duration to hold vStart after intial step, and 0 volts after secondary step if caStepMode==1
-  uint16_t caDelay;                     //delay prior to initial step to hold 0 volts
+  uint16_t caDuration;                  //duration in ms to hold vStart after intial step, and 0 volts after secondary step if caStepMode==1
+  uint16_t caDelay;                     //delay in ms prior to initial step to hold 0 volts
+  uint8_t suppress_output;              //set to 1 to suppress printing whne running CA cleaning steps
   
   /**Open circuit potentiometry*/
   float ocpDuration;                    //time in seconds to measure potential

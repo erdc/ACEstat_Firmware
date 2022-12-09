@@ -51,6 +51,8 @@ void runCV(int debug_mode){
   cvSetVoltages(&cvTest);                                       
   cvEquilibriumDelay(&cvTest);                                  //apply equilibrium signal 
   cvSignalMeasure(&cvTest);                                     //apply CV signal and measure current response
+  turn_off_afe_power_things_down();
+  printCVResults(&cvTest);
   
   /**End test and shutdown AFE*/
   printf("[END:CV]");
@@ -193,12 +195,7 @@ void cvSignalMeasure(acestatTest_type *tPar){
   LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
   delay_10us(SETTLING_DELAY);
   tPar->vZeroMeasured = oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
-  
-  /**Put the sensor in "open circuit" state */
-  turn_off_afe_power_things_down();
-  
-  /**Print test results from SzAdcSamples to terminal */
-  printCVResults(tPar);
+
 }
 
 void printCVResults(acestatTest_type *tPar){
@@ -264,6 +261,8 @@ void runSWV(void){
   swvSetVoltages(&swvTest);
   swvEquilibriumDelay(&swvTest);
   swvSignalMeasure(&swvTest);
+  turn_off_afe_power_things_down();
+  printSWVResults(&swvTest);
 
   /**End test and shutdown AFE*/
   printf("[END:SWV]");
@@ -386,10 +385,6 @@ void swvSignalMeasure(acestatTest_type *tPar){
   delay_10us(SETTLING_DELAY);
   tPar->vZeroMeasured = oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
   
-  /**Put the sensor in "open circuit" state*/
-  turn_off_afe_power_things_down();
-  /**Print SWV test results to terminal*/
-  printSWVResults(tPar);
 }
 
 void printSWVResults(acestatTest_type *tPar){
@@ -463,6 +458,8 @@ void runCSWV(void){
   cswvSetVoltages(&cswvTest);
   cswvEquilibriumDelay(&cswvTest);
   cswvSignalMeasure(&cswvTest);
+  turn_off_afe_power_things_down();
+  printCSWVResults(&cswvTest);
 
   /**Turn off AFE after test completion*/
   printf("[END:CSWV]");
@@ -629,10 +626,7 @@ void cswvSignalMeasure(acestatTest_type *tPar){
   LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
   delay_10us(SETTLING_DELAY);
   tPar->vZeroMeasured = oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
-  
-  /**Put the sensor in "open circuit" state and print test results*/
-  turn_off_afe_power_things_down();
-  printCSWVResults(tPar);
+
 }
 
 void printCSWVResults(acestatTest_type *tPar){
@@ -675,15 +669,16 @@ void runCA(void){
   
   acestatTest_type caTest;
   
-  caTest.sensor_channel = get_sensor_channel();                 //parser expects 0 or 1
+  caTest.sensor_channel = get_sensor_channel();                
   printf("[:STEPVI]");
-  caTest.vStart = get_parameter();                          //parser expects -9999 to +9999 mV
+  caTest.vStart = get_parameter();                          
   printf("[:STEPLI]");
-  caTest.caDuration = get_parameter();                         //parser expects 00000 to 99999 ms
+  caTest.caDuration = get_parameter();                       
   printf("[:STEPDI]");
-  caTest.caDelay = get_parameter();                             //parser expects 00000 to 99999 ms
+  caTest.caDelay = get_parameter();                             
   printf("[:RTIAI]");
-  caTest.rtia = LPRTIA_LOOKUP(get_parameter());                //PASS INT VAL RATHER THAN ASCII
+  caTest.rtia = LPRTIA_LOOKUP(get_parameter());
+  caTest.suppress_output = 0;
   
   /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
   printf("[:PMI]");
@@ -757,21 +752,23 @@ void caSignalMeasure(acestatTest_type *tPar){
   current_time = 0;                             //reset current time
   
   /**Set the sensor to the test voltage for step_duration*/
-  printf("[RESULTS:\n");
+  if( !(tPar->suppress_output) ){ printf("[RESULTS:\n"); }
   while(current_time < signal_length){
     
     current_time = ((float)get_timer_ctr())*2.52/1000;
     
     uint16_t current = oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
     
-    if(tPar->printing_mode == PRINT_MODE_PROCESSED){
-      printf("%.3f,%.3f\n" , current_time, adc_to_current(current, LPRTIA_VAL_LOOKUP(tPar->rtia)));
-    }
-    else{
-      printf("%i,%\n", current_time, current);
-    }
+    if( !(tPar->suppress_output) ){
+      if(tPar->printing_mode == PRINT_MODE_PROCESSED){
+        printf("%.3f,%.3f\n" , current_time, adc_to_current(current, LPRTIA_VAL_LOOKUP(tPar->rtia)));
+      }
+      else{
+        printf("%i,%.3f\n", current_time, current);
+      }
     
     delay_10us(5000);                           //delay to avoid collecting too much data
+    }
   }
   
   /**Manually measure the vZero voltage (in mV) to more accurately calculate dfferential sensor potential*/
@@ -779,7 +776,7 @@ void caSignalMeasure(acestatTest_type *tPar){
   delay_10us(SETTLING_DELAY);
   tPar->vZeroMeasured = 1000*adc_to_voltage(oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE));
   
-  /**Turn of the AFE and print test data*/
+  /**Set the DAC back to 0V differential*/
   LPDacWr(tPar->sensor_channel, tPar->cZero, mV_to_DAC(tPar->vZero, 12));
 
 }

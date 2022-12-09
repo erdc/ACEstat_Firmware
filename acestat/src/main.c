@@ -18,6 +18,7 @@
 #include "ACEstat_setup.h"
 #include "ACEstat_tia.h"
 #include "ACEstat_voltammetry.h"
+#include "ACEstat_cleaning.h"
 #include "ACEstat_eis.h"
 #include "ACEstat_adc.h"
 #include "ACEstat_gpt.h"
@@ -32,7 +33,7 @@ int getTestMode(void);
 First two digits of version number match ACEstat PCB version, 
 3rd digit represents firmware iteration for that board version
 */
-char* version = "1.7.5";
+char* version = "1.7.6";
 
 /***************** ACEstat test mode definitions for top-level API control ********************/
 #define MODE_CV_DEBUG   0
@@ -42,6 +43,11 @@ char* version = "1.7.5";
 #define MODE_CA         4
 #define MODE_EIS        5
 #define MODE_OCP        6
+#define CLEAN_STEP1     7
+#define CLEAN_STEP2     8
+#define CLEAN_STEP3     9
+#define CLEAN_STEP4     10
+
 
 int main(void){
   
@@ -69,7 +75,7 @@ int main(void){
     printf("%s%s%s", "[:MAIN:", version, "]\n");
     
     /**User selects a test mode via UART*/
-    runTest(getTestMode());
+    runTest(get_parameter());
     
   }
   return 0;
@@ -106,6 +112,18 @@ void runTest(int mode){
   if(mode==MODE_OCP){             
     runOCP();
     printf("[END:OCP]");
+  }
+  if(mode==CLEAN_STEP1){             
+    cleaningStep1();  
+  }
+  if(mode==CLEAN_STEP2){             
+    cleaningStep2();
+  }
+  if(mode==CLEAN_STEP3){             
+    cleaningStep3();
+  }
+  if(mode==CLEAN_STEP4){             
+    cleaningStep4();
   }
 }  
 

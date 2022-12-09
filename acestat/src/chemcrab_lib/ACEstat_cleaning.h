@@ -29,20 +29,40 @@
 
 
 /*****************Electrode Cleaning Functions ********************/
+/*********Used for electrochemically cleaning electrodes***********/
 
 /**
-  *@brief       cleanElectrodeAcid: 
+  *@brief       cleaningStep1:  A CV scan in Base, 0.350V to 1.35 V at 2V/s
   *@param       none
   *@retval      none
 */
-void cleanElectrodeAcid(acestatTest_type *testParams);
+void cleaningStep1(void);
 
 /**
-  *@brief       cleanElectrodeBase: 
+  *@brief       cleaningStep2:  Two sequential CA scans in Base, 2V for 5s followed by 0.350V for 10s
   *@param       none
   *@retval      none
 */
-void cleanElectrodeBase(acestatTest_type *testParams);
+void cleaningStep2(void);
+
+/**
+  *@brief       cleaningStep3:  20 CV scans in Acid, 0.350V to 1.35V at 4V/s.  
+                                Followed by 4 CV scans in Acid, 0.350V to 1.35V at 0.100V/s
+  *@param       none
+  *@retval      none
+*/
+void cleaningStep3(void);
+
+/**
+  *@brief       cleaningStep4:  10 CV scans in Acid, at 0.100V/s at each of 4 potential ranges:
+                                0.200V to 0.750V, 0.200V to 1.000V, 0.200V to 1.250V, 0.200V to 1.500V
+  *@param       none
+  *@retval      none
+*/
+void cleaningStep4(void);
+
+
+  
 
 
 #endif
