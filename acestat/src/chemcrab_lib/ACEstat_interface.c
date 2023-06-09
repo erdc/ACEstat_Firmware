@@ -13,7 +13,7 @@ uint8_t get_printing_mode(void){
   return printing_mode;
 }
 
-/***************** Check UARt flag ********************/
+/***************** Check UART flag ********************/
 int uart_get_flag(void)
 {
 	return uart_flag;

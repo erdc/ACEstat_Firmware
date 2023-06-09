@@ -33,7 +33,7 @@ int getTestMode(void);
 First two digits of version number match ACEstat PCB version, 
 3rd digit represents firmware iteration for that board version
 */
-char* version = "1.7.6";
+char* version = "1.7.5";
 
 /***************** ACEstat test mode definitions for top-level API control ********************/
 #define MODE_CV_DEBUG   0
@@ -48,7 +48,6 @@ char* version = "1.7.6";
 #define CLEAN_STEP3     9
 #define CLEAN_STEP4     10
 
-
 int main(void){
   
   /**Setup functions. only run when board powers on*/
@@ -60,7 +59,7 @@ int main(void){
   /**PRINT_MODE_RAW:            print ADC data directly to UART/USB, convert to voltage/current on application*/
   /**PRINT_MODE_PROCESSED:      convert ADC data on ADuCM355 and print to UART/USB*/
   set_printing_mode(PRINT_MODE_RAW);
-
+  
   while(1){
     /************************************
     *0 Cyclic Voltammetry Debug         *

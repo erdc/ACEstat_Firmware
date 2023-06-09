@@ -1,5 +1,5 @@
-#ifndef ACEstat_cleaning_H
-#define ACEstat_cleaning_H
+#ifndef ACESTAT_CLEANING_H
+#define ACESTAT_CLEANING_H
 
 /**Analog Devices ADuCM355 Reference Libraries */
 #include "ADuCM355.h"

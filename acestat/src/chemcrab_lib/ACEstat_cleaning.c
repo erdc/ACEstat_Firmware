@@ -4,8 +4,6 @@
 Perform a series of CV and CA scans at high scanrates to clean electrodes in acids/bases
 */
 
-
-
 /*****************Electrode Cleaning Functions ********************/
 
 void cleaningStep1(void){
@@ -140,7 +138,6 @@ void cleaningStep3(void){
   NVIC_SystemReset(); 
   
 }
-
 
 void cleaningStep4(void){
   

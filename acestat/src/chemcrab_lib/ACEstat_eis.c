@@ -59,9 +59,10 @@ AppIMPCfg_Type* AD5940ImpedanceStructInit()
   pImpedanceCfg->MaxSeqLen = 512;
   
   pImpedanceCfg->RcalVal = 200.0;
-  pImpedanceCfg->SinFreq = 1000.0;
+  pImpedanceCfg->SinFreq = 50000.0;
   pImpedanceCfg->FifoThresh = 6;
-  pImpedanceCfg->ImpODR = 10;                /* 10 Hz output data rate rate */
+  pImpedanceCfg->ImpODR = 10;                /* 10 Hz out1
+put data rate rate */
   
   /* Configure EC Sensor Parameters */
   /*Sensor is connected to CH0 on EVAL-ADuCM355QSPZ */
@@ -84,13 +85,13 @@ AppIMPCfg_Type* AD5940ImpedanceStructInit()
   /* Configure the sweep function. */
   pImpedanceCfg->SweepCfg.SweepEn = bTRUE;
   
-  pImpedanceCfg->SweepCfg.SweepStart = 100;	/* Set start frequency*/
-  pImpedanceCfg->SweepCfg.SweepStop = 1000;	/* Set final frequency */
+  pImpedanceCfg->SweepCfg.SweepStart = 0.1;	/* Set start frequency*/
+  pImpedanceCfg->SweepCfg.SweepStop = 75000;	/* Set final frequency */
   pImpedanceCfg->SweepCfg.SweepPoints = 10;		/* Set number of points for sweep*/
   
   pImpedanceCfg->SweepCfg.SweepLog = bTRUE;
   /* Configure Power Mode. Use HP mode if frequency is higher than 80kHz. */
-  pImpedanceCfg->PwrMod = AFEPWR_LP;
+  pImpedanceCfg->PwrMod = AFEPWR_HP;
   /* Configure filters if necessary */
   pImpedanceCfg->ADCSinc3Osr = ADCSINC3OSR_4;		
   pImpedanceCfg->DftNum = DFTNUM_16384;
@@ -103,12 +104,15 @@ AppIMPCfg_Type* AD5940ImpedanceStructInit()
 void runEIS(void){
 
   /**Get the EIS frequency ranges as floats over UART*/
+  /**
   printf("[:FSTARTI]");
   float start_freq = get_frequency();            
   printf("[:FSTOPI]");                    
   float stop_freq = get_frequency(); 
   printf("[:NUMPOINTSI]");
   int num_points = get_parameter(3);
+  **/
+  
   printf("[START:EIS]");
   
   uint32_t temp;  
@@ -121,17 +125,18 @@ void runEIS(void){
   AppIMPCfg_Type* testCfg = AD5940ImpedanceStructInit();          //Initialize struct to store EIS test parameters
   
   /**Modify test object with user parameters (hardcoded for now while debugging)*/
+  /**
   testCfg->SweepCfg.SweepStart = 1;
-  testCfg->SweepCfg.SweepStop = 75000;
+  testCfg->SweepCfg.SweepStop = 200000;
   testCfg->SweepCfg.SweepPoints = 30;
+``*/
   
   AppIMPInit(AppBuff, APPBUFF_SIZE);    /* Initialize IMP application. Provide a buffer, which is used to store sequencer commands */
   AppIMPCtrl(IMPCTRL_START, 0);          /* Control IMP measurment to start. Second parameter has no meaning with this command. */
   
   uint16_t ctr = 0;
-  
-  while(ctr < num_points)
-  {
+
+  while(1){
     if(AD5940_GetMCUIntFlag())
     {
       AD5940_ClrMCUIntFlag();
@@ -141,6 +146,7 @@ void runEIS(void){
       ++ctr;
     }
   }
+    
   printf("[END:EIS]");
   NVIC_SystemReset();                   //ARM DIGITAL SOFTWARE RESET
 }

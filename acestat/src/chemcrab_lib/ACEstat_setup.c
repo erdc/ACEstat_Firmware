@@ -17,7 +17,7 @@ void UartInit(void)
   DioCfgPin(pADI_GPIO0,PIN11,1);                //Setup P0.11 as UART pin
   pADI_UART0->COMLCR2 = 0x3;                    //Set PCLk oversampling rate 32. (PCLK to UART baudrate generator is /32)
   UrtCfg(pADI_UART0,B115200,
-         (BITM_UART_COMLCR_WLS|3),0);           //Configure UART for 9600 baud rate
+         (BITM_UART_COMLCR_WLS|3),0);           //Configure UART for 115200 baud rate
   UrtFifoCfg(pADI_UART0, RX_FIFO_8BYTE,         //Configure the UART FIFOs for 8 bytes deep
              BITM_UART_COMFCR_FIFOEN);
   UrtFifoClr(pADI_UART0, BITM_UART_COMFCR_RFCLR //Clear the Rx/TX FIFOs
