@@ -66,6 +66,10 @@ typedef struct {
   
   /**Cyclic square wave voltammetry combines CV and SWV, has no unique parameters*/
   
+  /**Differentail pulse voltammetry variables*/
+  /**Most will be reused from square wave*/
+  uint16_t dpvPulseWidth;               //pulse width (should be between 10-100)
+  
   /**Chronoamperometry parameters*/
   uint8_t caStepMode;                   //0 to measure response to 0->vStart only, 1 to measure 0->vStart and vStart->0 responses
   uint16_t caDuration;                  //duration in ms to hold vStart after intial step, and 0 volts after secondary step if caStepMode==1
@@ -150,6 +154,22 @@ void swvSignalMeasure(acestatTest_type *testParams);
   *@retval      none
 */
 void printSWVResults(acestatTest_type *testParams);
+
+/*****************Differential Pulse Voltammetry(DPV) Functions ********************/
+
+/**
+  *@brief       runDPV: performs setup and carries out electrochemical test/measurement on 3-electrode sensor
+  *@param       none
+  *@retval      none
+*/
+void runDPV(void);
+
+/**
+  *@brief       dpvSignalMeasure: apply DPV signal to electrode and measure current response
+  *@param       testParams: pointer to acestatTest_type struct containing test parameters and config
+  *@retval      none
+*/
+void dpvSignalMeasure(acestatTest_type *testParams);
 
 /*****************Cyclic Square Wave Voltammetry(CSWV) Functions ********************/
 

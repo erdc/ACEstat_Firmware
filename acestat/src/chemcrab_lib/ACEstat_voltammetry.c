@@ -861,3 +861,134 @@ void runOCP(){
   }
   reset_timer_ctr();                                            //reset the timer counter after measurement ends
 }
+
+/****************DIFFERENTIAL PULSE VOLTAMMETRY*******************/
+
+void runDPV(void){
+  set_adc_mode(0);
+  
+  acestatTest_type dpvTest;
+  
+  /**Get DPV user inputs from ACEstat app or command-line interface */
+  dpvTest.sensor_channel = get_sensor_channel();                        //parser expects 0 or 1
+  printf("[:SVI]");
+  dpvTest.vStart = get_parameter();                                 //parser expects -9999 to +9999 mV
+  printf("[:EVI]");
+  dpvTest.vEnd = get_parameter();                                   //parser expects -9999 to +9999 mV
+  printf("[:AMPI]");
+  dpvTest.swvAmplitude = get_parameter();                              //parser expects 000 to 999 mV
+  printf("[:STEPI]");
+  dpvTest.swvStepSize = get_parameter();                               //parser expects 000 to 999 mV
+  printf("[:FREQI]");
+  dpvTest.swvFrequency = get_parameter();                              //parser expects 00000 to 99999 Hz
+  printf("[:PWI]");
+  dpvTest.dpvPulseWidth = get_parameter();                              //parser expects 000 to 999 ms
+  printf("[:TEI]");
+  dpvTest.equilibrium_time = get_parameter();                          //parser expects 0000 to 9999 seconds
+  printf("[:RTIAI]");      
+  dpvTest.rtia = LPRTIA_LOOKUP(get_parameter()-48);        //parser expects 00-25 
+  
+  /**Get printing mode, 0 for raw ADC values, 1 for processed values*/
+  printf("[:PMI]");
+  dpvTest.printing_mode = get_parameter(1);
+  
+  /**Setup AFE for DPV test*/
+  AFE_SETUP_VOLTAMMETRY(dpvTest.sensor_channel, dpvTest.rtia);
+  
+  printf("[START:DPV]");                                                //begin SWV test
+
+  /**Convert user inputs into DAC-scale voltages and perform DPV test */
+  /**Can reuse swv functions for setup since swv is a type of dpv*/
+  swvSetVoltages(&dpvTest);
+  swvEquilibriumDelay(&dpvTest);
+  //swvSignalMeasure(&dpvTest);
+  dpvSignalMeasure(&dpvTest);
+  turn_off_afe_power_things_down();
+  printSWVResults(&dpvTest);
+
+  /**End test and shutdown AFE*/
+  printf("[END:DPV]");
+  NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
+}
+
+void dpvSignalMeasure(acestatTest_type *tPar){
+  
+  /**Convert relative voltages to DAC inputs*/
+  tPar->cStart = mV_to_DAC(tPar->vStart_diff,12);           //vStart on 12-bit DAC channel
+  tPar->cEnd = mV_to_DAC(tPar->vEnd_diff,12);               //vEnd on 12-bit DAC channel        
+  tPar->cZero = mV_to_DAC(tPar->vZero,6);                   //vZero on 6-bit DAC channel
+  tPar->cAmplitude = (int)((tPar->swvAmplitude)/0.537);     //convert amplitude to 12-bit DAC scale
+  uint16_t cBias = tPar->cStart;                                  //cBias on 12-bit DAC channel
+  uint16_t inc = 2*tPar->swvStepSize;                             //DAC bit is 0.537mV/bit, x2 to make inc ~1mV
+  
+  /**Square wave timing parameters*/
+  uint16_t SETTLING_DELAY = 5;
+  uint16_t pulseDelayVal = tPar->dpvPulseWidth*100;                             //Pulse width in 10's of us (originally ms)
+  uint16_t baselineDelayVal = 2*(50000/tPar->swvFrequency/3) - pulseDelayVal;       //delay required to maintain specified frequency
+  //TODO make sure that the pulse delay is not bigger than the frequency would allow
+  
+  /**Initialize ADC parameters*/
+  tPar->sample_count = 0;
+  tPar->adc_data_buffer = return_adc_buffer();
+  AfeAdcGo(BITM_AFE_AFECON_ADCCONVEN);
+  
+  /**Condition if SWV baseline ramp is moving "downwards" relative to vZero*/
+  if(tPar->vStart_diff < tPar->vEnd_diff){
+    
+    /** Increase cBias until cBias=cEnd */
+    for (cBias = tPar->cStart; cBias < tPar->cEnd; cBias = cBias + inc){
+      /**Squarewave Low*/
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
+      delay_10us(SETTLING_DELAY);                                       // allow LPDAC to settle
+      delay_10us(baselineDelayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
+      
+      /**Measure the baseline voltage and first current for this cycle*/
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
+      
+      /**Squarewave high*/
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias+2*tPar->cAmplitude);       //Squarewave peak, voltage = cBias+2*amp
+      delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
+      delay_10us(pulseDelayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
+      
+      /**Measure the second current for this cycle*/
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++; 
+    }
+  }
+  /**Condition if SWV baseline ramp is moving "upwards" relative to vZero*/
+  else{
+    
+    /** Decrease cBias until cBias=cEnd */
+    for (cBias = tPar->cStart; cBias > tPar->cEnd; cBias = cBias - inc){
+      
+      /**Squarewave high*/
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
+      delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
+      delay_10us(pulseDelayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
+      
+      /**Measure the baseline voltage and first current for this cycle*/
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_VRE,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure VRE with 16x oversampling
+      tPar->sample_count++;
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;
+      
+      /**Squarewave Low*/
+      LPDacWr(tPar->sensor_channel, tPar->cZero, cBias-2*tPar->cAmplitude);       //Squarewave peak, voltage = cBias+2*amp
+      delay_10us(SETTLING_DELAY);                                       //allow LPDAC to settle
+      delay_10us(baselineDelayVal-SETTLING_DELAY);                              //holding delay to maintain squarewave frequency
+      
+      /**Measure the second current for this cycle*/
+      tPar->adc_data_buffer[tPar->sample_count]=oversample_adc(MODE_LPTIA,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);  //measure current from LPTIA with 16x oversampling
+      tPar->sample_count++;     
+    }
+  }
+  
+  /**Manually measure the vZero voltage (in mV) to more accurately calculate differential sensor potential*/
+  LPDacWr(tPar->sensor_channel, tPar->cZero, cBias);
+  delay_10us(SETTLING_DELAY);
+  tPar->vZeroMeasured = oversample_adc(MODE_VZERO,tPar->sensor_channel,ADC_OVERSAMPLE_RATE);
+  
+}

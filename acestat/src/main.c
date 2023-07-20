@@ -33,7 +33,7 @@ int getTestMode(void);
 First two digits of version number match ACEstat PCB version, 
 3rd digit represents firmware iteration for that board version
 */
-char* version = "1.7.5";
+char* version = "1.7.6";
 
 /***************** ACEstat test mode definitions for top-level API control ********************/
 #define MODE_CV_DEBUG   0
@@ -47,6 +47,7 @@ char* version = "1.7.5";
 #define CLEAN_STEP2     8
 #define CLEAN_STEP3     9
 #define CLEAN_STEP4     10
+#define MODE_DPV        11
 
 int main(void){
   
@@ -123,6 +124,10 @@ void runTest(int mode){
   }
   if(mode==CLEAN_STEP4){             
     cleaningStep4();
+  }
+  if(mode==MODE_DPV){
+    runDPV();
+    printf("[END:DPV]");
   }
 }  
 

@@ -11,13 +11,28 @@ define symbol __ICFEDIT_size_heap__   = 0x200;
 define memory mem with size        = 4G;
 
 // symbols
+
+/* The user bootloader resides in the first 8K flash block */
+define symbol BOOTLOADER_SIZE = 8K; 
+                                    
+/* The user code (and user code checksum) is pushed up in the memory space by the size of the bootloader.*/
+define symbol CHECKSUM_ADDR  = BOOTLOADER_SIZE + 0x000007FC;
+
+/* The bootloader is provided to this project as an array in BootloaderConstantArray.c Place that at 0x0*/
+define block BOOTLOADER    with alignment = 4, size = BOOTLOADER_SIZE { readonly object BootloaderConstantArray.o };
+place at address 0x0 { block BOOTLOADER };
+
 define symbol USE_PARITY = 1;
 
-define symbol FLASH                               = 0x00000000;  // flash address
-define symbol FLASH_SIZE                          = 128K;        // 128k flash size
+define symbol FLASH                               = BOOTLOADER_SIZE;  // flash address
+define symbol FLASH_SIZE                          = 128K - BOOTLOADER_SIZE;        // 128k flash size
 define symbol FLASH_PAGE_SIZE                     = 2K;          // 2k flash page size
 define symbol PAGE0_ROM_START                     = 0x1A0;
 
+define symbol UF_START_PAGE                       = BOOTLOADER_SIZE/FLASH_PAGE_SIZE;
+export symbol UF_START_PAGE;                      // C file needs this information
+define symbol FINAL_CRC_PAGE                      = CHECKSUM_ADDR/FLASH_PAGE_SIZE;
+export symbol FINAL_CRC_PAGE;                     // C file needs this information
 
 define symbol SIZE_OF_INTVEC                      = 384;
 define symbol START_OF_READ_PROTECT_KEY_HASH       = FLASH+SIZE_OF_INTVEC;
@@ -125,11 +140,12 @@ define block HEAP   with alignment = 8, size = __ICFEDIT_size_heap__   { };
 define block CHECKSUM      with alignment = 4, size = 4 { ro section .checksum };
 
 // force manditory placement of the CHECKSUM block within Page0
-place at address 0x000007FC { block CHECKSUM };
+place at address CHECKSUM_ADDR { block CHECKSUM };
 
 
 // KEEP these blocks, avoiding linker elimination...
 keep {
+    block BOOTLOADER,
     block CHECKSUM,
 };
 
