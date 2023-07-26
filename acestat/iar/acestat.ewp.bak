@@ -11,7 +11,7 @@
             <name>General</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <version>34</version>
+                <version>33</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -70,7 +70,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.20.2.43955</state>
+                    <state>9.10.2.39304</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
@@ -98,7 +98,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>31</version>
+                    <version>30</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -115,7 +115,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>31</version>
+                    <version>30</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -138,7 +138,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>31</version>
+                    <version>30</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -198,10 +198,6 @@
                 <option>
                     <name>OG_32_64Device</name>
                     <state>0</state>
-                </option>
-                <option>
-                    <name>BuildFilesPath</name>
-                    <state>Debug</state>
                 </option>
             </data>
         </settings>
@@ -342,7 +338,7 @@
                     <state>$PROJ_DIR$\..\..\aducm355-examples\inc</state>
                     <state>$PROJ_DIR$\..\..\aducm355-examples\common</state>
                     <state>$PROJ_DIR$\..\..\aducm355-examples\common\ad5940lib</state>
-                    <state>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355_ECSns_EIS</state>
+                    <state>$PROJ_DIR$\..\..\aducm355-examples\examples\ApplicationExamples\M355ECSns_EIS</state>
                     <state>$PROJ_DIR$\..\src</state>
                     <state>$PROJ_DIR$\..\src\chemcrab_lib</state>
                 </option>
@@ -676,7 +672,7 @@
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>26</version>
+                <version>25</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -697,8 +693,7 @@
                 </option>
                 <option>
                     <name>IlinkKeepSymbols</name>
-                    <state>bootloader</state>
-                    <state>__checksum</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile</name>
@@ -818,7 +813,7 @@
                 </option>
                 <option>
                     <name>DoFill</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>FillerByte</name>
@@ -826,24 +821,24 @@
                 </option>
                 <option>
                     <name>FillerStart</name>
-                    <state>0x2000</state>
+                    <state>0x0</state>
                 </option>
                 <option>
                     <name>FillerEnd</name>
-                    <state>0x27FB</state>
+                    <state>0x0</state>
                 </option>
                 <option>
                     <name>CrcSize</name>
                     <version>0</version>
-                    <state>2</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CrcAlign</name>
-                    <state>4</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CrcPoly</name>
-                    <state>0x04C11DB7</state>
+                    <state>0x11021</state>
                 </option>
                 <option>
                     <name>CrcCompl</name>
@@ -857,11 +852,11 @@
                 </option>
                 <option>
                     <name>CrcInitialValue</name>
-                    <state>0xFFFFFFFF</state>
+                    <state>0x0</state>
                 </option>
                 <option>
                     <name>DoCrc</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IlinkBE8Slave</name>
@@ -901,7 +896,7 @@
                 </option>
                 <option>
                     <name>IlinkCrcUseAsInput</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>IlinkOptInline</name>
@@ -946,12 +941,12 @@
                 <option>
                     <name>CrcAlgorithm</name>
                     <version>1</version>
-                    <state>3</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CrcUnitSize</name>
                     <version>0</version>
-                    <state>2</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IlinkThreadsSlave</name>
@@ -1029,14 +1024,6 @@
                     <name>IlinkDemangle</name>
                     <state>0</state>
                 </option>
-                <option>
-                    <name>IlinkWrapperFileEnable</name>
-                    <state>0</state>
-                </option>
-                <option>
-                    <name>IlinkWrapperFile</name>
-                    <state></state>
-                </option>
             </data>
         </settings>
         <settings>
@@ -1071,7 +1058,7 @@
             <name>General</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <version>34</version>
+                <version>33</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -1158,7 +1145,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>31</version>
+                    <version>30</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -1175,7 +1162,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>31</version>
+                    <version>30</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -1198,7 +1185,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>31</version>
+                    <version>30</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -1258,10 +1245,6 @@
                 <option>
                     <name>OG_32_64Device</name>
                     <state>0</state>
-                </option>
-                <option>
-                    <name>BuildFilesPath</name>
-                    <state>Release</state>
                 </option>
             </data>
         </settings>
@@ -1731,7 +1714,7 @@
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>26</version>
+                <version>25</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -2083,14 +2066,6 @@
                     <name>IlinkDemangle</name>
                     <state>0</state>
                 </option>
-                <option>
-                    <name>IlinkWrapperFileEnable</name>
-                    <state>0</state>
-                </option>
-                <option>
-                    <name>IlinkWrapperFile</name>
-                    <state></state>
-                </option>
             </data>
         </settings>
         <settings>
@@ -2118,72 +2093,24 @@
     <group>
         <name>application</name>
         <group>
-            <name>ACEstat_lib</name>
+            <name>crab_lib</name>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_adc.h</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\craabUtil.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_cleaning.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\eis.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_cleaning.h</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\eis.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.c</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_eis.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_gpt.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_interface.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_inthandlers.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_misc.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_mux.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_setup.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_tia.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\src\chemcrab_lib\ACEstat_voltammetry.h</name>
+                <name>$PROJ_DIR$\..\src\chemcrab_lib\voltammetry.h</name>
             </file>
         </group>
         <group>
@@ -2198,9 +2125,6 @@
                 <name>$PROJ_DIR$\..\src\AfeTiaLib.c</name>
             </file>
         </group>
-        <file>
-            <name>$PROJ_DIR$\..\src\BootloaderConstantArray.c</name>
-        </file>
         <file>
             <name>$PROJ_DIR$\..\src\main.c</name>
         </file>

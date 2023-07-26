@@ -2,61 +2,62 @@
 #include "voltammetry.h"
 
 /***********************Cyclic Voltammetry(CV) Functions *************************/
-void runCV(void){
+void runCV(int debug_mode){
   set_adc_mode(0);
   
-  /**Get user inputs from ACEstat app or command-line interface */
-  uint16_t cvSensChan = get_sensor_channel();     //parser expects 0 or 1
-  printf("[:SVI]");                             
-  int cvStartVolt = get_voltage_input();          //parser expects -9999 to +9999 [mV]
-  printf("[:VVI]");
-  int cvVertexVolt = get_voltage_input();         //parser expects -9999 to +9999 [mV]
-  printf("[:EVI]");
-  int cvEndVolt = get_voltage_input();            //parser expects -9999 to +9999 [mV]
-  printf("[:SRI]");
-  uint16_t sweepRate = get_parameter(3);         //parser expects 000 to 999 [mV/s]
-  printf("[:TEI]");
-  uint16_t tEquilibrium = get_parameter(4);      //parser expects 0000 to 9999 [s]
-  printf("[:RTIAI]");
-  uint8_t RTIACHOICE = get_parameter(2);         //parser expects 00-25
-  uint32_t RGAIN = LPRTIA_LOOKUP(RTIACHOICE);   //PASS INT VAL RATHER THAN ASCII
-  printf("[START:CV]");                         //Begin test setup
+  acestatTest cvTest;
+  cvTest.test_type = "CV";
+  
+  /**Pre-defined parameters to run quick diagrnostic tests*/
+  cvTest.sensor_channel = 0;                      //parser expects 0 or 1
+  cvTest.vStart = -100;                           //parser expects -9999 to +9999 [mV]
+  cvTest.vVertex = 100;                           //parser expects -9999 to +9999 [mV]
+  cvTest.vEnd = -100;                             //parser expects -9999 to +9999 [mV]
+  cvTest.cvSweepRate = 200;                       //parser expects 000 to 999 [mV/s]
+  cvTest.equilibrium_time = 1;                    //parser expects 0000 to 9999 [s]
+  cvTest.gain_resistance = LPRTIA_LOOKUP(1);      //PASS INT VAL RATHER THAN ASCII
+  
+  /**If getting user inputs for test parameters*/
+  if(!debug_mode){
+    /**Get user inputs from ACEstat app or command-line interface */
+    cvTest.sensor_channel = get_sensor_channel();                 //parser expects 0 or 1
+    printf("[:SVI]");                             
+    cvTest.vStart = get_voltage_input();                          //parser expects -9999 to +9999 [mV]
+    printf("[:VVI]");
+    cvTest.vVertex = get_voltage_input();                         //parser expects -9999 to +9999 [mV]
+    printf("[:EVI]");
+    cvTest.vEnd = get_voltage_input();                            //parser expects -9999 to +9999 [mV]
+    printf("[:SRI]");
+    cvTest.cvSweepRate = get_parameter(3);                        //parser expects 000 to 999 [mV/s]
+    printf("[:TEI]");
+    cvTest.equilibrium_time = get_parameter(4);                   //parser expects 0000 to 9999 [s]
+    printf("[:RTIAI]");                    
+    cvTest.gain_resistance = LPRTIA_LOOKUP(get_parameter(2));     //parser expects 00-25
+  }
+
+  printf("[START:CV]");                                         //Begin test setup
   
   /**Setup AFE for CV test */
-  AfePwrCfg(AFE_ACTIVE);                        //set AFE power mode to active
-  LPDacPwrCtrl(cvSensChan,PWR_UP);              //Power up LPDAC on requested sensor_channel
-  LPDacCfg(cvSensChan,LPDACSWNOR,VBIAS12BIT_VZERO6BIT,LPDACREF2P5);     //config DAC on requested sensor_channel
-  AfeLpTiaPwrDown(cvSensChan,0);                //Power up LPTIA on requested sensor_channel
-  AfeLpTiaAdvanced(cvSensChan,BANDWIDTH_NORMAL,CURRENT_NOR);
-  AfeLpTiaCon(cvSensChan,LPTIA_RLOAD_0,LPTIA_RGAIN_96K,LPTIA_RFILTER_1M); 
-  delay_10us(1000);
-  AFE_SETUP_LPTIA_LPDAC(cvSensChan);            //Ensure LPTIA/LPDAC registers match required configuration
-  AfeLpTiaCon(cvSensChan, LPTIA_RLOAD_100, RGAIN, LPTIA_RFILTER_DISCONNECT);    //Setup LPTIA gain to match user input
-  
-  /**Convert user inputs into DAC-scale voltages and perform CV test */
-  int input_voltages[3] = {cvStartVolt,cvVertexVolt,cvEndVolt}; 
-  uint16_t relative_voltages[4] = {0,0,0,0};    //array to hold converted voltages
-  cvSetVoltages(input_voltages, relative_voltages, cvSensChan); //convert inputs to DAC-usable voltages
-  cvEquilibriumDelay(cvSensChan, relative_voltages, tEquilibrium);      //Apply equilibrium signal 
-  cvSignalMeasure(cvSensChan, relative_voltages, RGAIN, sweepRate);  //Apply CV signal and measure current response
+  AFE_SETUP_VOLTAMMETRY(cvTest.sensor_channel, cvTest.gain_resistance)
+
+  /**Convert user inputs into positive voltages and perform CV test */
+  cvSetVoltages(&cvTest);                                       
+  cvEquilibriumDelay(&cvTest);                                  //apply equilibrium signal 
+  cvSignalMeasure(&cvTest);                                     //apply CV signal and measure current response
   
   /**End test and shutdown AFE*/
-  turn_off_afe_power_things_down();
   printf("[END:CV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
 
-void cvSetVoltages(int input_voltages[3], uint16_t relative_voltages[4], uint8_t sensor_channel){
-  uint16_t vMax = 2300; //maximum DAC output voltage
+void cvSetVoltages(acestatTest *testParams){
+  uint16_t vMax = 2300;                         //maximum DAC output voltage
   
-  /**Identify minimum value of input_voltages */
-  int minVal = input_voltages[0];
-  for(int i=1 ; i<3 ; ++i){
-    if(input_voltages[i] < minVal){
-      minVal = input_voltages[i];
-    }
-  }
- 
+  /**Identify minimum value of of the three test voltages(start, vertex, end */
+  int minVal = testParams.vStart;
+  if(testParams->vVertex < minVal){minVal=testParams->vVertex;}
+  if(testParams->vEnd < minVal){minVal=testParams->vEnd;}
+
   relative_voltages[0] = vMax - abs(minVal);    //set vZero based on minVal
  
   /**Description of voltage array elements
@@ -189,19 +190,22 @@ void cvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], uin
   /**Manually measure 6-bit DAC channel (in mV) to more accurately calculate dfferential sensor potential */
   LPDacWr(sensor_channel, cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
+  int vZeroMeas = oversample_adc(2,sensor_channel,16);
   
   /**Put the sensor in "open circuit" state */
   turn_off_afe_power_things_down();
+  
   /**Print test results from SzAdcSamples to terminal */
   printCVResults(cZero,cStart,cVertex,cEnd,sampleCount,RTIA,vZeroMeas);
 }
 
-void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA, float vZeroMeasured){
+void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA, int vZeroM){
   /**Convert DAC-scale values to voltages in mV*/
   float vStart = DAC_to_mV(cStart,12);
   float vVertex = DAC_to_mV(cVertex,12);
   float vEnd = DAC_to_mV(cEnd,12);
+  
+  float vZeroMeasured = adc_to_voltage(vZeroM);
   
   /**Get szAdcSamples and print test parameters/metadata*/
   uint16_t* szADCSamples = return_adc_buffer();
@@ -211,9 +215,14 @@ void printCVResults(float cZero, float cStart, float cVertex, float cEnd, int sa
   /**Print test data line-by-line to terminal*/
   float tc, vDiff;
   for(uint32_t i = 0; i < sampleCount; i+=2){
-    vDiff = (vZeroMeasured/1000) - adc_to_voltage(szADCSamples[i]);       //sensor potential defined relative to vZero
-    tc = adc_to_current(szADCSamples[i+1], RTIA);
-    printf("%.4f,%.4f"EOL, vDiff,tc);
+    if(get_printing_mode()==PRINT_MODE_PROCESSED){
+      vDiff = (vZeroMeasured/1000) - adc_to_voltage(szADCSamples[i]);       //sensor potential defined relative to vZero
+      tc = adc_to_current(szADCSamples[i+1], RTIA);
+      printf("%.4f,%.4f"EOL, vDiff,tc);
+    }
+    else{
+      print("%i,%i"EOL, vZeroM-szADCSamples[i], szADCSamples[i+1]);
+    }
   }
   printf("]");
 }
@@ -263,7 +272,6 @@ void runSWV(void){
   swvSignalMeasure(swvSensChan, relative_voltages, RGAIN, swvAmp, swvStep, swvFreq);
 
   /**End test and shutdown AFE*/
-  turn_off_afe_power_things_down();
   printf("[END:SWV]");
   NVIC_SystemReset(); //ARM DIGITAL SOFTWARE RESET
 }
@@ -404,7 +412,7 @@ void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], ui
   /**Manually measure the vZero voltage (in mV) to more accurately calculate differential sensor potential*/
   LPDacWr(sensor_channel, cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
+  int vZeroMeas = oversample_adc(2,sensor_channel,16);
   
   /**Put the sensor in "open circuit" state*/
   turn_off_afe_power_things_down();
@@ -412,9 +420,9 @@ void swvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[3], ui
   printSWVResults(cZero, cStart, cEnd, sampleCount, RTIA, vZeroMeas);
 }
 
-void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA, float vZeroMeasured){
+void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int RTIA, int vZeroM){
 
-  float vZero = vZeroMeasured;
+  float vZero = adc_tovoltage(vZeroMeasured);
   float vStart = DAC_to_mV(cStart,12);
   float vEnd = DAC_to_mV(cEnd,12);
   
@@ -427,18 +435,22 @@ void printSWVResults(float cZero, float cStart, float cEnd, int sampleCount, int
   
   uint8_t use_mov_avg = 1;
   for(uint16_t i = 0; i < sampleCount; i+=3){
-    vDiff = (vZero/1000) - adc_to_voltage(szADCSamples[i]);
     
-    /**Moving average filter for SWV data*/
-    if(use_mov_avg){
-      int filterWidth = 20;
-      tc = voltammetry_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
+    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+      vDiff = (vZero/1000) - adc_to_voltage(szADCSamples[i]);
+      /**Moving average filter for SWV data*/
+      if(use_mov_avg){
+        int filterWidth = 20;
+        tc = swv_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
+      }
+      else{
+      tc = (adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA));
+      }
+      printf("%.4f,%.4f"EOL, vDiff, 0.92*tc);
     }
     else{
-      tc = (adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA));
-    }
-    
-    printf("%.4f,%.4f\n", vDiff, 0.92*tc);
+      printf("%i,%i"EOL, vZeroM-szADCSamples[i], szADCSamples[i+2] - szADCSamples[i+1]);
+    }  
   }
   printf("]");
 }
@@ -491,7 +503,6 @@ void runCSWV(void){
   cswvSignalMeasure(cswvSensChan, relative_voltages, RGAIN, cswvAmp, cswvStep, cswvFreq);
 
   /**Turn off AFE after test completion*/
-  turn_off_afe_power_things_down();
   printf("[END:CSWV]");
   NVIC_SystemReset();                           //ARM DIGITAL SOFTWARE RESET
 }
@@ -682,17 +693,17 @@ void cswvSignalMeasure(uint16_t sensor_channel, uint16_t relative_voltages[4], u
   /**Manually measure the vZero voltage (in mV) to more accurately calculate dfferential sensor potential*/
   LPDacWr(sensor_channel, cZero, cBias);
   delay_10us(SETTLING_DELAY);
-  float vZeroMeas = 1000*adc_to_voltage(oversample_adc(2,sensor_channel,16));
+  int vZeroMeas = oversample_adc(2,sensor_channel,16);
   
   /**Put the sensor in "open circuit" state and print test results*/
   turn_off_afe_power_things_down();
   printCSWVResults(cZero, cStart, cVertex, cEnd, sampleCount, RTIA, vZeroMeas);
 }
 
-void printCSWVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA, float vZeroMeasured){
+void printCSWVResults(float cZero, float cStart, float cVertex, float cEnd, int sampleCount, int RTIA, int vZeroMeasured){
   
   /**Convert DAC-scale voltages back to millivolts*/
-  float vZero = vZeroMeasured;
+  float vZero = adc_to_voltage(vZeroMeasured);
   float vStart = DAC_to_mV(cStart,12);
   float vVertex = DAC_to_mV(cVertex,12);
   float vEnd = DAC_to_mV(cEnd,12);
@@ -700,17 +711,32 @@ void printCSWVResults(float cZero, float cStart, float cVertex, float cEnd, int 
   /**Print test parameters/metadata*/
   printf("[RANGE:%.4f,%.4f,%.4f]", vZero-vStart, vZero-vVertex, vZero-vEnd);
   printf("[RGAIN:%i][RESULTS:", RTIA);
-  
-  /**Print test data from szADCSamples*/
+
   uint16_t* szADCSamples = return_adc_buffer();
   float vDiff, tc;
-  for(uint32_t i = 0; i < sampleCount; i+=3){
-    vDiff = (vZero/1000) - adc_to_voltage(szADCSamples[i]);
-    tc = 0-(adc_to_current(szADCSamples[i+1],RTIA)-adc_to_current(szADCSamples[i+2],RTIA));
-    printf("%.4f,%.4f\n", vDiff, tc);
+  
+  uint8_t use_mov_avg = 1;
+  for(uint16_t i = 0; i < sampleCount; i+=3){
+    
+    if(get_printing_mode() == PRINT_MODE_PROCESSED){
+      vDiff = (vZero/1000) - adc_to_voltage(szADCSamples[i]);
+      /**Moving average filter for SWV data*/
+      if(use_mov_avg){
+        int filterWidth = 20;
+        tc = swv_mov_avg(filterWidth, szADCSamples, i+1, sampleCount, RTIA);
+      }
+      else{
+      tc = (adc_to_current(szADCSamples[i+2],RTIA) - adc_to_current(szADCSamples[i+1],RTIA));
+      }
+      printf("%.4f,%.4f"EOL, vDiff, 0.92*tc);
+    }
+    else{
+      printf("%i,%i"EOL, vZeroM-szADCSamples[i], szADCSamples[i+2] - szADCSamples[i+1]);
+    }  
   }
   printf("]");
 }
+
 
 /****************END CYCLIC SQUARE WAVE VOLTAMMETRY***************************/
 
@@ -749,7 +775,6 @@ void runCA(void){
   caSignalMeasure(caChan, relative_voltages, stepLength, stepDelay, RGAIN);
   
   /**Turn off AFE and reset board*/
-  turn_off_afe_power_things_down();
   printf("[END:CA]");
   NVIC_SystemReset();                           //ARM DIGITAL SOFTWARE RESET
 }
@@ -853,3 +878,9 @@ void printCAResults(float cZero, float cStep, int length, int RTIA, int sampleCo
 }
 
 /****************END CHRONOAMPEROMETRY***************************/
+
+/****************OPEN-CIRCUIT POTENTIOMETRY***************************/
+
+void runOCP(){
+  
+}
