@@ -2923,6 +2923,9 @@
             </file>
         </group>
         <file>
+            <name>$PROJ_DIR$\..\src\BootloaderConstantArray.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\src\main.c</name>
         </file>
     </group>

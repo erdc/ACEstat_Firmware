@@ -11,7 +11,7 @@
             <name>General</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <version>33</version>
+                <version>34</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -70,7 +70,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.10.2.39304</state>
+                    <state>9.20.2.43955</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
@@ -98,7 +98,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>30</version>
+                    <version>31</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -115,7 +115,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>30</version>
+                    <version>31</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -138,7 +138,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>30</version>
+                    <version>31</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -198,6 +198,10 @@
                 <option>
                     <name>OG_32_64Device</name>
                     <state>0</state>
+                </option>
+                <option>
+                    <name>BuildFilesPath</name>
+                    <state>Debug</state>
                 </option>
             </data>
         </settings>
@@ -672,7 +676,7 @@
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>25</version>
+                <version>26</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -693,7 +697,8 @@
                 </option>
                 <option>
                     <name>IlinkKeepSymbols</name>
-                    <state></state>
+                    <state>bootloader</state>
+                    <state>__checksum</state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile</name>
@@ -813,7 +818,7 @@
                 </option>
                 <option>
                     <name>DoFill</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>FillerByte</name>
@@ -821,24 +826,24 @@
                 </option>
                 <option>
                     <name>FillerStart</name>
-                    <state>0x0</state>
+                    <state>0x2000</state>
                 </option>
                 <option>
                     <name>FillerEnd</name>
-                    <state>0x0</state>
+                    <state>0x27FB</state>
                 </option>
                 <option>
                     <name>CrcSize</name>
                     <version>0</version>
-                    <state>1</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>CrcAlign</name>
-                    <state>1</state>
+                    <state>4</state>
                 </option>
                 <option>
                     <name>CrcPoly</name>
-                    <state>0x11021</state>
+                    <state>0x04C11DB7</state>
                 </option>
                 <option>
                     <name>CrcCompl</name>
@@ -852,11 +857,11 @@
                 </option>
                 <option>
                     <name>CrcInitialValue</name>
-                    <state>0x0</state>
+                    <state>0xFFFFFFFF</state>
                 </option>
                 <option>
                     <name>DoCrc</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>IlinkBE8Slave</name>
@@ -896,7 +901,7 @@
                 </option>
                 <option>
                     <name>IlinkCrcUseAsInput</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IlinkOptInline</name>
@@ -941,12 +946,12 @@
                 <option>
                     <name>CrcAlgorithm</name>
                     <version>1</version>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>CrcUnitSize</name>
                     <version>0</version>
-                    <state>0</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>IlinkThreadsSlave</name>
@@ -1024,6 +1029,14 @@
                     <name>IlinkDemangle</name>
                     <state>0</state>
                 </option>
+                <option>
+                    <name>IlinkWrapperFileEnable</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>IlinkWrapperFile</name>
+                    <state></state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -1058,7 +1071,7 @@
             <name>General</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <version>33</version>
+                <version>34</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -1145,7 +1158,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>30</version>
+                    <version>31</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -1162,7 +1175,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>30</version>
+                    <version>31</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -1185,7 +1198,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>30</version>
+                    <version>31</version>
                     <state>38</state>
                 </option>
                 <option>
@@ -1245,6 +1258,10 @@
                 <option>
                     <name>OG_32_64Device</name>
                     <state>0</state>
+                </option>
+                <option>
+                    <name>BuildFilesPath</name>
+                    <state>Release</state>
                 </option>
             </data>
         </settings>
@@ -1714,7 +1731,7 @@
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>25</version>
+                <version>26</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -2066,6 +2083,14 @@
                     <name>IlinkDemangle</name>
                     <state>0</state>
                 </option>
+                <option>
+                    <name>IlinkWrapperFileEnable</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>IlinkWrapperFile</name>
+                    <state></state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -2173,6 +2198,9 @@
                 <name>$PROJ_DIR$\..\src\AfeTiaLib.c</name>
             </file>
         </group>
+        <file>
+            <name>$PROJ_DIR$\..\src\BootloaderConstantArray.c</name>
+        </file>
         <file>
             <name>$PROJ_DIR$\..\src\main.c</name>
         </file>
