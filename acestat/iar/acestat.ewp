@@ -2265,7 +2265,7 @@
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\retarget.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\aducm355-examples\common\IAR\startup_ADuCM355.c</name>
+            <name>$PROJ_DIR$\startup_ADuCM355_bootloader.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\aducm355-examples\common\system_ADuCM355.c</name>
