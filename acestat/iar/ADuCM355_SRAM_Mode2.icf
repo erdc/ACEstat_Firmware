@@ -15,23 +15,41 @@ define memory mem with size        = 4G;
 /* The user bootloader resides in the first 8K flash block */
 define symbol BOOTLOADER_SIZE = 8K; 
                                     
+<<<<<<< HEAD
 /* The user code (and user code checksum) is pushed up in the memory space by the size of the bootloader.*/
 define symbol CHECKSUM_ADDR  = BOOTLOADER_SIZE + 0x000007FC;
 
 /* The bootloader is provided to this project as an array in BootloaderConstantArray.c Place that at 0x0*/
+=======
+/* The user code (and user code checksum) is pushed up in the memory space 
+   by the size of the bootloader.*/
+define symbol CHECKSUM_ADDR  = BOOTLOADER_SIZE + 0x000007FC;
+
+/* The bootloader is provided to this project as an array in BootloaderConstantArray.c 
+   Place that at 0x0*/
+>>>>>>> SW
 define block BOOTLOADER    with alignment = 4, size = BOOTLOADER_SIZE { readonly object BootloaderConstantArray.o };
 place at address 0x0 { block BOOTLOADER };
 
 define symbol USE_PARITY = 1;
 
 define symbol FLASH                               = BOOTLOADER_SIZE;  // flash address
+<<<<<<< HEAD
 define symbol FLASH_SIZE                          = 128K - BOOTLOADER_SIZE;        // 128k flash size
+=======
+define symbol FLASH_SIZE                          = 128K-BOOTLOADER_SIZE;        // 128k flash size
+>>>>>>> SW
 define symbol FLASH_PAGE_SIZE                     = 2K;          // 2k flash page size
 define symbol PAGE0_ROM_START                     = 0x1A0;
 
 define symbol UF_START_PAGE                       = BOOTLOADER_SIZE/FLASH_PAGE_SIZE;
+<<<<<<< HEAD
 export symbol UF_START_PAGE;                      // C file needs this information
 define symbol FINAL_CRC_PAGE                      = CHECKSUM_ADDR/FLASH_PAGE_SIZE;
+=======
+export symbol UF_START_PAGE;                     // C file needs this information
+define symbol FINAL_CRC_PAGE                    = CHECKSUM_ADDR/FLASH_PAGE_SIZE;
+>>>>>>> SW
 export symbol FINAL_CRC_PAGE;                     // C file needs this information
 
 define symbol SIZE_OF_INTVEC                      = 384;
@@ -41,6 +59,8 @@ define symbol START_OF_CRC_READ_PROTECT_KEY_HASH   = FLASH+SIZE_OF_INTVEC+SIZE_O
 define symbol SIZE_OF_CRC_READ_PROTECT_KEY_HASH   = 4;
 define symbol START_OF_NUM_CRC_PAGES              = FLASH+SIZE_OF_INTVEC+SIZE_OF_READ_PROTECT_KEY_HASH+SIZE_OF_CRC_READ_PROTECT_KEY_HASH;
 define symbol NUM_OF_CRC_PAGES                    = 4;
+
+
 
 
 
