@@ -254,10 +254,6 @@ __root const uint32_t ReadProKeyHsh[]={ 0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFF
 #pragma location="CRC_ReadProtectedKeyHash"
 __root const uint32_t CrcOfReadKey=0xA79C3203;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> SW
 extern uint32_t FINAL_CRC_PAGE;
 #pragma location="NumCRCPages"
 __root const uint32_t NumOfCRCPages=(uint32_t)&FINAL_CRC_PAGE;
@@ -266,11 +262,6 @@ void __iar_init_core(void){
   SCB->VTOR=(uint32_t)&__vector_table;
 }
 
-
-<<<<<<< HEAD
-
-=======
->>>>>>> SW
 #ifdef RELOCATE_IVT
 /*
    A relocated IVT is requested.  Provision for IVT relocation
